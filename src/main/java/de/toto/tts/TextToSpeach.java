@@ -1,27 +1,27 @@
 package de.toto.tts;
 
-import java.util.Set;
-
 import de.toto.game.Position;
+
+import java.util.Set;
 
 public interface TextToSpeach {
 
-	void setVoice(String voiceName);
-	
-	Set<String> getAvailableVoices();
+    void setVoice(String voiceName);
 
-	void say(String input) throws Exception;
+    Set<String> getAvailableVoices();
 
-	/**
-	 * Announces a single Long Algebraic Notation chess move
-	 */
+    void say(String input) throws Exception;
 
-	void announceChessMove(String move);
+    /**
+     * Announces a single Long Algebraic Notation chess move
+     */
 
-	/**
-	 * Announces a single Short Algebraic Notation chess move
-	 */
+    void announceChessMove(String move);
 
-	void announcePosition(Position p);
+    /**
+     * Announces a single Short Algebraic Notation chess move
+     */
+
+    void announcePosition(Position p);
 
 }
