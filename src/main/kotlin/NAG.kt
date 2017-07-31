@@ -52,19 +52,15 @@ enum class NAG (val nag: String, val pgn: String) {
     companion object {
         @JvmStatic
         fun getByNag(nag: String): NAG {
-            try {
-                return NAG.valueOf(nag)
-            } catch(e: Exception) {
-                return UNKNOWN
-            }
+            return NAG.values().firstOrNull { it.nag == nag } ?: UNKNOWN
         }
     }
 }
 
 fun main(args: Array<String>) {
     for (nag in NAG.values()) {
-        println("$nag is positional eval: ${nag.isPositionEval}")
+        nag.name
+        println("$nag: Name=${nag.name} is positional eval: ${nag.isPositionEval}")
     }
-    val unknown = NAG.getByNag("balla")
 
 }
