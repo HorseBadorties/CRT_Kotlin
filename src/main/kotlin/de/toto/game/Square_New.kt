@@ -10,23 +10,24 @@ class Square_New(val rank: Byte, val file: Byte, val piece: Piece? = null) {
             throw IllegalArgumentException("Illegal Square rank $rank")
         }
     }
-    constructor(name: String) : this(
+
+    companion object {
+        fun fromName(name: String): Square_New {
             if (name.length != 2) {
                 throw IllegalArgumentException("Illegal Square name $name")
-            } else name[1].toString().toByte(), (name[0] - 96).toByte()
-//            {
-//                val file: Byte =
-//                if (file !in 1..8) {
-//                    throw IllegalArgumentException("Illegal Square name $name")
-//                }
-//                val rank: Byte = name[1].toString().toByte()
-//                if (file !in 1..8) {
-//                    throw IllegalArgumentException("Illegal Square name $name")
-//                }
-//                rank, file
-//            }
+            }
+            val file: Byte = (name[0] - 96).toByte()
+            if (file !in 1..8) {
+                throw IllegalArgumentException("Illegal Square name $name")
+            }
+            val rank: Byte = name[1].toString().toByte()
+            if (file !in 1..8) {
+                throw IllegalArgumentException("Illegal Square name $name")
+            }
+            return Square_New(rank, file)
+        }
+    }
 
-    )
 
     val isWhite = file % 2 == 0 && rank % 2 != 0 || file % 2 != 0 && rank % 2 == 0
 
@@ -585,23 +586,4 @@ class Square_New(val rank: Byte, val file: Byte, val piece: Piece? = null) {
         }
     }
 */
-}
-
-private fun parseName(name: String): Pair<Byte, Byte> {
-    if (name.length != 2) {
-        throw IllegalArgumentException("Illegal Square name $name")
-    }
-    val file: Byte = (name[0] - 96).toByte()
-    if (file !in 1..8) {
-        throw IllegalArgumentException("Illegal Square name $name")
-    }
-    val rank: Byte = name[1].toString().toByte()
-    if (file !in 1..8) {
-        throw IllegalArgumentException("Illegal Square name $name")
-    }
-    return Pair(rank, file)
-}
-
-fun main(args: Array<String>) {
-    Square_New("a1")
 }

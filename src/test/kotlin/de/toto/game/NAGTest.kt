@@ -1,6 +1,4 @@
-
-import de.toto.game.NAG
-import de.toto.game.getNag
+package de.toto.game
 import org.junit.Test
 
 import org.junit.Assert.*

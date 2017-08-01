@@ -1,3 +1,5 @@
+package de.toto.game
+
 import de.toto.game.Piece
 import de.toto.game.getPieceByFenChar
 import org.junit.Test
