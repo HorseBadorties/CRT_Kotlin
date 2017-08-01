@@ -31,19 +31,19 @@ import java.awt.event.*;
 public class JFontChooser extends JComponent {
     // class variables
     /**
-     * Return value from <code>showDialog()</code>.
+     * Return first from <code>showDialog()</code>.
      *
      * @see #showDialog
      **/
     public static final int OK_OPTION = 0;
     /**
-     * Return value from <code>showDialog()</code>.
+     * Return first from <code>showDialog()</code>.
      *
      * @see #showDialog
      **/
     public static final int CANCEL_OPTION = 1;
     /**
-     * Return value from <code>showDialog()</code>.
+     * Return first from <code>showDialog()</code>.
      *
      * @see #showDialog
      **/

@@ -1710,7 +1710,7 @@ public class AppFrame extends JFrame
         Game g = getCurrentGame();
         Position p = g.getPosition();
         Square s = p.getSquare(squareName);
-        if (s.piece == null || s.piece.isWhite != p.isWhiteToMove()) {
+        if (s.piece == null || s.piece.isWhite() != p.isWhiteToMove()) {
             if (!getCurrentPosition().canMoveTo(s))
                 return; // most probably a miss-click
         }

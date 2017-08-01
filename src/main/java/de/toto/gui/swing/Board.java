@@ -211,15 +211,15 @@ public class Board extends JPanel {
                     if (!isDragging || dragSquare.gameSquare.piece == null) {
                         return;
                     }
-                    boolean correctSideMoved = dragSquare.gameSquare.piece.isWhite == board.getCurrentPosition()
+                    boolean correctSideMoved = dragSquare.gameSquare.piece.isWhite() == board.getCurrentPosition()
                             .isWhiteToMove();
                     Square dropSquare = getSquareAt(e.getPoint());
                     if (correctSideMoved && dropSquare != null && dropSquare != dragSquare) {
                         if (dragSquare.gameSquare.canMoveTo(dropSquare.gameSquare, board.getCurrentPosition(), null)) {
-                            String move = dragSquare.gameSquare.piece.pgnChar + dragSquare.getName();
+                            String move = dragSquare.gameSquare.piece.getPgnChar() + dragSquare.getName();
                             boolean isCapture = dropSquare.gameSquare.piece != null;
                             // consider En Passant for pawn moves...
-                            if (dragSquare.gameSquare.piece.type == PieceType.PAWN) {
+                            if (dragSquare.gameSquare.piece.getType() == PieceType.PAWN) {
                                 isCapture = dragSquare.file != dropSquare.file;
                             }
                             if (isCapture) {
@@ -229,14 +229,14 @@ public class Board extends JPanel {
                             }
                             move += dropSquare.getName();
                             // Promotion?
-                            if (dragSquare.gameSquare.piece.type == PieceType.PAWN) {
-                                if ((dragSquare.gameSquare.piece.isWhite && dropSquare.rank == 8)
-                                        || (!dragSquare.gameSquare.piece.isWhite && dropSquare.rank == 1)) {
+                            if (dragSquare.gameSquare.piece.getType() == PieceType.PAWN) {
+                                if ((dragSquare.gameSquare.piece.isWhite() && dropSquare.rank == 8)
+                                        || (!dragSquare.gameSquare.piece.isWhite() && dropSquare.rank == 1)) {
                                     move += "=Q"; // TODO underpromotion
                                 }
                             }
                             // Castles?
-                            if (dragSquare.gameSquare.piece.type == PieceType.KING
+                            if (dragSquare.gameSquare.piece.getType() == PieceType.KING
                                     && dragSquare.file == 5) {
                                 if (dropSquare.file == 3) {
                                     move = "0-0-0";
@@ -773,7 +773,7 @@ public class Board extends JPanel {
             de.toto.game.Square gameSquare;
             int rank;
             int file;
-            boolean isWhite; // cache value rather than use
+            boolean isWhite; // cache first rather than use
             // de.toto.game.Square.isWhite() over and over
             // again during paint()
             Point topLeftOnBoard;

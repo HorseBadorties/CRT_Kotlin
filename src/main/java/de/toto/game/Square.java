@@ -55,7 +55,7 @@ public class Square {
     public String getNameWithPieceSuffix() {
         String name = "";
         if (piece != null) {
-            name += piece.pgnChar;
+            name += piece.getPgnChar();
             name.trim();
         }
         name += getName();
@@ -81,12 +81,12 @@ public class Square {
 
     public boolean isEnPassantPossible(Square to, Position p) {
         try {
-            if (to.piece.isWhite && rank - to.rank == -2) {
+            if (to.piece.isWhite() && rank - to.rank == -2) {
                 Square epSquare = getSquare(p, rank + 2, file - 1);
                 if (epSquare != null && epSquare.piece == Piece.BLACK_PAWN) return true;
                 epSquare = getSquare(p, rank + 2, file + 1);
                 if (epSquare != null && epSquare.piece == Piece.BLACK_PAWN) return true;
-            } else if (!to.piece.isWhite && rank - to.rank == 2) {
+            } else if (!to.piece.isWhite() && rank - to.rank == 2) {
                 Square epSquare = getSquare(p, rank - 2, file - 1);
                 if (epSquare != null && epSquare.piece == Piece.WHITE_PAWN) return true;
                 epSquare = getSquare(p, rank - 2, file + 1);
@@ -105,7 +105,7 @@ public class Square {
         if (piece == null) return false;
         if (ignore == null && isPinned(p, other) && other.piece != (isWhite() ? Piece.BLACK_KING : Piece.WHITE_KING))
             return false;
-        switch (piece.type) {
+        switch (piece.getType()) {
             case KING:
                 return kingAttacks(other, p);
             case QUEEN:
@@ -127,7 +127,7 @@ public class Square {
      */
     public boolean isAttacked(Position p) {
         if (piece == null) return false;
-        for (Square squareWithEnemyPiece : p.getSquaresWithPiecesByColor(!piece.isWhite)) {
+        for (Square squareWithEnemyPiece : p.getSquaresWithPiecesByColor(!piece.isWhite())) {
             if (squareWithEnemyPiece.attacks(this, p, null)) return true;
         }
         return false;
@@ -154,7 +154,7 @@ public class Square {
     public boolean canMoveTo(Square other, Position p, Square ignore) {
         if (piece == null) return false;
         if (ignore == null && isPinned(p, other)) return false;
-        switch (piece.type) {
+        switch (piece.getType()) {
             case KING:
                 return kingCanMoveTo(other, p);
             case QUEEN:
@@ -278,23 +278,23 @@ public class Square {
     }
 
     private boolean pawnAttacks(Square other, Position p) {
-        int startRank = this.piece.isWhite ? 2 : 7;
+        int startRank = this.piece.isWhite() ? 2 : 7;
         // move one square
-        Square s = getSquare(p, this.piece.isWhite ? rank + 1 : rank - 1, file);
+        Square s = getSquare(p, this.piece.isWhite() ? rank + 1 : rank - 1, file);
         if (other.equals(s) && s.piece == null) return true;
         if (rank == startRank && s.piece == null) {
             // move two squares
-            s = getSquare(p, this.piece.isWhite ? rank + 2 : rank - 2, file);
+            s = getSquare(p, this.piece.isWhite() ? rank + 2 : rank - 2, file);
             if (other.equals(s) && s.piece == null) return true;
         }
         // try captures (with en passant)
         String fen = p.getFen() != null ? p.getFen() : p.getPrevious().getFen();
         String enPassantField = fen.split(" ")[3];
-        s = getSquare(p, this.piece.isWhite ? rank + 1 : rank - 1, file + 1);
-        if (other.equals(s) && ((s.piece != null && s.piece.isWhite != this.piece.isWhite) || s.getName().equals(enPassantField)))
+        s = getSquare(p, this.piece.isWhite() ? rank + 1 : rank - 1, file + 1);
+        if (other.equals(s) && ((s.piece != null && s.piece.isWhite() != this.piece.isWhite()) || s.getName().equals(enPassantField)))
             return true;
-        s = getSquare(p, this.piece.isWhite ? rank + 1 : rank - 1, file - 1);
-        if (other.equals(s) && ((s.piece != null && s.piece.isWhite != this.piece.isWhite) || s.getName().equals(enPassantField)))
+        s = getSquare(p, this.piece.isWhite() ? rank + 1 : rank - 1, file - 1);
+        if (other.equals(s) && ((s.piece != null && s.piece.isWhite() != this.piece.isWhite()) || s.getName().equals(enPassantField)))
             return true;
 
         return false;
@@ -308,7 +308,7 @@ public class Square {
     public List<Square> getPossibleTargetSquares(Position p) {
         List<Square> result = new ArrayList<Square>();
         if (piece == null) return result;
-        switch (piece.type) {
+        switch (piece.getType()) {
             case KING:
                 addPossibleTargetSquaresOfKing(result, p);
                 break;
@@ -332,7 +332,7 @@ public class Square {
     }
 
     private boolean doAdd(List<Square> squares, Square s) {
-        if (s != null && (s.piece == null || s.piece.isWhite != this.piece.isWhite)) {
+        if (s != null && (s.piece == null || s.piece.isWhite() != this.piece.isWhite())) {
             return squares.add(s);
         } else return false;
     }
@@ -348,7 +348,7 @@ public class Square {
         doAdd(squares, getSquare(p, rank - 1, file + 1));
         // castling
         if (!p.isCheck()) {
-            int rank = this.piece.isWhite ? 1 : 8;
+            int rank = this.piece.isWhite() ? 1 : 8;
             for (String castlingSquare : p.getPossibleCastlingSquareNames()) {
                 if (castlingSquare != null && castlingSquare.startsWith("g")) {
                     Square f = getSquare(p, rank, 6);
@@ -445,23 +445,23 @@ public class Square {
     }
 
     private void addPossibleTargetSquaresOfPawn(List<Square> squares, Position p) {
-        int startRank = this.piece.isWhite ? 2 : 7;
+        int startRank = this.piece.isWhite() ? 2 : 7;
         // move one square
-        Square s = getSquare(p, this.piece.isWhite ? rank + 1 : rank - 1, file);
+        Square s = getSquare(p, this.piece.isWhite() ? rank + 1 : rank - 1, file);
         if (s != null && s.piece == null) squares.add(s);
         if (rank == startRank && s.piece == null) {
             // move two squares
-            s = getSquare(p, this.piece.isWhite ? rank + 2 : rank - 2, file);
+            s = getSquare(p, this.piece.isWhite() ? rank + 2 : rank - 2, file);
             if (s != null && s.piece == null) squares.add(s);
         }
         // try captures (with en passant)
         String fen = p.getFen() != null ? p.getFen() : p.getPrevious().getFen();
         String enPassantField = fen.split(" ")[3];
-        s = getSquare(p, this.piece.isWhite ? rank + 1 : rank - 1, file + 1);
-        if (s != null && ((s.piece != null && s.piece.isWhite != this.piece.isWhite) || s.getName().equals(enPassantField)))
+        s = getSquare(p, this.piece.isWhite() ? rank + 1 : rank - 1, file + 1);
+        if (s != null && ((s.piece != null && s.piece.isWhite() != this.piece.isWhite()) || s.getName().equals(enPassantField)))
             squares.add(s);
-        s = getSquare(p, this.piece.isWhite ? rank + 1 : rank - 1, file - 1);
-        if (s != null && ((s.piece != null && s.piece.isWhite != this.piece.isWhite) || s.getName().equals(enPassantField)))
+        s = getSquare(p, this.piece.isWhite() ? rank + 1 : rank - 1, file - 1);
+        if (s != null && ((s.piece != null && s.piece.isWhite() != this.piece.isWhite()) || s.getName().equals(enPassantField)))
             squares.add(s);
 
     }
@@ -473,17 +473,17 @@ public class Square {
 
     //TODO isPinned
     public boolean isPinned(Position p, Square moveSquare) {
-        if (piece.type == PieceType.KING) return false;
-        Square kingsSquare = p.findKing(this.piece.isWhite);
+        if (piece.getType() == PieceType.KING) return false;
+        Square kingsSquare = p.findKing(this.piece.isWhite());
         Piece originalPieceOnMoveSquare = moveSquare.piece;
         try {
             if (moveSquare != null) {
                 //temporarily change the position by adding a "ghost pawn" on our moveSquare...
-                moveSquare.piece = piece.isWhite ? Piece.WHITE_PAWN : Piece.BLACK_PAWN;
+                moveSquare.piece = piece.isWhite() ? Piece.WHITE_PAWN : Piece.BLACK_PAWN;
             }
             List<Square> potentialAttackers = new ArrayList<Square>();
-            Piece enemyQueen = piece.isWhite ? Piece.BLACK_QUEEN : Piece.WHITE_QUEEN;
-            Piece enemyRook = piece.isWhite ? Piece.BLACK_ROOK : Piece.WHITE_ROOK;
+            Piece enemyQueen = piece.isWhite() ? Piece.BLACK_QUEEN : Piece.WHITE_QUEEN;
+            Piece enemyRook = piece.isWhite() ? Piece.BLACK_ROOK : Piece.WHITE_ROOK;
             // find potential pinning squares/pieces on same rank, file or diagonal behind us and our king...
             if (kingsSquare.rank == this.rank) {
                 if (kingsSquare.file < this.file) {
@@ -522,7 +522,7 @@ public class Square {
                     }
                 }
             } else { //check diagonals..
-                Piece enemyBishop = piece.isWhite ? Piece.BLACK_BISHOP : Piece.WHITE_BISHOP;
+                Piece enemyBishop = piece.isWhite() ? Piece.BLACK_BISHOP : Piece.WHITE_BISHOP;
                 int _rank = kingsSquare.rank, _file = kingsSquare.file;
                 Square s = kingsSquare;
                 boolean foundMe = false;

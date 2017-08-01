@@ -170,7 +170,7 @@ public class UCIEngine {
 
     public void setMultiPV(int value) {
         multiPV = value;
-        sendCommand("setoption name MultiPV value " + value);
+        sendCommand("setoption name MultiPV first " + value);
         if (isStarted() && fen != null) {
             String _fen = fen;
             fen = null;
@@ -184,7 +184,7 @@ public class UCIEngine {
 
     public void setThreadCount(int value) {
         threadCount = value;
-        sendCommand("setoption name Threads value " + value);
+        sendCommand("setoption name Threads first " + value);
         if (isStarted() && fen != null) {
             String _fen = fen;
             fen = null;
@@ -226,14 +226,14 @@ public class UCIEngine {
         }
         sendCommand("stop");
 
-//		sendCommand("setoption name UCI_LimitStrength value true");
-//		sendCommand("setoption name UCI_Elo value " + translateElo());
+//		sendCommand("setoption name UCI_LimitStrength first true");
+//		sendCommand("setoption name UCI_Elo first " + translateElo());
 
         if (isStockfish()) {
-            sendCommand("setoption name Skill Level value " + translateSkillLevel());
+            sendCommand("setoption name Skill Level first " + translateSkillLevel());
         }
         if (isRodentIII()) {
-            sendCommand("setoption name PersonalityFile value " + Preferences.userNodeForPackage(AppFrame.class).get(AppFrame.PREFS_PATH_TO_RODENT_PERSONALITY, ""));
+            sendCommand("setoption name PersonalityFile first " + Preferences.userNodeForPackage(AppFrame.class).get(AppFrame.PREFS_PATH_TO_RODENT_PERSONALITY, ""));
         }
         sendCommand("ucinewgame");
         sendCommand("isready");
@@ -247,7 +247,7 @@ public class UCIEngine {
     public void endGame() {
         if (isStarted()) {
             sendCommand("stop");
-            sendCommand("setoption name Skill Level value 20");
+            sendCommand("setoption name Skill Level first 20");
             sendCommand("ucinewgame");
             sendCommand("isready");
             announcesBestMove = false;

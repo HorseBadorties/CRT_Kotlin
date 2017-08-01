@@ -148,7 +148,7 @@ public class Position {
         if (nags.isEmpty()) return "";
         StringBuilder result = new StringBuilder();
         for (String nag : nags) {
-            result.append(NAG.getByNag(nag).toString());
+            result.append(NAGKt.getNag(nag).toString());
         }
         return result.toString();
     }
@@ -157,7 +157,7 @@ public class Position {
         if (nags.isEmpty()) return "";
         StringBuilder result = new StringBuilder();
         for (String nag : nags) {
-            NAG nAG = NAG.getByNag(nag);
+            NAG nAG = NAGKt.getNag(nag);
             if (nAG.isPositionEval()) {
                 result.append(nAG.toString());
             }
@@ -282,16 +282,16 @@ public class Position {
         Square to = previous.getSquare(moveParts[1].substring(0, 2));
         Piece piece = from.piece;
 
-        if (piece != null && piece.type != PieceType.PAWN) {
-            result.append(piece.pgnChar);
+        if (piece != null && piece.getType() != PieceType.PAWN) {
+            result.append(piece.getPgnChar());
         }
-        if (wasCapture() && piece.type == PieceType.PAWN) {
+        if (wasCapture() && piece.getType() == PieceType.PAWN) {
             result.append(from.getFileName());
         }
-        if (piece.type != PieceType.PAWN && piece.type != PieceType.KING) {
-            List<Square> squares = previous.getAllPiecesByColor(whiteMoved(), piece.type);
+        if (piece.getType() != PieceType.PAWN && piece.getType() != PieceType.KING) {
+            List<Square> squares = previous.getAllPiecesByColor(whiteMoved(), piece.getType());
             if (squares.size() > 1) {
-                //check if more than one Piece of this PieceType could have moved to "to"
+                //check if more than one de.toto.game.Piece of this PieceType could have moved to "to"
                 List<Square> possible = new ArrayList<Square>();
                 for (Square s : squares) {
                     if (s.attacks(to, previous, null)) {
@@ -366,7 +366,7 @@ public class Position {
             String[] moveParts = move.split(wasCapture() ? "x" : "-");
             from = getSquare(moveParts[0].substring(moveParts[0].length() - 2, moveParts[0].length()));
             to = getSquare(moveParts[1].substring(0, 2));
-            return from.getName() + to.getName() + (wasPromotion() ? String.valueOf(getPromotionPiece().fenChar).toLowerCase() : "");
+            return from.getName() + to.getName() + (wasPromotion() ? String.valueOf(getPromotionPiece().getFenChar()).toLowerCase() : "");
         }
     }
 
@@ -424,7 +424,7 @@ public class Position {
             int promotionPiecePosition = checkOrMate ? move.length() - 2 : move.length() - 1;
             String promotionPiece = move.substring(promotionPiecePosition, move.length());
             if (!whiteMoved()) promotionPiece = promotionPiece.toLowerCase();
-            return Piece.getByFenChar(promotionPiece.charAt(0));
+            return PieceKt.getPieceByFenChar(promotionPiece.charAt(0));
         }
         return null;
     }
@@ -493,7 +493,7 @@ public class Position {
                         file += numericValue;
                         continue;
                     }
-                    Piece piece = Piece.getByFenChar(fenChar);
+                    Piece piece = PieceKt.getPieceByFenChar(fenChar);
                     if (piece != null) {
                         getSquare(rank, file).piece = piece;
                         file++;
@@ -517,7 +517,7 @@ public class Position {
                 if (s.piece != null) {
                     if (emptySquareCounter > 0) fen.append(emptySquareCounter);
                     emptySquareCounter = 0;
-                    fen.append(s.piece.fenChar);
+                    fen.append(s.piece.getFenChar());
                 } else emptySquareCounter++;
             }
             if (emptySquareCounter > 0) fen.append(emptySquareCounter);
@@ -631,7 +631,7 @@ public class Position {
                     Piece piece = fromSquare.piece;
                     fromSquare.piece = null;
                     // En Passant?
-                    if (wasCapture() && piece.type == PieceType.PAWN) {
+                    if (wasCapture() && piece.getType() == PieceType.PAWN) {
                         if (toSquare.piece == null) {
                             getSquare(whiteMoved() ? toSquare.rank - 1 : toSquare.rank + 1, toSquare.file).piece = null;
                         }
@@ -733,7 +733,7 @@ public class Position {
         // get target square and strip from san
         Square targetSquare = getSquare(_san.substring(_san.length() - 2, _san.length()));
         _san = _san.substring(0, _san.length() - 2);
-        // get Piece to move and strip from san
+        // get de.toto.game.Piece to move and strip from san
         Piece piece = whiteMoved ? Piece.WHITE_PAWN : Piece.BLACK_PAWN;
         if (_san.length() > 0) {
             switch (_san.charAt(0)) {
@@ -754,7 +754,7 @@ public class Position {
                     break;
             }
         }
-        if (piece.type != PieceType.PAWN) {
+        if (piece.getType() != PieceType.PAWN) {
             _san = _san.substring(1, _san.length());
         }
         // strip potential 'x'
@@ -797,7 +797,7 @@ public class Position {
         for (int file = 1; file <= 8; file++) {
             for (int rank = 1; rank <= 8; rank++) {
                 Square s = squares[rank - 1][file - 1];
-                if (s.piece != null && s.piece.isWhite == white) {
+                if (s.piece != null && s.piece.isWhite() == white) {
                     matchingSquares.add(squares[rank - 1][file - 1]);
                 }
             }
@@ -856,7 +856,7 @@ public class Position {
         List<Position> result = new ArrayList<Position>();
         for (Square pieces : getAllPiecesByColor(isWhiteToMove())) {
             for (Square s : pieces.getPossibleTargetSquares(this)) {
-                boolean isPromotion = pieces.piece.type == PieceType.PAWN && (s.rank == 1 || s.rank == 8);
+                boolean isPromotion = pieces.piece.getType() == PieceType.PAWN && (s.rank == 1 || s.rank == 8);
                 String move = pieces.getName() + s.getName() + (isPromotion ? "q" : "");
                 move = translateMove(move);
                 Position p = new Position(this, move, null, false, false);
@@ -889,7 +889,7 @@ public class Position {
         for (int _rank = 1; _rank <= 8; _rank++) {
             for (int _file = 1; _file <= 8; _file++) {
                 Square s = squares[_rank - 1][_file - 1];
-                if (s.piece != null && s.piece.isWhite == white && _types.contains(s.piece.type)) {
+                if (s.piece != null && s.piece.isWhite() == white && _types.contains(s.piece.getType())) {
                     result.add(s);
                 }
             }
@@ -908,14 +908,14 @@ public class Position {
         StringBuilder result = new StringBuilder();
         if (from.piece == null) return null;
         // Consider castling
-        if (from.piece.type == PieceType.KING && (to.file == from.file + 2 || to.file == from.file - 2)) {
+        if (from.piece.getType() == PieceType.KING && (to.file == from.file + 2 || to.file == from.file - 2)) {
             if (to.file == 7) return "0-0";
             if (to.file == 3) return "0-0-0";
         }
         result.append(from.getNameWithPieceSuffix());
         if (to.piece != null) {
             result.append("x");
-        } else if (from.piece.type == PieceType.PAWN && from.file != to.file) {
+        } else if (from.piece.getType() == PieceType.PAWN && from.file != to.file) {
             // Consider en passant
             result.append("x");
         } else {
@@ -1090,7 +1090,7 @@ public class Position {
     private List<Square> getSquaresWithPiecesByColor(boolean white, PieceType... pieceTypes) {
         List<Square> result = new ArrayList<Square>();
         for (Square s : getSquaresWithPiecesByColor(white)) {
-            if (Arrays.asList(pieceTypes).contains(s.piece.type)) result.add(s);
+            if (Arrays.asList(pieceTypes).contains(s.piece.getType())) result.add(s);
         }
         return result;
     }
@@ -1123,8 +1123,8 @@ public class Position {
 
         @Override
         public int compare(Piece p1, Piece p2) {
-            if (p1.isWhite != p2.isWhite) return p1.isWhite && whiteFirst ? 1 : -1;
-            return p1.type.compareTo(p2.type);
+            if (p1.isWhite() != p2.isWhite()) return p1.isWhite() && whiteFirst ? 1 : -1;
+            return p1.getType().compareTo(p2.getType());
         }
 
     }

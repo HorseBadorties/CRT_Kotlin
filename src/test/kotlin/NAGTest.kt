@@ -1,4 +1,6 @@
 
+import de.toto.game.NAG
+import de.toto.game.getNag
 import org.junit.Test
 
 import org.junit.Assert.*
@@ -17,10 +19,10 @@ class NAGTest {
     }
 
     @Test
-    fun getByNag() {
-        assertTrue(NAG.getByNag("foo") == NAG.UNKNOWN)
-        assertTrue(NAG.getByNag("$13") == NAG.UNCLEAR_POSITION)
-        assertTrue(NAG.getByNag("$22") == NAG.ZUGZWANG_WHITE)
+    fun getNag() {
+        assertTrue(getNag("foo") == NAG.UNKNOWN)
+        assertTrue(getNag("$13") == NAG.UNCLEAR_POSITION)
+        assertTrue(getNag("$22") == NAG.ZUGZWANG_WHITE)
     }
 
 }
