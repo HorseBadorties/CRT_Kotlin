@@ -83,11 +83,28 @@ class SquareTest {
     }
 
     @Test
+    fun nameWithPieceSuffix() {
+        val s = Square.fromName("a1")
+        s.piece = Piece.WHITE_ROOK
+        assertTrue(s.nameWithPieceSuffix() == "Ra1")
+        assertTrue(Square.fromName("a3").nameWithPieceSuffix() == "a3")
+
+    }
+
+    @Test
     fun equals() {
         assertTrue(Square(1, 1) == Square.fromName("a1"))
         assertTrue(Square.fromName("a1") == Square.fromName("a1"))
         assertTrue(Square(1, 2) != Square.fromName("a1"))
         assertTrue(Square.fromName("a1") != Square.fromName("b1"))
+        assertFalse(Square.fromName("a1").equals(null))
+    }
+
+    @Test
+    fun testHashCode() {
+        assertTrue(Square.fromName("a1").hashCode() == Square.fromName("a1").hashCode())
+        assertTrue(Square.fromName("a2").hashCode() != Square.fromName("a1").hashCode())
+        assertTrue(Square.fromName("h1").hashCode() != Square.fromName("a1").hashCode())
     }
 
 }
