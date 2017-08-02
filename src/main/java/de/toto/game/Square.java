@@ -1,6 +1,7 @@
 package de.toto.game;
 
-import de.toto.game.Piece.PieceType;
+import de.toto.crt.game.Piece;
+import de.toto.crt.game.Piece.PieceType;
 
 import java.util.ArrayList;
 import java.util.List;

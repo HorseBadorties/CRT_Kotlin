@@ -2,8 +2,8 @@ package de.toto.gui.swing;
 
 import com.kitfox.svg.SVGUniverse;
 import com.kitfox.svg.app.beans.SVGIcon;
-import de.toto.game.Piece;
-import de.toto.game.Piece.PieceType;
+import de.toto.crt.game.Piece;
+import de.toto.crt.game.Piece.PieceType;
 import de.toto.game.Position;
 import de.toto.game.Position.GraphicsComment;
 

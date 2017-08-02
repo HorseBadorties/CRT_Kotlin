@@ -1,7 +1,5 @@
-package de.toto.game
+package de.toto.crt.game
 
-import de.toto.game.Piece
-import de.toto.game.getPieceByFenChar
 import org.junit.Test
 
 import org.junit.Assert.*
@@ -90,7 +88,7 @@ class PieceTest {
 
     @Test
     fun getPieceByFenChar() {
-        assertTrue(getPieceByFenChar('b') == Piece.BLACK_BISHOP)
+        assertTrue(Piece.getPieceByFenChar('b') == Piece.BLACK_BISHOP)
     }
 
 }

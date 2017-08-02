@@ -1,4 +1,4 @@
-package de.toto.game
+package de.toto.crt.game
 
 /**
  * Numeric annotation glyphs
@@ -54,8 +54,11 @@ enum class NAG(val nag: String, val pgn: String) {
 
     val isPositionEval = nag.drop(1).toIntOrNull() in 10..135
 
+    companion object {
+        @JvmStatic
+        fun getNag(nag: String): NAG {
+            return NAG.values().firstOrNull { it.nag == nag } ?: NAG.UNKNOWN
+        }
+    }
 }
 
-fun getNag(nag: String): NAG {
-    return NAG.values().firstOrNull { it.nag == nag } ?: NAG.UNKNOWN
-}

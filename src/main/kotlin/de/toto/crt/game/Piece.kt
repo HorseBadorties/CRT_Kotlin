@@ -1,4 +1,4 @@
-package de.toto.game
+package de.toto.crt.game
 
 /**
  * Enumeration of all chess pieces, including their associated FEN and PGN characters.
@@ -45,6 +45,10 @@ enum class Piece (val type: PieceType, val isWhite: Boolean, val fenChar: Char, 
                 PieceType.PAWN -> return if (isWhite) "\u2659" else "\u265F"
             }
         }
+
+    companion object {
+        @JvmStatic
+        fun getPieceByFenChar(fenChar: Char) = Piece.values().first { it.fenChar == fenChar }
+    }
 }
 
-fun getPieceByFenChar(fenChar: Char) = Piece.values().first { it.fenChar == fenChar }

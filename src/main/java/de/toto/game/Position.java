@@ -1,6 +1,8 @@
 package de.toto.game;
 
-import de.toto.game.Piece.PieceType;
+import de.toto.crt.game.NAG;
+import de.toto.crt.game.Piece;
+import de.toto.crt.game.Piece.PieceType;
 
 import java.awt.*;
 import java.util.*;
@@ -148,7 +150,7 @@ public class Position {
         if (nags.isEmpty()) return "";
         StringBuilder result = new StringBuilder();
         for (String nag : nags) {
-            result.append(NAGKt.getNag(nag).toString());
+            result.append(NAG.getNag(nag).toString());
         }
         return result.toString();
     }
@@ -157,7 +159,7 @@ public class Position {
         if (nags.isEmpty()) return "";
         StringBuilder result = new StringBuilder();
         for (String nag : nags) {
-            NAG nAG = NAGKt.getNag(nag);
+            NAG nAG = NAG.getNag(nag);
             if (nAG.isPositionEval()) {
                 result.append(nAG.toString());
             }
@@ -424,7 +426,7 @@ public class Position {
             int promotionPiecePosition = checkOrMate ? move.length() - 2 : move.length() - 1;
             String promotionPiece = move.substring(promotionPiecePosition, move.length());
             if (!whiteMoved()) promotionPiece = promotionPiece.toLowerCase();
-            return PieceKt.getPieceByFenChar(promotionPiece.charAt(0));
+            return Piece.getPieceByFenChar(promotionPiece.charAt(0));
         }
         return null;
     }
@@ -493,7 +495,7 @@ public class Position {
                         file += numericValue;
                         continue;
                     }
-                    Piece piece = PieceKt.getPieceByFenChar(fenChar);
+                    Piece piece = Piece.getPieceByFenChar(fenChar);
                     if (piece != null) {
                         getSquare(rank, file).piece = piece;
                         file++;
