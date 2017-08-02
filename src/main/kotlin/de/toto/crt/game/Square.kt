@@ -2,6 +2,8 @@ package de.toto.crt.game
 
 class Square(val rank: Byte, val file: Byte) {
 
+    var piece : Piece? = null
+
     init {
         if (file !in 1..8) {
             throw IllegalArgumentException("Illegal Square file $file")
@@ -12,19 +14,24 @@ class Square(val rank: Byte, val file: Byte) {
     }
 
     companion object {
-        fun fromName(name: String): Square {
+        fun rankAndFileByName(name: String): Pair<Int, Int> {
             if (name.length != 2) {
                 throw IllegalArgumentException("Illegal Square name $name")
             }
-            val file: Byte = (name[0] - 96).toByte()
+            val file: Int = (name[0] - 96).toInt()
+            val rank: Int = name[1].toString().toInt()
             if (file !in 1..8) {
                 throw IllegalArgumentException("Illegal Square name $name")
             }
-            val rank: Byte = name[1].toString().toByte()
             if (file !in 1..8) {
                 throw IllegalArgumentException("Illegal Square name $name")
             }
-            return Square(rank, file)
+            return Pair(rank, file)
+        }
+
+        fun fromName(name: String): Square {
+            val rankAndFile = rankAndFileByName(name)
+            return Square(rankAndFile.first.toByte(), rankAndFile.second.toByte())
         }
     }
 
@@ -47,26 +54,24 @@ class Square(val rank: Byte, val file: Byte) {
     /**
      * A Square equals another Square if they have the same coordinates.
      */
-    override fun equals(obj: Any?): Boolean {
-        if (obj !is Square) return false
-        return this.rank == obj.rank && this.file == obj.file
+    override fun equals(other: Any?): Boolean {
+        if (other !is Square) return false
+        return this.rank == other.rank && this.file == other.file
     }
 
-/*
+    override fun hashCode(): Int {
+        return 10*rank+file
+    }
+
     /**
      * e.g. "Nf3"
      */
-    val nameWithPieceSuffix: String
-        get() {
-            var name = ""
-            if (piece != null) {
-                name += piece.pgnChar
-                name.trim { it <= ' ' }
-            }
-            name += name
-            return name.trim { it <= ' ' }
-        }
+    fun nameWithPieceSuffix(): String {
+        return (piece?.pgnChar ?: "").toString() + name
+    }
 
+
+/*
     fun isEnPassantPossible(to: Square, p: Position): Boolean {
         try {
             if (to.piece!!.isWhite && rank - to.rank == -2) {
