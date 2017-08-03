@@ -48,11 +48,9 @@ enum class NAG(val nag: String, val pgn: String) {
     ENDING("$245", "\u22A5"), //⊥
     UNKNOWN("<?>", "<unknown de.toto.game.NAG>");
 
-    override fun toString(): String {
-        return pgn
-    }
+    override fun toString() = pgn
 
-    val isPositionEval = nag.drop(1).toIntOrNull() in 10..135
+    val isPositionEval get() = nag.drop(1).toIntOrNull() in 10..135
 
     companion object {
         @JvmStatic

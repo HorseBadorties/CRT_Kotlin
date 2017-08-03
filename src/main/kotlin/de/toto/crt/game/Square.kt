@@ -2,74 +2,75 @@ package de.toto.crt.game
 
 class Square(val rank: Byte, val file: Byte) {
 
-    var piece : Piece? = null
+    var piece: Piece? = null
 
     init {
-        if (file !in 1..8) {
-            throw IllegalArgumentException("Illegal Square file $file")
-        }
-        if (rank !in 1..8) {
-            throw IllegalArgumentException("Illegal Square rank $rank")
+        if (file !in 1..8 || rank !in 1..8) {
+            throw IllegalArgumentException("Illegal Square: rank $rank file $file")
         }
     }
 
+    constructor(rank: Byte, file: Byte, piece: Piece?) : this(rank, file) {
+        this.piece = piece
+    }
+
     companion object {
-        fun rankAndFileByName(name: String): Pair<Int, Int> {
+        /**
+         * e.g. "b4" -> 2, 4;
+         */
+        fun rankAndFileByName(name: String) : Pair<Int, Int> {
             if (name.length != 2) {
                 throw IllegalArgumentException("Illegal Square name $name")
             }
-            val file: Int = (name[0] - 96).toInt()
-            val rank: Int = name[1].toString().toInt()
-            if (file !in 1..8) {
-                throw IllegalArgumentException("Illegal Square name $name")
-            }
-            if (file !in 1..8) {
+            val file = name[0] - 'a' + 1
+            val rank = name[1].toString().toInt()
+            if (file !in 1..8 || rank !in 1..8) {
                 throw IllegalArgumentException("Illegal Square name $name")
             }
             return Pair(rank, file)
         }
 
-        fun fromName(name: String): Square {
+        fun fromName(name: String, piece: Piece?) : Square {
             val rankAndFile = rankAndFileByName(name)
-            return Square(rankAndFile.first.toByte(), rankAndFile.second.toByte())
+            return Square(rankAndFile.first.toByte(), rankAndFile.second.toByte(), piece)
         }
+
+        fun fromName(name: String) = fromName(name, null)
     }
 
-    val isWhite = file % 2 == 0 && rank % 2 != 0 || file % 2 != 0 && rank % 2 == 0
+    /**
+     * is it a light-colored Square?
+     */
+    val isWhite get() = file.isEven() && !rank.isEven() || !file.isEven() && rank.isEven()
 
-    val fileName = (file + 96).toChar().toString()
+    /**
+     * is there a Piece on this Square?
+     */
+    val isEmpty get() = piece == null
+
+    private val fileName get() = ('a' + file.toInt() - 1).toString()
 
     /**
      * e.g. "f3"
      */
-    val name: String = fileName + rank
-
-    /**
-     * e.g. "a1 black"
-     */
-    override fun toString(): String {
-        return "$name, ${if (isWhite) "white" else "black"} "
-    }
-
-    /**
-     * A Square equals another Square if they have the same coordinates.
-     */
-    override fun equals(other: Any?): Boolean {
-        if (other !is Square) return false
-        return this.rank == other.rank && this.file == other.file
-    }
-
-    override fun hashCode(): Int {
-        return 10*rank+file
-    }
+    val name get() = fileName + rank
 
     /**
      * e.g. "Nf3"
      */
-    fun nameWithPieceSuffix(): String {
-        return (piece?.pgnChar ?: "").toString() + name
-    }
+    val nameWithPieceSuffix get() = (piece?.pgnChar ?: "").toString() + name
 
+    /**
+     * e.g. "a1 black"
+     */
+    override fun toString() = "$name, ${if (isWhite) "white" else "black"} "
+
+    /**
+     * A Square equals another Square if they have the same coordinates.
+     */
+    override fun equals(other: Any?) = other is Square && this.hashCode() == other.hashCode()
+
+    override fun hashCode() = 10*rank+file
 
 /*
     fun isEnPassantPossible(to: Square, p: Position): Boolean {
@@ -589,3 +590,5 @@ class Square(val rank: Byte, val file: Byte) {
     }
 */
 }
+
+fun Byte.isEven() = this % 2 == 0
