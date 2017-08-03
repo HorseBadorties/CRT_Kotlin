@@ -84,14 +84,18 @@ class SquareTest {
 
     @Test
     fun nameWithPieceSuffix() {
-        val s = Square.fromName("a1")
-        s.piece = Piece.WHITE_ROOK
-        assertTrue(s.nameWithPieceSuffix() == "Ra1")
-        assertTrue(Square.fromName("a3").nameWithPieceSuffix() == "a3")
+        assertTrue(Square.fromName("a1", Piece.WHITE_ROOK).nameWithPieceSuffix == "Ra1")
+        assertTrue(Square.fromName("a3").nameWithPieceSuffix == "a3")
 
     }
 
     @Test
+    fun isEmpty() {
+        assertFalse(Square.fromName("a1", Piece.WHITE_ROOK).isEmpty)
+        assertTrue(Square.fromName("a1", null).isEmpty)
+    }
+
+        @Test
     fun equals() {
         assertTrue(Square(1, 1) == Square.fromName("a1"))
         assertTrue(Square.fromName("a1") == Square.fromName("a1"))
