@@ -92,9 +92,9 @@ public class SettingsPanel extends JPanel implements ActionListener {
 
         tabs = new JTabbedPane();
         JPanel pnlBoardOptions = createTabPanel();
-        tabs.add("Board Options", pnlBoardOptions);
+        tabs.add("Position Options", pnlBoardOptions);
         JPanel pnlBoard = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
-        pnlBoard.add(new JLabel("Board: "));
+        pnlBoard.add(new JLabel("Position: "));
         pnlBoard.add(cmbBoard);
         pnlBoard.setAlignmentX(LEFT_ALIGNMENT);
         pnlBoardOptions.add(pnlBoard);

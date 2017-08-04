@@ -1,7 +1,6 @@
 package de.toto.game;
 
 import de.toto.crt.game.Piece;
-import de.toto.crt.game.Piece.PieceType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -474,7 +473,7 @@ public class Square {
 
     //TODO isPinned
     public boolean isPinned(Position p, Square moveSquare) {
-        if (piece.getType() == PieceType.KING) return false;
+        if (piece.getType() == Piece.PieceType.KING) return false;
         Square kingsSquare = p.findKing(this.piece.isWhite());
         Piece originalPieceOnMoveSquare = moveSquare.piece;
         try {
