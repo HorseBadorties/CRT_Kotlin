@@ -1,82 +1,24 @@
 package de.toto.crt.game
 
-class Square(val rank: Byte, val file: Byte) {
+class Position {
 
-    var piece: Piece? = null
+    private val squares = Array(8) { iOuter -> Array(8)
+        { iInner -> Square((iOuter+1).toByte(), (iInner+1).toByte())} }
 
-    init {
-        if (file !in 1..8 || rank !in 1..8) {
-            throw IllegalArgumentException("Illegal Square: rank:$rank file $file")
+    fun square(rank: Int, file: Int): Square {
+        if (rank !in 0..7 || file !in 0..7) {
+            throw IllegalArgumentException("Illegal Square rank:$rank file:$file")
         }
+        return squares[rank][file]
     }
 
-    constructor(rank: Byte, file: Byte, piece: Piece?) : this(rank, file) {
-        this.piece = piece
+    fun square(name: String): Square {
+        val rankAndFile = Square.rankAndFileByName(name)
+        return squares[rankAndFile.first-1][rankAndFile.second-1]
     }
-
-    companion object {
-        /**
-         * e.g. "b4" -> 2, 4;
-         */
-        fun rankAndFileByName(name: String) : Pair<Int, Int> {
-            if (name.length != 2) {
-                throw IllegalArgumentException("Illegal Square name $name")
-            }
-            val file = name[0] - 'a' + 1
-            val rank = name[1].toString().toInt()
-            if (file !in 1..8 || rank !in 1..8) {
-                throw IllegalArgumentException("Illegal Square name $name")
-            }
-            return Pair(rank, file)
-        }
-
-        fun fromName(name: String, piece: Piece?) : Square {
-            val rankAndFile = rankAndFileByName(name)
-            return Square(rankAndFile.first.toByte(), rankAndFile.second.toByte(), piece)
-        }
-
-        fun fromName(name: String) = fromName(name, null)
-    }
-
-    /**
-     * is it a light-colored Square?
-     */
-    val isWhite get() = file.isEven() && !rank.isEven() || !file.isEven() && rank.isEven()
-
-    /**
-     * is there a Piece on this Square?
-     */
-    val isEmpty get() = piece == null
-
-    private val fileName get() = ('a' + file.toInt() - 1).toString()
-
-    /**
-     * e.g. "f3"
-     */
-    val name get() = fileName + rank
-
-    /**
-     * e.g. "Nf3"
-     */
-    val nameWithPieceSuffix get() = (piece?.pgnChar ?: "").toString() + name
-
-    /**
-     * e.g. "a1 black"
-     */
-    override fun toString() = "$name, ${if (isWhite) "white" else "black"} "
-
-    /**
-     * A Square equals another Square if they have the same coordinates.
-     */
-    override fun equals(other: Any?) = other is Square && this.hashCode() == other.hashCode()
-
-    override fun hashCode() = 10*rank+file
 
 /*
-    private fun getSquare(p: Position, rank: Int, file: Int): Square? {
-        if (rank < 1 || rank > 8 || file < 1 || file > 8) return null
-        return p.getSquare(rank, file)
-    }
+
 
     fun isEnPassantPossible(to: Square, p: Position): Boolean {
         try {
@@ -159,17 +101,7 @@ class Square(val rank: Byte, val file: Byte) {
         return false
     }
 
-    private fun kingAttacks(other: Square, p: Position): Boolean {
-        if (other == getSquare(p, rank + 1, file.toInt())) return true
-        if (other == getSquare(p, rank + 1, file - 1)) return true
-        if (other == getSquare(p, rank + 1, file + 1)) return true
-        if (other == getSquare(p, rank.toInt(), file - 1)) return true
-        if (other == getSquare(p, rank.toInt(), file + 1)) return true
-        if (other == getSquare(p, rank - 1, file.toInt())) return true
-        if (other == getSquare(p, rank - 1, file - 1)) return true
-        if (other == getSquare(p, rank - 1, file + 1)) return true
-        return false
-    }
+
 
     private fun kingCanMoveTo(other: Square, p: Position): Boolean {
         if (kingAttacks(other, p)) return true
@@ -181,42 +113,6 @@ class Square(val rank: Byte, val file: Byte) {
 
     private fun queenAttacks(other: Square, p: Position, ignore: Square): Boolean {
         return rookAttacks(other, p, ignore) || bishopAttacks(other, p, ignore)
-    }
-
-    private fun rookAttacks(other: Square, p: Position, ignore: Square): Boolean {
-        var _rank = rank.toInt()
-        var _file = file.toInt()
-        var s: Square? = this
-        while (s != null) { //go up
-            s = getSquare(p, ++_rank, _file)
-            if (other == s) return true
-            if (s != null && s.piece != null && s !== ignore) break
-        }
-        s = this
-        _rank = rank.toInt()
-        _file = file.toInt()
-        while (s != null) { //go right
-            s = getSquare(p, _rank, ++_file)
-            if (other == s) return true
-            if (s != null && s.piece != null && s !== ignore) break
-        }
-        s = this
-        _rank = rank.toInt()
-        _file = file.toInt()
-        while (s != null) { //go down
-            s = getSquare(p, --_rank, _file)
-            if (other == s) return true
-            if (s != null && s.piece != null && s !== ignore) break
-        }
-        s = this
-        _rank = rank.toInt()
-        _file = file.toInt()
-        while (s != null) { //go left
-            s = getSquare(p, _rank, --_file)
-            if (other == s) return true
-            if (s != null && s.piece != null && s !== ignore) break
-        }
-        return false
     }
 
     private fun bishopAttacks(other: Square, p: Position, ignore: Square?): Boolean {
@@ -589,7 +485,57 @@ class Square(val rank: Byte, val file: Byte) {
         }
     }
 */
-
 }
 
-fun Byte.isEven() = this % 2 == 0
+fun kingAttacks(kingsSquare: Square, other: Square): Boolean {
+    return with (kingsSquare) {
+        other.match(rank + 1, file) ||
+        other.match(rank + 1, file - 1) ||
+        other.match(rank + 1, file + 1) ||
+        other.match(rank, file - 1) ||
+        other.match(rank, file + 1) ||
+        other.match(rank - 1, file) ||
+        other.match(rank - 1, file - 1) ||
+        other.match(rank - 1, file + 1)
+    }
+}
+
+
+fun rookAttacks(rooksSquare: Square, other: Square, p: Position): Boolean {
+    // up
+    if (rooksSquare.rank < 7) {
+        for (_rank in rooksSquare.rank..7) {
+            val s = p.square(_rank, rooksSquare.file - 1)
+            if (other == s) return true
+            if (!s.isEmpty) break
+        }
+    }
+    // down
+    if (rooksSquare.rank > 1) {
+        for (_rank in (rooksSquare.rank - 2)..0) {
+            val s = p.square(_rank, rooksSquare.file - 1)
+            if (other == s) return true
+            if (!s.isEmpty) break
+        }
+    }
+    // right
+    if (rooksSquare.file < 7) {
+        for (_file in rooksSquare.file..7) {
+            val s = p.square(rooksSquare.rank - 1, _file)
+            if (other == s) return true
+            if (!s.isEmpty) break
+        }
+    }
+    // left
+    if (rooksSquare.file > 1) {
+        for (_file in (rooksSquare.file - 2)..0) {
+            val s = p.square(rooksSquare.rank - 1, _file)
+            if (other == s) return true
+            if (!s.isEmpty) break
+        }
+    }
+    return false
+}
+private fun Square.match(_rank: Int, _file: Int) = rank.toInt() == _rank && file.toInt() == _file
+private fun Square.match(_rank: Byte, _file: Int) = match(_rank.toInt(), _file)
+private fun Square.match(_rank: Int, _file: Byte) = match(_rank, _file.toInt())

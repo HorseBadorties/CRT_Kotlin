@@ -5,14 +5,21 @@ import org.junit.Test
 
 class SquareTest {
 
-    @Test(expected = IllegalArgumentException::class)
+    fun failConstructor(rank: Byte, file: Byte) {
+        try {
+            Square(rank, file)
+            fail("IllegalArgumentException expected")
+        } catch(e: IllegalArgumentException) {}
+    }
+
+    @Test
     fun failConstructor() {
-        Square(1,0)
-        Square(1,9)
-        Square(1,10)
-        Square(0,1)
-        Square(9,1)
-        Square(10,1)
+        failConstructor(1,0)
+        failConstructor(1,9)
+        failConstructor(1,10)
+        failConstructor(0,1)
+        failConstructor(9,1)
+        failConstructor(10,1)
     }
 
     @Test
@@ -35,18 +42,25 @@ class SquareTest {
         assertTrue(Square.fromName("h1").file == 8.toByte())
     }
 
-    @Test(expected = IllegalArgumentException::class)
-    fun failFromName() {
-        Square.fromName("a0")
-        Square.fromName("a9")
-        Square.fromName("a10")
-        Square.fromName(" a1")
-        Square.fromName("a1 ")
-        Square.fromName("A1")
-        Square.fromName("i1")
-        Square.fromName("a")
-        Square.fromName("1")
-        Square.fromName("1a")
+    fun failFromName(name: String) {
+        try {
+            Square.fromName(name)
+            fail("IllegalArgumentException expected")
+        } catch(e: IllegalArgumentException) {}
+    }
+
+    @Test
+    fun allFailFromName() {
+        failFromName("a0")
+        failFromName("a9")
+        failFromName("a10")
+        failFromName(" a1")
+        failFromName("a1 ")
+        failFromName("A1")
+        failFromName("i1")
+        failFromName("a")
+        failFromName("1")
+        failFromName("1a")
     }
 
     @Test
@@ -55,18 +69,6 @@ class SquareTest {
         assertTrue(Square.fromName("a8").isWhite)
         assertTrue(Square.fromName("h1").isWhite)
         assertFalse(Square.fromName("h8").isWhite)
-    }
-
-    @Test
-    fun fileName() {
-        assertTrue(Square(1,1).fileName == "a")
-        assertTrue(Square(1,2).fileName == "b")
-        assertTrue(Square(1,3).fileName == "c")
-        assertTrue(Square(1,4).fileName == "d")
-        assertTrue(Square(1,5).fileName == "e")
-        assertTrue(Square(1,6).fileName == "f")
-        assertTrue(Square(1,7).fileName == "g")
-        assertTrue(Square(1,8).fileName == "h")
     }
 
     @Test
