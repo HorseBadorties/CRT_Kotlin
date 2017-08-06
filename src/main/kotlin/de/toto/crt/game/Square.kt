@@ -5,8 +5,8 @@ class Square(val rank: Byte, val file: Byte) {
     var piece: Piece? = null
 
     init {
-        if (file !in 1..8 || rank !in 1..8) {
-            throw IllegalArgumentException("Illegal Square: rank:$rank file $file")
+        require (file in 1..8 && rank in 1..8) {
+            "Illegal Square: rank:$rank file $file"
         }
     }
 
@@ -19,13 +19,13 @@ class Square(val rank: Byte, val file: Byte) {
          * e.g. "b4" -> 2, 4;
          */
         fun rankAndFileByName(name: String) : Pair<Int, Int> {
-            if (name.length != 2) {
-                throw IllegalArgumentException("Illegal Square name $name")
+            require (name.length == 2) {
+                "Illegal Square name $name"
             }
             val file = name[0] - 'a' + 1
             val rank = name[1].toString().toInt()
-            if (file !in 1..8 || rank !in 1..8) {
-                throw IllegalArgumentException("Illegal Square name $name")
+            require (file in 1..8 && rank in 1..8) {
+                "Illegal Square name $name"
             }
             return Pair(rank, file)
         }

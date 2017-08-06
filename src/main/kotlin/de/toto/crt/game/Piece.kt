@@ -3,23 +3,29 @@ package de.toto.crt.game
 /**
  * Enumeration of all chess pieces, including their associated FEN and PGN characters.
  */
-enum class Piece (val type: PieceType, val isWhite: Boolean, val fenChar: Char, val pgnChar: Char) {
+enum class Piece (val type: PieceType, val color: PieceColor, val fenChar: Char, val pgnChar: Char) {
 
-    WHITE_KING(PieceType.KING, true, 'K', 'K'),
-    WHITE_QUEEN(PieceType.QUEEN, true, 'Q', 'Q'),
-    WHITE_ROOK(PieceType.ROOK, true, 'R', 'R'),
-    WHITE_BISHOP(PieceType.BISHOP, true, 'B', 'B'),
-    WHITE_KNIGHT(PieceType.KNIGHT, true, 'N', 'N'),
-    WHITE_PAWN(PieceType.PAWN, true, 'P', ' '),
-    BLACK_KING(PieceType.KING, false, 'k', 'K'),
-    BLACK_QUEEN(PieceType.QUEEN, false, 'q', 'Q'),
-    BLACK_ROOK(PieceType.ROOK, false, 'r', 'R'),
-    BLACK_BISHOP(PieceType.BISHOP, false, 'b', 'B'),
-    BLACK_KNIGHT(PieceType.KNIGHT, false, 'n', 'N'),
-    BLACK_PAWN(PieceType.PAWN, false, 'p', ' ');
+    WHITE_KING(PieceType.KING, PieceColor.WHITE, 'K', 'K'),
+    WHITE_QUEEN(PieceType.QUEEN, PieceColor.WHITE, 'Q', 'Q'),
+    WHITE_ROOK(PieceType.ROOK, PieceColor.WHITE, 'R', 'R'),
+    WHITE_BISHOP(PieceType.BISHOP, PieceColor.WHITE, 'B', 'B'),
+    WHITE_KNIGHT(PieceType.KNIGHT, PieceColor.WHITE, 'N', 'N'),
+    WHITE_PAWN(PieceType.PAWN, PieceColor.WHITE, 'P', ' '),
+    BLACK_KING(PieceType.KING, PieceColor.BLACK, 'k', 'K'),
+    BLACK_QUEEN(PieceType.QUEEN, PieceColor.BLACK, 'q', 'Q'),
+    BLACK_ROOK(PieceType.ROOK, PieceColor.BLACK, 'r', 'R'),
+    BLACK_BISHOP(PieceType.BISHOP, PieceColor.BLACK, 'b', 'B'),
+    BLACK_KNIGHT(PieceType.KNIGHT, PieceColor.BLACK, 'n', 'N'),
+    BLACK_PAWN(PieceType.PAWN, PieceColor.BLACK, 'p', ' ');
+
+    val isWhite = color == PieceColor.WHITE
 
     enum class PieceType {
         KING, QUEEN, ROOK, BISHOP, KNIGHT, PAWN
+    }
+
+    enum class PieceColor {
+        WHITE, BLACK, NONE
     }
 
     val figurine: String

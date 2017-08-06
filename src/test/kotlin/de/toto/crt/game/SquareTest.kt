@@ -97,7 +97,7 @@ class SquareTest {
         assertTrue(Square.fromName("a1", null).isEmpty)
     }
 
-        @Test
+    @Test
     fun equals() {
         assertTrue(Square(1, 1) == Square.fromName("a1"))
         assertTrue(Square.fromName("a1") == Square.fromName("a1"))

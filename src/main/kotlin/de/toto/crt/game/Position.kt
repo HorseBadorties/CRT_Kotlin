@@ -3,18 +3,27 @@ package de.toto.crt.game
 class Position {
 
     private val squares = Array(8) { iOuter -> Array(8)
-        { iInner -> Square((iOuter+1).toByte(), (iInner+1).toByte())} }
+        { iInner -> Square((iOuter+1).toByte(), (iInner+1).toByte())}
+    }
 
+    /**
+     * get a Square by 1-based rank and file
+     */
     fun square(rank: Int, file: Int): Square {
-        if (rank !in 0..7 || file !in 0..7) {
-            throw IllegalArgumentException("Illegal Square rank:$rank file:$file")
+        require (rank in 1..8 && file in 1..8) {
+            "Illegal Square rank:$rank file:$file"
         }
-        return squares[rank][file]
+        return squares[rank-1][file-1]
     }
 
     fun square(name: String): Square {
         val rankAndFile = Square.rankAndFileByName(name)
         return squares[rankAndFile.first-1][rankAndFile.second-1]
+    }
+
+    fun enPassantField(): String? {
+        //TODO implement enPassantField()
+        return null
     }
 
 /*
@@ -108,46 +117,6 @@ class Position {
         val castlingSquareNames = p.possibleCastlingSquareNames
         if (other.name == castlingSquareNames[0] || other.name == castlingSquareNames[1])
             return true
-        return false
-    }
-
-    private fun queenAttacks(other: Square, p: Position, ignore: Square): Boolean {
-        return rookAttacks(other, p, ignore) || bishopAttacks(other, p, ignore)
-    }
-
-    private fun bishopAttacks(other: Square, p: Position, ignore: Square?): Boolean {
-        var _rank = rank.toInt()
-        var _file = file.toInt()
-        var s: Square? = this
-        while (s != null) { //go up-right
-            s = getSquare(p, ++_rank, ++_file)
-            if (other == s) return true
-            if (s != null && s.piece != null && s !== ignore) break
-        }
-        s = this
-        _rank = rank.toInt()
-        _file = file.toInt()
-        while (s != null) { //go up-left
-            s = getSquare(p, ++_rank, --_file)
-            if (other == s) return true
-            if (s != null && s.piece != null && s !== ignore) break
-        }
-        s = this
-        _rank = rank.toInt()
-        _file = file.toInt()
-        while (s != null) { //go down-right
-            s = getSquare(p, --_rank, ++_file)
-            if (other == s) return true
-            if (s != null && s.piece != null && s !== ignore) break
-        }
-        s = this
-        _rank = rank.toInt()
-        _file = file.toInt()
-        while (s != null) { //go down-left
-            s = getSquare(p, --_rank, --_file)
-            if (other == s) return true
-            if (s != null && s.piece != null && s !== ignore) break
-        }
         return false
     }
 
@@ -487,8 +456,11 @@ class Position {
 */
 }
 
-fun kingAttacks(kingsSquare: Square, other: Square): Boolean {
-    return with (kingsSquare) {
+/**
+ * With a KING on square does he attack the other Square?
+ */
+fun Position.kingAttacks(square: Square, other: Square): Boolean {
+    return with (square) {
         other.match(rank + 1, file) ||
         other.match(rank + 1, file - 1) ||
         other.match(rank + 1, file + 1) ||
@@ -500,42 +472,166 @@ fun kingAttacks(kingsSquare: Square, other: Square): Boolean {
     }
 }
 
+/**
+ * With a KING on square can he move to or capture on the other Square?
+ */
+fun Position.kingCanMoveTo(isWhiteKing: Boolean, square: Square, other: Square): Boolean {
+    if (other.piece?.isWhite == isWhiteKing) return false
+    if (kingAttacks(square, other)) return true
+    TODO()
+//    val castlingSquareNames = p.possibleCastlingSquareNames
+//    if (other.name == castlingSquareNames[0] || other.name == castlingSquareNames[1])
+//        return true
+    return false
+}
 
-fun rookAttacks(rooksSquare: Square, other: Square, p: Position): Boolean {
+/**
+ * With a ROOK on square does he attack the other Square?
+ * Blocking pieces are considered, pins are not.
+ */
+fun Position.rookAttacks(square: Square, other: Square): Boolean {
     // up
-    if (rooksSquare.rank < 7) {
-        for (_rank in rooksSquare.rank..7) {
-            val s = p.square(_rank, rooksSquare.file - 1)
+    if (square.rank < other.rank && square.file == other.file) {
+        for (_rank in (square.rank + 1)..8) {
+            val s = square(_rank, square.file.toInt())
             if (other == s) return true
             if (!s.isEmpty) break
         }
     }
     // down
-    if (rooksSquare.rank > 1) {
-        for (_rank in (rooksSquare.rank - 2)..0) {
-            val s = p.square(_rank, rooksSquare.file - 1)
+    if (square.rank > other.rank && square.file == other.file) {
+        for (_rank in square.rank - 1 downTo 1) {
+            val s = square(_rank, square.file.toInt())
             if (other == s) return true
             if (!s.isEmpty) break
         }
     }
     // right
-    if (rooksSquare.file < 7) {
-        for (_file in rooksSquare.file..7) {
-            val s = p.square(rooksSquare.rank - 1, _file)
+    if (square.file < other.file && square.rank == other.rank) {
+        for (_file in (square.file + 1)..8) {
+            val s = square(square.rank.toInt(), _file)
             if (other == s) return true
             if (!s.isEmpty) break
         }
     }
     // left
-    if (rooksSquare.file > 1) {
-        for (_file in (rooksSquare.file - 2)..0) {
-            val s = p.square(rooksSquare.rank - 1, _file)
+    if (square.file > other.file && square.rank == other.rank) {
+        for (_file in square.file - 1 downTo 1) {
+            val s = square(square.rank.toInt(), _file)
             if (other == s) return true
             if (!s.isEmpty) break
         }
     }
     return false
 }
+
+/**
+ * With a BISHOP on square does he attack the other Square?
+ * Blocking pieces are considered, pins are not.
+ */
+fun Position.bishopAttacks(square: Square, other: Square): Boolean {
+    // up-right
+    if (square.rank < other.rank && square.file < other.file) {
+        var rank = square.rank + 1
+        var file = square.file + 1
+        while (rank <= 8 && file <= 8) {
+            val s = square(rank++, file++)
+            if (other == s) return true
+            if (!s.isEmpty) break
+        }
+    }
+    // up-left
+    if (square.rank < other.rank && square.file > other.file) {
+        var rank = square.rank + 1
+        var file = square.file - 1
+        while (rank <= 8 && file >= 1) {
+            val s = square(rank++, file--)
+            if (other == s) return true
+            if (!s.isEmpty) break
+        }
+    }
+    // down-right
+    if (square.rank > other.rank && square.file < other.file) {
+        var rank = square.rank - 1
+        var file = square.file + 1
+        while (rank >= 1 && file <= 8) {
+            val s = square(rank--, file++)
+            if (other == s) return true
+            if (!s.isEmpty) break
+        }
+    }
+    // down-left
+    if (square.rank > other.rank && square.file > other.file) {
+        var rank = square.rank - 1
+        var file = square.file - 1
+        while (rank >= 1 && file >= 1) {
+            val s = square(rank--, file--)
+            if (other == s) return true
+            if (!s.isEmpty) break
+        }
+    }
+    return false
+}
+
+/**
+ * With a QUEEN on square does she attack the other Square?
+ * Blocking pieces are considered, pins are not.
+ */
+fun Position.queenAttacks(square: Square, other: Square): Boolean {
+    return rookAttacks(square, other) || bishopAttacks(square, other)
+}
+
+/**
+ * With a KNIGHT on square does it attack the other Square?
+ * Pins are not considered.
+ */
+fun Position.knightAttacks(square: Square, other: Square): Boolean {
+    val otherRank = other.rank.toInt()
+    val otherFile = other.file.toInt()
+    if (square.rank + 2 == otherRank && square.file + 1 == otherFile) return true
+    if (square.rank + 2 == otherRank && square.file - 1 == otherFile) return true
+    if (square.rank + 1 == otherRank && square.file + 2 == otherFile) return true
+    if (square.rank + 1 == otherRank && square.file - 2 == otherFile) return true
+    if (square.rank - 1 == otherRank && square.file + 2 == otherFile) return true
+    if (square.rank - 1 == otherRank && square.file - 2 == otherFile) return true
+    if (square.rank - 2 == otherRank && square.file + 1 == otherFile) return true
+    if (square.rank - 2 == otherRank && square.file - 1 == otherFile) return true
+    return false
+}
+
+/**
+ * With a PAWN on square does he attack the other Square?
+ * Pins are not considered.
+ */
+fun Position.pawnAttacks(isWhitePawn: Boolean, square: Square, other: Square): Boolean {
+    val rank = square.rank + if (isWhitePawn) 1 else -1
+    return other.rank.toInt() == rank
+            && (other.file.toInt() == square.file + 1 || other.file.toInt() == square.file - 1)
+}
+
+/**
+ * With a PAWN on square can he move to or capture on the other Square?
+ * Blocking pieces and en passant captures are considered, pins are not.
+ */
+fun Position.pawnCanMoveTo(isWhitePawn: Boolean, square: Square, other: Square): Boolean {
+    // try capture
+    if (pawnAttacks(isWhitePawn, square, other)) {
+        if (other.piece != null && other.piece?.isWhite != isWhitePawn) return true
+        // en passant
+        if (other.name == enPassantField()) return true
+    }
+    // try move one square
+    val inFrontOfUs: Square = square(if (isWhitePawn) square.rank + 1 else square.rank - 1, square.file.toInt())
+    if (inFrontOfUs == other && inFrontOfUs.isEmpty) return true
+    // try move two squares if we are on our start square and are not blocked
+    if (inFrontOfUs.isEmpty && square.rank.toInt() == if (isWhitePawn) 2 else 7) {
+        square(square.rank + if (isWhitePawn) 2 else -2, square.file.toInt()).let {
+            if (it == other && it.isEmpty) return true
+        }
+    }
+    return false
+}
+
 private fun Square.match(_rank: Int, _file: Int) = rank.toInt() == _rank && file.toInt() == _file
 private fun Square.match(_rank: Byte, _file: Int) = match(_rank.toInt(), _file)
 private fun Square.match(_rank: Int, _file: Byte) = match(_rank, _file.toInt())
