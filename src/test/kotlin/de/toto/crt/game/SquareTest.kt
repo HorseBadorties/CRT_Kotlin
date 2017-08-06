@@ -5,7 +5,7 @@ import org.junit.Test
 
 class SquareTest {
 
-    fun failConstructor(rank: Byte, file: Byte) {
+    fun failConstructor(rank: Int, file: Int) {
         try {
             Square(rank, file)
             fail("IllegalArgumentException expected")
@@ -32,14 +32,14 @@ class SquareTest {
 
     @Test
     fun passFromName() {
-        assertTrue(Square.fromName("a1").file == 1.toByte())
-        assertTrue(Square.fromName("b1").file == 2.toByte())
-        assertTrue(Square.fromName("c1").file == 3.toByte())
-        assertTrue(Square.fromName("d1").file == 4.toByte())
-        assertTrue(Square.fromName("e1").file == 5.toByte())
-        assertTrue(Square.fromName("f1").file == 6.toByte())
-        assertTrue(Square.fromName("g1").file == 7.toByte())
-        assertTrue(Square.fromName("h1").file == 8.toByte())
+        assertTrue(Square.fromName("a1").file == 1)
+        assertTrue(Square.fromName("b1").file == 2)
+        assertTrue(Square.fromName("c1").file == 3)
+        assertTrue(Square.fromName("d1").file == 4)
+        assertTrue(Square.fromName("e1").file == 5)
+        assertTrue(Square.fromName("f1").file == 6)
+        assertTrue(Square.fromName("g1").file == 7)
+        assertTrue(Square.fromName("h1").file == 8)
     }
 
     fun failFromName(name: String) {

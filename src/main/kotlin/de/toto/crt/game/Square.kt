@@ -1,16 +1,23 @@
 package de.toto.crt.game
 
-class Square(val rank: Byte, val file: Byte) {
+class Square {
 
+    // rank and file are intern Byte but visible as Int
+    var _rank: Byte = 0
+    val rank get() = _rank.toInt()
+    var _file: Byte = 0
+    val file get() = _file.toInt()
     var piece: Piece? = null
 
-    init {
+    constructor(rank: Int, file: Int)  {
         require (file in 1..8 && rank in 1..8) {
             "Illegal Square: rank:$rank file $file"
         }
+        _rank = rank.toByte()
+        _file = file.toByte()
     }
 
-    constructor(rank: Byte, file: Byte, piece: Piece?) : this(rank, file) {
+    constructor(rank: Int, file: Int, piece: Piece?) : this(rank, file) {
         this.piece = piece
     }
 
@@ -32,7 +39,7 @@ class Square(val rank: Byte, val file: Byte) {
 
         fun fromName(name: String, piece: Piece?) : Square {
             val rankAndFile = rankAndFileByName(name)
-            return Square(rankAndFile.first.toByte(), rankAndFile.second.toByte(), piece)
+            return Square(rankAndFile.first, rankAndFile.second, piece)
         }
 
         fun fromName(name: String) = fromName(name, null)
@@ -41,14 +48,14 @@ class Square(val rank: Byte, val file: Byte) {
     /**
      * is it a light-colored Square?
      */
-    val isWhite get() = file.isEven() && !rank.isEven() || !file.isEven() && rank.isEven()
+    val isWhite get() = _file.isEven() && !_rank.isEven() || !_file.isEven() && _rank.isEven()
 
     /**
      * is there a Piece on this Square?
      */
     val isEmpty get() = piece == null
 
-    private val fileName get() = ('a' + file.toInt() - 1).toString()
+    private val fileName get() = ('a' + file - 1).toString()
 
     /**
      * e.g. "f3"

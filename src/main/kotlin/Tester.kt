@@ -1,16 +1,5 @@
-data class Foo(val name: String, val age: Int, val optional: String? = null) {
-    override fun equals(other: Any?): Boolean {
-        println("Foo.equals called")
-        return super.equals(other)
-    }
-}
-
 fun main(args: Array<String>) {
 
-    println(Foo::class.members)
-    println(Foo("foo1", 10) == Foo("foo1", 10, "extra"))
-
-    val foo = Foo("foo1", 10).copy(optional = "new")
     val x: String? = null
 
     x?.let {

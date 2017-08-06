@@ -3,7 +3,7 @@ package de.toto.crt.game
 class Position {
 
     private val squares = Array(8) { iOuter -> Array(8)
-        { iInner -> Square((iOuter+1).toByte(), (iInner+1).toByte())}
+        { iInner -> Square(iOuter + 1, iInner + 1)}
     }
 
     /**
@@ -493,7 +493,7 @@ fun Position.rookAttacks(square: Square, other: Square): Boolean {
     // up
     if (square.rank < other.rank && square.file == other.file) {
         for (_rank in (square.rank + 1)..8) {
-            val s = square(_rank, square.file.toInt())
+            val s = square(_rank, square.file)
             if (other == s) return true
             if (!s.isEmpty) break
         }
@@ -501,7 +501,7 @@ fun Position.rookAttacks(square: Square, other: Square): Boolean {
     // down
     if (square.rank > other.rank && square.file == other.file) {
         for (_rank in square.rank - 1 downTo 1) {
-            val s = square(_rank, square.file.toInt())
+            val s = square(_rank, square.file)
             if (other == s) return true
             if (!s.isEmpty) break
         }
@@ -509,7 +509,7 @@ fun Position.rookAttacks(square: Square, other: Square): Boolean {
     // right
     if (square.file < other.file && square.rank == other.rank) {
         for (_file in (square.file + 1)..8) {
-            val s = square(square.rank.toInt(), _file)
+            val s = square(square.rank, _file)
             if (other == s) return true
             if (!s.isEmpty) break
         }
@@ -517,7 +517,7 @@ fun Position.rookAttacks(square: Square, other: Square): Boolean {
     // left
     if (square.file > other.file && square.rank == other.rank) {
         for (_file in square.file - 1 downTo 1) {
-            val s = square(square.rank.toInt(), _file)
+            val s = square(square.rank, _file)
             if (other == s) return true
             if (!s.isEmpty) break
         }
@@ -586,8 +586,8 @@ fun Position.queenAttacks(square: Square, other: Square): Boolean {
  * Pins are not considered.
  */
 fun Position.knightAttacks(square: Square, other: Square): Boolean {
-    val otherRank = other.rank.toInt()
-    val otherFile = other.file.toInt()
+    val otherRank = other.rank
+    val otherFile = other.file
     if (square.rank + 2 == otherRank && square.file + 1 == otherFile) return true
     if (square.rank + 2 == otherRank && square.file - 1 == otherFile) return true
     if (square.rank + 1 == otherRank && square.file + 2 == otherFile) return true
@@ -605,8 +605,8 @@ fun Position.knightAttacks(square: Square, other: Square): Boolean {
  */
 fun Position.pawnAttacks(isWhitePawn: Boolean, square: Square, other: Square): Boolean {
     val rank = square.rank + if (isWhitePawn) 1 else -1
-    return other.rank.toInt() == rank
-            && (other.file.toInt() == square.file + 1 || other.file.toInt() == square.file - 1)
+    return other.rank == rank
+            && (other.file == square.file + 1 || other.file == square.file - 1)
 }
 
 /**
@@ -621,17 +621,15 @@ fun Position.pawnCanMoveTo(isWhitePawn: Boolean, square: Square, other: Square):
         if (other.name == enPassantField()) return true
     }
     // try move one square
-    val inFrontOfUs: Square = square(if (isWhitePawn) square.rank + 1 else square.rank - 1, square.file.toInt())
+    val inFrontOfUs: Square = square(if (isWhitePawn) square.rank + 1 else square.rank - 1, square.file)
     if (inFrontOfUs == other && inFrontOfUs.isEmpty) return true
     // try move two squares if we are on our start square and are not blocked
-    if (inFrontOfUs.isEmpty && square.rank.toInt() == if (isWhitePawn) 2 else 7) {
-        square(square.rank + if (isWhitePawn) 2 else -2, square.file.toInt()).let {
+    if (inFrontOfUs.isEmpty && square.rank == if (isWhitePawn) 2 else 7) {
+        square(square.rank + if (isWhitePawn) 2 else -2, square.file).let {
             if (it == other && it.isEmpty) return true
         }
     }
     return false
 }
 
-private fun Square.match(_rank: Int, _file: Int) = rank.toInt() == _rank && file.toInt() == _file
-private fun Square.match(_rank: Byte, _file: Int) = match(_rank.toInt(), _file)
-private fun Square.match(_rank: Int, _file: Byte) = match(_rank, _file.toInt())
+private fun Square.match(_rank: Int, _file: Int) = rank == _rank && file == _file
