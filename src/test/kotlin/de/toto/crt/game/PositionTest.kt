@@ -6,7 +6,8 @@ import org.junit.Assert.*
 
 class PositionTest {
 
-    private val LOOP_COUNT = 1 // 1_000_000
+    private val LOOP_COUNT = 1 //1_000_000
+
     @Test
     fun square() {
         assertTrue(Position().square(1, 1).name == "a1")
@@ -56,14 +57,17 @@ class PositionTest {
     @Test
     fun rookAttacks() {
         val pos = Position()
-        assertTrue(pos.rookAttacks("d4", "d1"))
-        pos.square("c1").piece = Piece.WHITE_ROOK
-        assertTrue(pos.rookAttacks("a1", "c1"))
-        assertTrue(pos.rookAttacks("a1", "a8"))
-        assertTrue(pos.rookAttacks("a1", "c1"))
-        assertFalse(pos.rookAttacks("a1", "d1"))
-        assertFalse(pos.rookAttacks("a1", "d1"))
-        assertFalse(pos.rookAttacks("a1", "a1"))
+        for (i in 1..LOOP_COUNT) {
+            assertTrue(pos.rookAttacks("d4", "d1"))
+            pos.square("c1").piece = Piece.WHITE_ROOK
+            assertTrue(pos.rookAttacks("a1", "c1"))
+            assertTrue(pos.rookAttacks("a1", "a8"))
+            assertTrue(pos.rookAttacks("a1", "c1"))
+            assertFalse(pos.rookAttacks("a1", "d1"))
+            assertFalse(pos.rookAttacks("a1", "d1"))
+            assertFalse(pos.rookAttacks("a1", "a1"))
+            val pos = Position()
+        }
     }
 
     @Test
@@ -148,7 +152,7 @@ class PositionTest {
 
     @Test
     fun pawnCanMoveTo_Moves() {
-        val pos = Position()
+        var pos = Position()
         for (i in 1..LOOP_COUNT) {
             assertTrue(pos.pawnCanMoveTo(WHITE_PAWN, "d2", "d3"))
             assertTrue(pos.pawnCanMoveTo(WHITE_PAWN, "d2", "d4"))
@@ -157,12 +161,13 @@ class PositionTest {
             assertTrue(pos.pawnCanMoveTo(BLACK_PAWN, "d2", "d1"))
             pos.square("d3").piece = Piece.BLACK_BISHOP
             assertFalse(pos.pawnCanMoveTo(WHITE_PAWN, "d2", "d4"))
+            pos = Position()
         }
     }
 
     @Test
     fun pawnCanMoveTo_Captures() {
-        val pos = Position()
+        var pos = Position()
         for (i in 1..LOOP_COUNT) {
             assertFalse(pos.pawnCanMoveTo(WHITE_PAWN, "d2", "c3"))
             assertFalse(pos.pawnCanMoveTo(WHITE_PAWN, "d2", "e3"))
@@ -177,6 +182,7 @@ class PositionTest {
             assertFalse(pos.pawnCanMoveTo(BLACK_PAWN, "d2", "e1"))
             pos.square("c1").piece = Piece.BLACK_BISHOP
             assertFalse(pos.pawnCanMoveTo(BLACK_PAWN, "d2", "c1"))
+            pos = Position()
         }
     }
 
