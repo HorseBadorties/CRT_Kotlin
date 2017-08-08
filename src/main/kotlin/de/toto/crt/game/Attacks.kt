@@ -1,10 +1,23 @@
 package de.toto.crt.game
 
+import de.toto.crt.game.Piece.PieceType.*
+
+/**
+ * Is any Piece of color `byWhitePieces` attacking the `square`?
+ */
 fun Position.isSquareAttacked(square: Square, byWhitePieces: Boolean): Boolean {
-    // TODO implement!
+    for (squareWithPiece in getPiecesByColor(byWhitePieces)) {
+        when (squareWithPiece.piece?.type) {
+            KING -> if (kingAttacks(squareWithPiece, square)) return true
+            QUEEN -> if (queenAttacks(squareWithPiece, square)) return true
+            ROOK -> if (rookAttacks(squareWithPiece, square)) return true
+            BISHOP -> if (bishopAttacks(squareWithPiece, square)) return true
+            KNIGHT -> if (knightAttacks(squareWithPiece, square)) return true
+            PAWN -> if (pawnAttacks(byWhitePieces, squareWithPiece, square)) return true
+        }
+    }
     return false
 }
-
 
 /**
  * With a KING on square does he attack the other Square?

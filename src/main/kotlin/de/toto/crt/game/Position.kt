@@ -2,6 +2,20 @@ package de.toto.crt.game
 
 class Position {
 
+    var fen: String = FEN_EMPTY_BOARD
+
+    /**
+     * Constructs a Position with an empty board
+     */
+    constructor()
+
+    /**
+     * Constructs a Position according to the provided `fen`
+     */
+    constructor(fen: String): this() {
+        setFen(fen, true)
+    }
+
     private val squares = Array(8) { iOuter -> Array(8)
         { iInner -> Square(iOuter + 1, iInner + 1)}
     }
@@ -26,9 +40,45 @@ class Position {
         return null
     }
 
+    fun hasCastleRight(shortCastles: Boolean, forWhite: Boolean): Boolean {
+        // TODO implement
+        return false
+    }
+
+    fun squares() = squares.flatten()
+
+    fun getPiecesByPiece(piece: Piece) = squares().filter { !it.isEmpty && it.piece == piece }
+
+    fun getPiecesByColor(byWhitePieces: Boolean) =
+            squares().filter { !it.isEmpty && it.piece?.isWhite == byWhitePieces }
+
+    private fun setFen(_fen: String, setupPosition: Boolean) {
+        this.fen = _fen.trim()
+        if (setupPosition) {
+            try {
+                var rank = 8; var file = 1
+                for (fenChar in fen.split(" ").first()) {
+                    if ('/' == fenChar) {
+                        rank--
+                        file = 1
+                    } else if (fenChar.isDigit()) {
+                        file += fenChar.toInt()
+                    } else {
+                        square(rank, file).piece = Piece.getPieceByFenChar(fenChar)
+                        file++
+                    }
+                }
+            } catch (ex: Exception) {
+                throw IllegalArgumentException("failed to parse FEN: " + fen, ex)
+            }
+        }
+    }
+
+    companion object {
+        val FEN_STARTPOSITION = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+        val FEN_EMPTY_BOARD = "8/8/8/8/8/8/8/8 w KQkq - 0 1"
+    }
 /*
-
-
     fun isEnPassantPossible(to: Square, p: Position): Boolean {
         try {
             if (to.piece!!.isWhite && rank - to.rank == -2) {

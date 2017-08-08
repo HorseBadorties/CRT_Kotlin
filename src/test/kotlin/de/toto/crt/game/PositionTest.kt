@@ -9,6 +9,28 @@ class PositionTest {
     private val LOOP_COUNT = 1 //1_000_000
 
     @Test
+    fun constructorWithFen() {
+        assertNotNull(Position(Position.FEN_EMPTY_BOARD))
+        assertNotNull(Position(Position.FEN_STARTPOSITION))
+    }
+
+
+    fun doFailConstructorWithFen(fen: String) {
+        try {
+            Position(fen)
+            fail("IllegalArgumentException expected")
+        } catch (e: IllegalArgumentException) {
+        }
+    }
+
+    @Test
+    fun failConstructorWithFen() {
+        doFailConstructorWithFen("illegal FEN")
+        doFailConstructorWithFen("8/8/8/8/8/8/8/8/P7 w KQkq - 0 1")
+        doFailConstructorWithFen("PPPPPPPPP/8/8/8/8/8/8/8 w KQkq - 0 1")
+    }
+
+        @Test
     fun square() {
         assertTrue(Position().square(1, 1).name == "a1")
         assertTrue(Position().square(1, 8).name == "h1")
@@ -42,4 +64,21 @@ class PositionTest {
         doFailSquare("i1")
     }
 
+    @Test
+    fun getPiecesByColor() {
+        assertTrue(Position(Position.FEN_EMPTY_BOARD).getPiecesByColor(true).size == 0)
+        assertTrue(Position(Position.FEN_EMPTY_BOARD).getPiecesByColor(false).size == 0)
+        assertTrue(Position(Position.FEN_STARTPOSITION).getPiecesByColor(true).size == 16)
+        assertTrue(Position(Position.FEN_STARTPOSITION).getPiecesByColor(false).size == 16)
+    }
+
+}
+
+fun Position(vararg pieces : String): Position {
+    val result = Position()
+    result.squares().forEach({ it.piece = null })
+    for (p in pieces) {
+        result.square(p.substring(1, 3)).piece = Piece.getPieceByFenChar(p[0])
+    }
+    return result
 }

@@ -21,7 +21,7 @@ class AttacksTest {
 
     @Test
     fun rookAttacks() {
-        val pos = Position()
+        var pos = Position()
         for (i in 1..LOOP_COUNT) {
             Assert.assertTrue(pos.rookAttacks("d4", "d1"))
             pos.square("c1").piece = Piece.WHITE_ROOK
@@ -29,15 +29,15 @@ class AttacksTest {
             Assert.assertTrue(pos.rookAttacks("a1", "a8"))
             Assert.assertTrue(pos.rookAttacks("a1", "c1"))
             Assert.assertFalse(pos.rookAttacks("a1", "d1"))
-            Assert.assertFalse(pos.rookAttacks("a1", "d1"))
+            Assert.assertFalse(pos.rookAttacks("a1", "h1"))
             Assert.assertFalse(pos.rookAttacks("a1", "a1"))
-            val pos = Position()
+            pos = Position()
         }
     }
 
     @Test
     fun bishopAttacks() {
-        val pos = Position()
+        var pos = Position()
         for (i in 1..LOOP_COUNT) {
             Assert.assertTrue(pos.bishopAttacks("a1", "b2"))
             Assert.assertTrue(pos.bishopAttacks("a1", "h8"))
@@ -57,12 +57,13 @@ class AttacksTest {
             Assert.assertFalse(pos.bishopAttacks("d1", "b3"))
             Assert.assertFalse(pos.bishopAttacks("d3", "b1"))
             Assert.assertFalse(pos.bishopAttacks("b3", "d1"))
+            pos = Position()
         }
     }
 
     @Test
     fun queenAttacks() {
-        val pos = Position()
+        var pos = Position()
         for (i in 1..LOOP_COUNT) {
             Assert.assertTrue(pos.queenAttacks("d4", "a1"))
             Assert.assertTrue(pos.queenAttacks("d4", "g7"))
@@ -105,21 +106,21 @@ class AttacksTest {
     fun pawnAttacks() {
         val pos = Position()
         for (i in 1..LOOP_COUNT) {
-            Assert.assertTrue(pos.pawnAttacks(WHITE_PAWN, "d4", "c5"))
-            Assert.assertTrue(pos.pawnAttacks(WHITE_PAWN, "d4", "e5"))
-            Assert.assertFalse(pos.pawnAttacks(BLACK_PAWN, "d4", "c5"))
-            Assert.assertFalse(pos.pawnAttacks(BLACK_PAWN, "d4", "e5"))
-            Assert.assertTrue(pos.pawnAttacks(WHITE_PAWN, "a2", "b3"))
-            Assert.assertTrue(pos.pawnAttacks(BLACK_PAWN, "a2", "b1"))
-            Assert.assertFalse(pos.pawnAttacks(WHITE_PAWN, "a2", "a2"))
+            Assert.assertTrue(pos.pawnAttacks(PAWN_WHITE, "d4", "c5"))
+            Assert.assertTrue(pos.pawnAttacks(PAWN_WHITE, "d4", "e5"))
+            Assert.assertFalse(pos.pawnAttacks(PAWN_BLACK, "d4", "c5"))
+            Assert.assertFalse(pos.pawnAttacks(PAWN_BLACK, "d4", "e5"))
+            Assert.assertTrue(pos.pawnAttacks(PAWN_WHITE, "a2", "b3"))
+            Assert.assertTrue(pos.pawnAttacks(PAWN_BLACK, "a2", "b1"))
+            Assert.assertFalse(pos.pawnAttacks(PAWN_WHITE, "a2", "a2"))
         }
     }
 
 }
 
 
-val WHITE_PAWN = true
-val BLACK_PAWN = false
+val PAWN_WHITE = true
+val PAWN_BLACK = false
 
 // some helper functions
 fun Position.knightAttacks(from: String, to: String) = knightAttacks(this.square(from), this.square(to))

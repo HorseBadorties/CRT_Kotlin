@@ -70,7 +70,7 @@ class Square {
     /**
      * e.g. "a1 black"
      */
-    override fun toString() = "$name, ${if (isWhite) "white" else "black"} "
+    override fun toString() = "$nameWithPieceSuffix, ${if (isWhite) "white" else "black"} "
 
     /**
      * A Square equals another Square if they have the same coordinates.
