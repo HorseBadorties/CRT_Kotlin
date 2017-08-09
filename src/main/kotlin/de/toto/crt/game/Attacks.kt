@@ -5,7 +5,7 @@ import de.toto.crt.game.Piece.PieceType.*
 /**
  * Is any Piece of color `byWhitePieces` attacking the `square`?
  */
-fun Position.isSquareAttacked(square: Square, byWhitePieces: Boolean): Boolean {
+fun Position.isAttacked(square: Square, byWhitePieces: Boolean): Boolean {
     for (squareWithPiece in getPiecesByColor(byWhitePieces)) {
         when (squareWithPiece.piece?.type) {
             KING -> if (kingAttacks(squareWithPiece, square)) return true

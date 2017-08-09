@@ -1,10 +1,17 @@
 
-fun main(args: Array<String>) {
-    val x : String? = null
-    when (x) {
-        "foo" -> println("foo")
-        null -> println("x is null")
-        else -> println("whatever")
+class Foo {
+    val isImportant: Boolean
+
+    constructor() {
+        isImportant = false
     }
+
+    constructor(isImportant : Boolean) {
+        this.isImportant = isImportant
+    }
+}
+
+fun main(args: Array<String>) {
+
 }
 
