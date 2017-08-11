@@ -22,7 +22,7 @@ fun Position.isAttacked(square: Square, byWhitePieces: Boolean): Boolean {
 /**
  * With a KING on square does he attack the other Square?
  */
-fun Position.kingAttacks(square: Square, other: Square): Boolean {
+private fun Position.kingAttacks(square: Square, other: Square): Boolean {
     return with (square) {
         other.match(rank + 1, file) ||
                 other.match(rank + 1, file - 1) ||
@@ -38,7 +38,7 @@ fun Position.kingAttacks(square: Square, other: Square): Boolean {
 /**
  * With a ROOK on square does he attack the other Square?
  */
-fun Position.rookAttacks(square: Square, other: Square): Boolean {
+private fun Position.rookAttacks(square: Square, other: Square): Boolean {
     // up
     if (square.rank < other.rank && square.file == other.file) {
         for (_rank in (square.rank + 1)..8) {
@@ -77,7 +77,7 @@ fun Position.rookAttacks(square: Square, other: Square): Boolean {
 /**
  * With a BISHOP on square does he attack the other Square?
  */
-fun Position.bishopAttacks(square: Square, other: Square): Boolean {
+private fun Position.bishopAttacks(square: Square, other: Square): Boolean {
     // up-right
     if (square.rank < other.rank && square.file < other.file) {
         var rank = square.rank + 1
@@ -124,14 +124,14 @@ fun Position.bishopAttacks(square: Square, other: Square): Boolean {
 /**
  * With a QUEEN on square does she attack the other Square?
  */
-fun Position.queenAttacks(square: Square, other: Square): Boolean {
+private fun Position.queenAttacks(square: Square, other: Square): Boolean {
     return rookAttacks(square, other) || bishopAttacks(square, other)
 }
 
 /**
  * With a KNIGHT on square does it attack the other Square?
  */
-fun Position.knightAttacks(square: Square, other: Square): Boolean {
+private fun Position.knightAttacks(square: Square, other: Square): Boolean {
     val otherRank = other.rank
     val otherFile = other.file
     if (square.rank + 2 == otherRank && square.file + 1 == otherFile) return true
@@ -148,7 +148,7 @@ fun Position.knightAttacks(square: Square, other: Square): Boolean {
 /**
  * With a PAWN on square does he attack the other Square?
  */
-fun Position.pawnAttacks(isWhitePawn: Boolean, square: Square, other: Square): Boolean {
+private fun Position.pawnAttacks(isWhitePawn: Boolean, square: Square, other: Square): Boolean {
     val rank = square.rank + if (isWhitePawn) 1 else -1
     return other.rank == rank
             && (other.file == square.file + 1 || other.file == square.file - 1)

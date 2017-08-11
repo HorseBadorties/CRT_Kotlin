@@ -1,41 +1,58 @@
 package de.toto.crt.game
 
-import java.util.*
-
 class Position {
 
-    enum class CastlingRight { WHITE_SHORT, WHITE_LONG, BLACK_SHORT, BLACK_LONG }
-    val castlingRight = EnumSet.noneOf(CastlingRight::class.java)
-
-    var fen: String = FEN_EMPTY_BOARD
-
-    val isWhiteToMove: Boolean
+    val move: String //in Long Algebraic Notation, or "" for the starting position or "--" for a null move
+    val whiteToMove: Boolean
+    val castlingRight = java.util.EnumSet.noneOf(CastlingRight::class.java)
+    val enPassantField: Square?
+    val halfMoveCount: Int
+    val moveNumber: Int
+    val previous: Position?
+    val next = mutableListOf<Position>()
 
     /**
      * Constructs a Position with an empty board
      */
-    constructor() { isWhiteToMove = true }
+    constructor() {
+        move = ""
+        whiteToMove = true
+        enPassantField = null
+        halfMoveCount = 0
+        moveNumber = 0
+        previous = null
+    }
 
     /**
      * Constructs a Position according to the provided `fen`
      */
     constructor(fen: String) {
-        setFen(fen, true)
-        isWhiteToMove = false // TODO
+        move = ""
+        val fenValues = setFen(fen)
+        whiteToMove = fenValues.whiteToMove
+        defineCastleRights(fenValues.castlingRight)
+        enPassantField = if (fenValues.enPassantField == "-") null else square(fenValues.enPassantField)
+        halfMoveCount = fenValues.halfMoveCount
+        moveNumber = fenValues.moveNumber
+        previous = null
     }
 
     /**
      * Constructs a Position based on it's `previous` Position and the `move` (as LAN) that led to this Position
      */
     constructor(previous: Position, move: String) {
+        this.move = move
+        this.previous = previous
         for (rank in 0..7) {
             for (file in 0..7) {
                 squares[rank][file].piece = previous.squares[rank][file].piece
             }
         }
-        isWhiteToMove = !previous.isWhiteToMove
-
+        whiteToMove = !previous.whiteToMove
         // TODO
+        enPassantField = null // if (move was double pawn move and ...) field else null
+        halfMoveCount = 0 // if (move was pawn move and no capture) previous.moveNumber + 1 else 0
+        moveNumber = if (whiteToMove) previous.moveNumber + 1 else previous.moveNumber
     }
 
     private val squares = Array(8) { iOuter -> Array(8)
@@ -57,45 +74,12 @@ class Position {
         return squares[rankAndFile.first-1][rankAndFile.second-1]
     }
 
-    fun enPassantField(): String? {
-        //TODO implement enPassantField()
-        return null
-    }
-
     fun squares() = squares.flatten()
 
     fun getPiecesByPiece(piece: Piece) = squares().filter { !it.isEmpty && it.piece == piece }
 
-    fun getPiecesByColor(byWhitePieces: Boolean) =
-            squares().filter { !it.isEmpty && it.piece?.isWhite == byWhitePieces }
-
-    private fun setFen(_fen: String, setupPosition: Boolean) {
-        this.fen = _fen.trim()
-        if (setupPosition) {
-            try {
-                var rank = 8; var file = 1
-                for (fenChar in fen.split(" ").first()) {
-                    if ('/' == fenChar) {
-                        rank--
-                        file = 1
-                    } else if (fenChar.isDigit()) {
-                        file += fenChar.toInt()
-                    } else {
-                        square(rank, file).piece = Piece.getPieceByFenChar(fenChar)
-                        file++
-                    }
-                }
-            } catch (ex: Exception) {
-                throw IllegalArgumentException("failed to parse FEN: " + fen, ex)
-            }
-        }
-    }
-
-    companion object {
-        const val FEN_STARTPOSITION = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-        const val FEN_EMPTY_BOARD = "8/8/8/8/8/8/8/8 w KQkq - 0 1"
-
-    }
+    fun getPiecesByColor(white: Boolean) =
+            squares().filter { !it.isEmpty && it.piece?.isWhite == white }
 
 }
 

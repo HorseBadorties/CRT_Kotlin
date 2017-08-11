@@ -2,6 +2,10 @@ package de.toto.crt.game
 
 import de.toto.crt.game.Piece.PieceType.*
 
+/**
+ * Returns a list of Squares where the Piece on `square` can legally move to or capture on.
+ * Returns an empty list if `square` is empty or the Piece can not move or capture at all.
+ */
 fun Position.movesFrom(square: Square): List<Square> {
     when (square.piece?.type) {
         KING -> return kingMovesFrom(square)
@@ -14,6 +18,10 @@ fun Position.movesFrom(square: Square): List<Square> {
     return emptyList()
 }
 
+/**
+ * Returns a list of Squares where the Piece on `square` can legally move to or capture on.
+ * Returns an empty list if `square` is empty or the Piece can not move or capture at all.
+ */
 fun Position.movesFrom(squareName: String) = movesFrom(square(squareName))
 
 /**
@@ -144,23 +152,25 @@ private fun Position.pawnMovesFrom(from: Square): List<Square> {
     val startRank = if (whitePawn) 2 else 7
     // try move one square
     with (square(if (whitePawn) from.rank + 1 else from.rank - 1, from.file)) {
-        addSquare(from, this, result)
-        if (from.rank == startRank && this.isEmpty) {
-            // try move two squares
-            addSquare(from, square(if (whitePawn) from.rank + 2 else from.rank - 2, from.file), result)
+        if (this.isEmpty) {
+            addSquare(from, this, result)
+            if (from.rank == startRank) {
+                // try move two squares
+                addSquare(from, square(if (whitePawn) from.rank + 2 else from.rank - 2, from.file), result)
+            }
         }
     }
     // try normal or e.p. captures
     if (from.file > 1) {
          with (square(if (whitePawn) from.rank + 1 else from.rank - 1, from.file - 1)) {
-             if ((!isEmpty && piece!!.isWhite != whitePawn) || (isEmpty && name == enPassantField())) {
+             if ((!isEmpty && piece!!.isWhite != whitePawn) || (this == enPassantField && isEmpty)) {
                 addSquare(from, this, result)
              }
          }
     }
     if (from.file < 8) {
         with (square(if (whitePawn) from.rank + 1 else from.rank - 1, from.file + 1)) {
-            if ((!isEmpty && piece!!.isWhite != whitePawn) || (isEmpty && name == enPassantField())) {
+            if ((!isEmpty && piece!!.isWhite != whitePawn) || (isEmpty && this == enPassantField)) {
                 addSquare(from, this, result)
             }
         }

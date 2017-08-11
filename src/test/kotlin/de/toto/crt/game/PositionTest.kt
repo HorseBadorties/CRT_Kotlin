@@ -10,8 +10,8 @@ class PositionTest {
 
     @Test
     fun constructorWithFen() {
-        assertNotNull(Position(Position.FEN_EMPTY_BOARD))
-        assertNotNull(Position(Position.FEN_STARTPOSITION))
+        assertNotNull(Position(FEN_EMPTY_BOARD))
+        assertNotNull(Position(FEN_STARTPOSITION))
     }
 
 
@@ -66,15 +66,18 @@ class PositionTest {
 
     @Test
     fun getPiecesByColor() {
-        assertTrue(Position(Position.FEN_EMPTY_BOARD).getPiecesByColor(true).size == 0)
-        assertTrue(Position(Position.FEN_EMPTY_BOARD).getPiecesByColor(false).size == 0)
-        assertTrue(Position(Position.FEN_STARTPOSITION).getPiecesByColor(true).size == 16)
-        assertTrue(Position(Position.FEN_STARTPOSITION).getPiecesByColor(false).size == 16)
+        assertTrue(Position(FEN_EMPTY_BOARD).getPiecesByColor(true).size == 0)
+        assertTrue(Position(FEN_EMPTY_BOARD).getPiecesByColor(false).size == 0)
+        assertTrue(Position(FEN_STARTPOSITION).getPiecesByColor(true).size == 16)
+        assertTrue(Position(FEN_STARTPOSITION).getPiecesByColor(false).size == 16)
+        assertTrue(Pos("Ne4", "Re5", "Ke1", "ke8").getPiecesByColor(false).size == 1)
+        assertTrue(Pos("Ne4", "Re5", "Ke1", "ke8").getPiecesByColor(true).size == 3)
     }
 
 }
 
-fun Position(vararg pieces : String): Position {
+// create a Position using FEN-Notation for Pieces, like "ke8" for "black king on e8 or "Ke1" for "white king on e1"
+fun Pos(vararg pieces : String): Position {
     val result = Position()
     result.squares().forEach({ it.piece = null })
     for (p in pieces) {
