@@ -85,10 +85,15 @@ class SquareTest {
     }
 
     @Test
-    fun nameWithPieceSuffix() {
-        assertTrue(Square.fromName("a1", Piece.WHITE_ROOK).nameWithPieceSuffix == "Ra1")
-        assertTrue(Square.fromName("a3").nameWithPieceSuffix == "a3")
+    fun nameWithPiecePrefix() {
+        assertTrue(Square.fromName("a1", Piece.WHITE_ROOK).nameWithPiecePrefix == "Ra1")
+        assertTrue(Square.fromName("a3").nameWithPiecePrefix == "a3")
+    }
 
+    @Test
+    fun nameWithPieceFigurine() {
+        assertTrue(Square.fromName("a1", Piece.WHITE_ROOK).nameWithPieceFigurine == "♜a1")
+        assertTrue(Square.fromName("a3").nameWithPieceFigurine == "a3")
     }
 
     @Test

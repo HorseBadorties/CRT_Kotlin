@@ -65,7 +65,7 @@ class Square {
     /**
      * e.g. "Nf3"
      */
-    val nameWithPieceSuffix get() = (piece?.pgnChar ?: "").toString() + name
+    val nameWithPiecePrefix get() = (piece?.pgnChar ?: "").toString() + name
 
     /**
      * e.g. "♞f3"
