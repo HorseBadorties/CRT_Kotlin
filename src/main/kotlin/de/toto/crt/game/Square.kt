@@ -68,9 +68,14 @@ class Square {
     val nameWithPieceSuffix get() = (piece?.pgnChar ?: "").toString() + name
 
     /**
+     * e.g. "♞f3"
+     */
+    val nameWithPieceFigurine get() = (piece?.figurine ?: "").toString() + name
+
+    /**
      * e.g. "a1 black"
      */
-    override fun toString() = "$nameWithPieceSuffix, ${if (isWhite) "white" else "black"} "
+    override fun toString() = "$nameWithPieceFigurine, ${if (isWhite) "white" else "black"} "
 
     /**
      * A Square equals another Square if they have the same coordinates.

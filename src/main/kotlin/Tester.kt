@@ -1,10 +1,8 @@
-
-fun varargsTest(vararg s: String) = null
+import de.toto.crt.game.Piece
 
 fun main(args: Array<String>) {
-    val list = listOf("1", "2")
+    Piece.values().forEach { println("${it.name}: ${it.figurine}") }
 
-    varargsTest(*list.toTypedArray())
 
 }
 

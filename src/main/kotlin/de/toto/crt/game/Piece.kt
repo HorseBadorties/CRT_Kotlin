@@ -31,24 +31,12 @@ enum class Piece (val type: PieceType, val color: PieceColor, val fenChar: Char,
     val figurine: String
         get() {
             when (type) {
-                PieceType.KING -> return WHITE_KING.coloredFigurine
-                PieceType.QUEEN -> return WHITE_QUEEN.coloredFigurine
-                PieceType.ROOK -> return WHITE_ROOK.coloredFigurine
-                PieceType.BISHOP -> return WHITE_BISHOP.coloredFigurine
-                PieceType.KNIGHT -> return WHITE_KNIGHT.coloredFigurine
-                PieceType.PAWN -> return WHITE_PAWN.coloredFigurine
-            }
-        }
-
-    val coloredFigurine: String
-        get() {
-            when (type) {
-                PieceType.KING -> return if (isWhite) "\u2654" else "\u265A"
-                PieceType.QUEEN -> return if (isWhite) "\u2655" else "\u265B"
-                PieceType.ROOK -> return if (isWhite) "\u2656" else "\u265C"
-                PieceType.BISHOP -> return if (isWhite) "\u2657" else "\u265D"
-                PieceType.KNIGHT -> return if (isWhite) "\u2658" else "\u265E"
-                PieceType.PAWN -> return if (isWhite) "\u2659" else "\u265F"
+                PieceType.KING -> return if (isWhite) "\u265A" else "\u2654"
+                PieceType.QUEEN -> return if (isWhite) "\u265B" else "\u2655"
+                PieceType.ROOK -> return if (isWhite) "\u265C" else "\u2656"
+                PieceType.BISHOP -> return if (isWhite) "\u265D" else "\u2657"
+                PieceType.KNIGHT -> return if (isWhite) "\u265E" else "\u2658"
+                PieceType.PAWN -> return if (isWhite) "\u265F" else "\u2659"
             }
         }
 
