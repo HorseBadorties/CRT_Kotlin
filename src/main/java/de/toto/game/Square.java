@@ -588,7 +588,7 @@ public class Square {
             }
             return false;
         } finally {
-            // restore original Position
+            // restore original Position.Companion.fromFEN
             moveSquare.piece = originalPieceOnMoveSquare;
         }
     }

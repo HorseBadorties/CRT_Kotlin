@@ -55,6 +55,10 @@ enum class Piece (val type: PieceType, val color: PieceColor, val fenChar: Char,
     companion object {
         @JvmStatic
         fun getPieceByFenChar(fenChar: Char) = Piece.values().first { it.fenChar == fenChar }
+
+        @JvmStatic
+        fun getPieceByPGNCharAndColor(pgnChar: Char, white: Boolean) =
+                Piece.values().first { it.pgnChar == pgnChar && it.isWhite == white }
     }
 }
 

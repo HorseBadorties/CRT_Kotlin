@@ -669,7 +669,7 @@ public class AppFrame extends JFrame
             }
         }
     };
-    private Action actionShowCurrentPositionGames = new AbstractAction("Show Games with Current Position") {
+    private Action actionShowCurrentPositionGames = new AbstractAction("Show Games with Current Position.Companion.fromFEN") {
         @Override
         public void actionPerformed(ActionEvent e) {
             SwingUtilities.invokeLater(new Runnable() {
@@ -754,7 +754,7 @@ public class AppFrame extends JFrame
 
         }
     };
-    private Action actionFindPosition = new AbstractAction("Find Current Position in Repertoire") {
+    private Action actionFindPosition = new AbstractAction("Find Current Position.Companion.fromFEN in Repertoire") {
         @Override
         public void actionPerformed(ActionEvent e) {
 
@@ -781,7 +781,7 @@ public class AppFrame extends JFrame
                 btnTryVariation.doClick();
                 getCurrentGame().gotoPosition(result);
             } else {
-                JOptionPane.showMessageDialog(AppFrame.this, "Position not found.");
+                JOptionPane.showMessageDialog(AppFrame.this, "Position.Companion.fromFEN not found.");
             }
         }
     };
@@ -816,7 +816,7 @@ public class AppFrame extends JFrame
 
         }
     };
-    private Action actionAnnouncePosition = new AbstractAction("Announce Position") {
+    private Action actionAnnouncePosition = new AbstractAction("Announce Position.Companion.fromFEN") {
         @Override
         public void actionPerformed(ActionEvent e) {
             if (tts != null) {

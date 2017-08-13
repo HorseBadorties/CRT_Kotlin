@@ -4,23 +4,21 @@ import org.junit.Test
 
 import org.junit.Assert.*
 
-import de.toto.crt.game.Position.*
-
 class MovesTest {
 
     @Test
     fun kingPossibleMoves() {
         assertTrue(Pos("Ke1", "ke8").movesFrom("e1").equal("d1","f1","d2","e2","f2"))
         assertTrue(with (Pos("Ke1", "Rh1", "ke8")) {
-            defineCastleRights(CastlingRight.WHITE_SHORT)
+            defineCastlingRights(CastlingRight.WHITE_SHORT)
             movesFrom("e1").equal("d1","f1","d2","e2","f2","g1")
         })
         assertTrue(with (Pos("Ke1", "Rh1", "Ra1", "ke8", "rd8")) {
-            defineCastleRights(CastlingRight.WHITE_SHORT, CastlingRight.WHITE_LONG)
+            defineCastlingRights(CastlingRight.WHITE_SHORT, CastlingRight.WHITE_LONG)
             movesFrom("e1").equal("f1","e2","f2","g1")
         })
         assertTrue(with (Pos("Ke1", "Rh1", "Ra1", "ke8", "rc8")) {
-            defineCastleRights(CastlingRight.WHITE_SHORT, CastlingRight.WHITE_LONG)
+            defineCastlingRights(CastlingRight.WHITE_SHORT, CastlingRight.WHITE_LONG)
             movesFrom("e1").equal("d1","f1","d2","e2","f2","g1")
         })
     }
@@ -31,7 +29,7 @@ class MovesTest {
         assertFalse(Pos("Qa1", "Ke1", "ke8").movesFrom("a1").contains("e1"))
         assertTrue(Pos("Qa1", "Ke1", "ke8").movesFrom("a1").contains("h8"))
         assertTrue(Pos("Qa1", "Ke1", "ke8").movesFrom("a1").contains("b2"))
-        assertTrue(Position(FEN_STARTPOSITION).movesFrom("d1").isEmpty())
+        assertTrue(Position.fromFEN(FEN_STARTPOSITION).movesFrom("d1").isEmpty())
         assertFalse(Pos("ra1", "Qb1", "Ke1", "ke8").movesFrom("b1").contains("b2"))
         assertTrue(Pos("ra1", "Qb1", "Ke1", "ke8").movesFrom("b1").equal("a1", "c1", "d1"))
         assertTrue(Pos("ba3", "Qb2", "Kc1", "ke8").movesFrom("b2").equal("a3"))
@@ -48,7 +46,7 @@ class MovesTest {
         assertFalse(Pos("Ra1", "Ke1", "ke8").movesFrom("a1").contains("e1"))
         assertFalse(Pos("Ra1", "Ke1", "ke8").movesFrom("a1").contains("f1"))
         assertFalse(Pos("Ra1", "Ke1", "ke8").movesFrom("a1").contains("b2"))
-        assertTrue(Position(FEN_STARTPOSITION).movesFrom("a1").isEmpty())
+        assertTrue(Position.fromFEN(FEN_STARTPOSITION).movesFrom("a1").isEmpty())
         assertFalse(Pos("ra1", "Rb1", "Ke1", "ke8").movesFrom("b1").contains("b2"))
         assertTrue(Pos("ra1", "Rb1", "Ke1", "ke8").movesFrom("b1").equal("a1", "c1", "d1"))
         assertTrue(Pos("ba3", "Rb2", "Kc1", "ke8").movesFrom("b2").isEmpty())
@@ -107,6 +105,6 @@ class MovesTest {
 
 }
 
-fun List<Square>.contains(square: String) = any { it.name == square }
-fun List<Square>.contains(vararg squares: String) = squares.all { contains(it) }
-fun List<Square>.equal(vararg squares: String) = squares.size == size && squares.all { contains(it) }
+private fun List<Square>.contains(square: String) = any { it.name == square }
+private fun List<Square>.contains(vararg squares: String) = squares.all { contains(it) }
+private fun List<Square>.equal(vararg squares: String) = squares.size == size && squares.all { contains(it) }

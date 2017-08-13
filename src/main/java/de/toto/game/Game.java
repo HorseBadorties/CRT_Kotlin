@@ -362,7 +362,7 @@ public class Game {
     public Position findNovelty(Game other) {
         Position otherPosition = other.gotoStartPosition();
 
-        //go to other's last Position
+        //go to other's last Position.Companion.fromFEN
         while (otherPosition.hasNext()) {
             otherPosition = otherPosition.getNext();
         }

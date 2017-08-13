@@ -102,9 +102,9 @@ private fun Position.pieceAttacks(piece: Piece, from: String, to: String): Boole
     return isAttacked(this.square(to), piece.isWhite)
 }
 
-fun Position.knightAttacks(from: String, to: String) = pieceAttacks(Piece.WHITE_KNIGHT, from ,to)
-fun Position.bishopAttacks(from: String, to: String) = pieceAttacks(Piece.WHITE_BISHOP, from ,to)
-fun Position.rookAttacks(from: String, to: String) = pieceAttacks(Piece.WHITE_ROOK, from ,to)
-fun Position.queenAttacks(from: String, to: String) = pieceAttacks(Piece.WHITE_QUEEN, from ,to)
-fun Position.kingAttacks(from: String, to: String) = pieceAttacks(Piece.WHITE_KING, from ,to)
-fun Position.pawnAttacks(piece: Piece, from: String, to: String) = pieceAttacks(piece, from ,to)
+private fun Position.knightAttacks(from: String, to: String) = pieceAttacks(Piece.WHITE_KNIGHT, from ,to)
+private fun Position.bishopAttacks(from: String, to: String) = pieceAttacks(Piece.WHITE_BISHOP, from ,to)
+private fun Position.rookAttacks(from: String, to: String) = pieceAttacks(Piece.WHITE_ROOK, from ,to)
+private fun Position.queenAttacks(from: String, to: String) = pieceAttacks(Piece.WHITE_QUEEN, from ,to)
+private fun Position.kingAttacks(from: String, to: String) = pieceAttacks(Piece.WHITE_KING, from ,to)
+private fun Position.pawnAttacks(piece: Piece, from: String, to: String) = pieceAttacks(piece, from ,to)

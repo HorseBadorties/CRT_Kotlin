@@ -92,7 +92,7 @@ public class PositionTableModel extends AbstractTableModel {
                 break;
             }
         }
-        //if the first move is a black move add a null Position into white
+        //if the first move is a black move add a null Position.Companion.fromFEN into white
         if (!moves.isEmpty() && !moves.get(0).whiteMoved()) {
             white.add(null);
         }

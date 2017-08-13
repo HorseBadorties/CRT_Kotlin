@@ -265,14 +265,14 @@ public class Position {
     }
 
     /**
-     * @return the move that led to this Position as LAN
+     * @return the move that led to this Position.Companion.fromFEN as LAN
      */
     public String getMove() {
         return move;
     }
 
     /**
-     * @return the move that led to this Position as SAN
+     * @return the move that led to this Position.Companion.fromFEN as SAN
      */
     public String getMoveAsSan() {
         if (move == null || "".equals(move) || "--".equals(move)) return "";
@@ -373,7 +373,7 @@ public class Position {
     }
 
     /**
-     * @return true, if White is to move to reach the next Position
+     * @return true, if White is to move to reach the next Position.Companion.fromFEN
      */
     public boolean isWhiteToMove() {
         if (fen != null) {
@@ -386,7 +386,7 @@ public class Position {
     }
 
     /**
-     * @return true, if White moved to reach this Position
+     * @return true, if White moved to reach this Position.Companion.fromFEN
      */
     public boolean whiteMoved() {
         return !isWhiteToMove();
@@ -932,7 +932,7 @@ public class Position {
     }
 
     /**
-     * Describes this Position as a human would do it.
+     * Describes this Position.Companion.fromFEN as a human would do it.
      */
     public String describe() {
         StringBuilder result = new StringBuilder();

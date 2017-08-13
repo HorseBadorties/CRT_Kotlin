@@ -6,18 +6,17 @@ import org.junit.Assert.*
 
 class PositionTest {
 
-    private val LOOP_COUNT = 1 //1_000_000
 
     @Test
     fun constructorWithFen() {
-        assertNotNull(Position(FEN_EMPTY_BOARD))
-        assertNotNull(Position(FEN_STARTPOSITION))
+        assertNotNull(Position.fromFEN(FEN_EMPTY_BOARD))
+        assertNotNull(Position.fromFEN(FEN_STARTPOSITION))
     }
 
 
     fun doFailConstructorWithFen(fen: String) {
         try {
-            Position(fen)
+            Position.fromFEN(fen)
             fail("IllegalArgumentException expected")
         } catch (e: IllegalArgumentException) {
         }
@@ -66,10 +65,10 @@ class PositionTest {
 
     @Test
     fun getPiecesByColor() {
-        assertTrue(Position(FEN_EMPTY_BOARD).getPiecesByColor(true).size == 0)
-        assertTrue(Position(FEN_EMPTY_BOARD).getPiecesByColor(false).size == 0)
-        assertTrue(Position(FEN_STARTPOSITION).getPiecesByColor(true).size == 16)
-        assertTrue(Position(FEN_STARTPOSITION).getPiecesByColor(false).size == 16)
+        assertTrue(Position.fromFEN(FEN_EMPTY_BOARD).getPiecesByColor(true).size == 0)
+        assertTrue(Position.fromFEN(FEN_EMPTY_BOARD).getPiecesByColor(false).size == 0)
+        assertTrue(Position.fromFEN(FEN_STARTPOSITION).getPiecesByColor(true).size == 16)
+        assertTrue(Position.fromFEN(FEN_STARTPOSITION).getPiecesByColor(false).size == 16)
         assertTrue(Pos("Ne4", "Re5", "Ke1", "ke8").getPiecesByColor(false).size == 1)
         assertTrue(Pos("Ne4", "Re5", "Ke1", "ke8").getPiecesByColor(true).size == 3)
     }

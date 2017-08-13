@@ -3,35 +3,33 @@ package de.toto.crt.game
 const val FEN_STARTPOSITION = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 const val FEN_EMPTY_BOARD = "8/8/8/8/8/8/8/8 w KQkq - 0 1"
 
-class FenValues(var whiteToMove: Boolean = true,
-                var castlingRight: String = "",
-                var enPassantField: String = "",
-                var halfMoveCount: Int = 0,
-                var moveNumber: Int = 0)
-
-fun Position.setFen(fen: String): FenValues {
-    val result = FenValues()
+/**
+ * Constructs a Position according to the provided `fen`
+ */
+fun Position.Companion.fromFEN(fen: String): Position {
     val fenFields = fen.trim().split(" ")
     try {
-        var rank = 8; var file = 1
-        for (fenChar in fenFields[0]) {
-            if ('/' == fenChar) {
-                rank--
-                file = 1
-            } else if (fenChar.isDigit()) {
-                file += fenChar.toInt()
-            } else {
-                square(rank, file).piece = Piece.getPieceByFenChar(fenChar)
-                file++
+        val epField = if (fenFields[3] == "-") null else fenFields[3]
+        with(Position("", fenFields[1] == "w", epField, fenFields[4].toInt(), fenFields[5].toInt(), null)) {
+            // Set up Pieces
+            var rank = 8; var file = 1
+            for (fenChar in fenFields[0]) {
+                if ('/' == fenChar) {
+                    rank--
+                    file = 1
+                } else if (fenChar.isDigit()) {
+                    file += fenChar.toString().toInt()
+                } else {
+                    square(rank, file).piece = Piece.getPieceByFenChar(fenChar)
+                    file++
+                }
             }
+            // Castling
+            defineCastlingRights(fenFields[2])
+            return this
         }
-        result.whiteToMove = fenFields[1] == "w"
-        result.castlingRight = fenFields[2]
-        result.enPassantField = fenFields[3]
-        result.halfMoveCount = fenFields[4].toInt()
-        result.moveNumber = fenFields[5].toInt()
-        return result
     } catch (ex: Exception) {
         throw IllegalArgumentException("failed to parse FEN: " + fen, ex)
     }
 }
+

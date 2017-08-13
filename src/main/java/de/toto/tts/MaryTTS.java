@@ -95,7 +95,7 @@ public class MaryTTS implements TextToSpeach {
     }
     
     /* (non-Javadoc)
-	 * @see de.toto.tts.TextToSpeach#announcePosition(de.toto.game.Position)
+	 * @see de.toto.tts.TextToSpeach#announcePosition(de.toto.game.Position.Companion.fromFEN)
 	 */
 
     /* (non-Javadoc)

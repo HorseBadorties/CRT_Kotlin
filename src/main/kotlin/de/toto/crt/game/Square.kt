@@ -3,9 +3,9 @@ package de.toto.crt.game
 class Square {
 
     // rank and file are intern Byte but visible as Int
-    var _rank: Byte = 0
+    private var _rank: Byte = 0
     val rank get() = _rank.toInt()
-    var _file: Byte = 0
+    private var _file: Byte = 0
     val file get() = _file.toInt()
     var piece: Piece? = null
 

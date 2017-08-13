@@ -42,7 +42,7 @@ private fun Position.kingMovesFrom(from: Square): List<Square> {
     // try castling
     val isWhite = from.piece!!.isWhite
     if (!isAttacked(from, !isWhite)) {
-        if (hasCastleRight(true, isWhite)) {
+        if (hasCastlingRight(true, isWhite)) {
             val fSquare = square(from.rank, 6)
             val gSquare = square(from.rank, 7)
             if (fSquare.isEmpty && !isAttacked(fSquare, !isWhite)
@@ -50,7 +50,7 @@ private fun Position.kingMovesFrom(from: Square): List<Square> {
                 addSquare(from, gSquare, result)
             }
         }
-        if (hasCastleRight(false, isWhite)) {
+        if (hasCastlingRight(false, isWhite)) {
             val dSquare = square(from.rank, 4)
             val cSquare = square(from.rank, 3)
             if (dSquare.isEmpty && !isAttacked(dSquare, !isWhite)
@@ -161,16 +161,17 @@ private fun Position.pawnMovesFrom(from: Square): List<Square> {
         }
     }
     // try normal or e.p. captures
+    val epField = if (enPassantField != null) square(enPassantField) else null
     if (from.file > 1) {
          with (square(if (whitePawn) from.rank + 1 else from.rank - 1, from.file - 1)) {
-             if ((!isEmpty && piece!!.isWhite != whitePawn) || (this == enPassantField && isEmpty)) {
+             if ((!isEmpty && piece!!.isWhite != whitePawn) || (this == epField && isEmpty)) {
                 addSquare(from, this, result)
              }
          }
     }
     if (from.file < 8) {
         with (square(if (whitePawn) from.rank + 1 else from.rank - 1, from.file + 1)) {
-            if ((!isEmpty && piece!!.isWhite != whitePawn) || (isEmpty && this == enPassantField)) {
+            if ((!isEmpty && piece!!.isWhite != whitePawn) || (isEmpty && this == epField)) {
                 addSquare(from, this, result)
             }
         }
