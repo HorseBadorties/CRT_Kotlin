@@ -2,7 +2,6 @@ package de.toto.crt.game
 
 import de.toto.crt.game.Piece.*
 import de.toto.crt.game.Piece.PieceType.*
-import de.toto.crt.game.CastlingRight.*
 
 /**
  * Construct the next Position from a PGN-SAN move String.
@@ -93,12 +92,9 @@ private fun Position.doCreateNextFromSAN(san: String, asVariation: Boolean): Pos
             result.square(fromSquare.name).piece = null
             result.square(toSquare.name).piece = piece
         }
-        // adjust castling rights
+        // copy and possibly adjust castling rights
         result.defineCastlingRights(*this.castlingRight.toTypedArray())
-        checkCastleRight(result, SHORT_CASTLES, true)
-        checkCastleRight(result, SHORT_CASTLES, false)
-        checkCastleRight(result, LONG_CASTLES, true)
-        checkCastleRight(result, LONG_CASTLES, false)
+        result.checkCastleRights()
         // add the new Position to our list of `next` Positions
         next.add(if (asVariation) next.size - 1 else 0, result)
         return result
@@ -107,14 +103,3 @@ private fun Position.doCreateNextFromSAN(san: String, asVariation: Boolean): Pos
     }
 }
 
-private fun checkCastleRight(position: Position, shortCastles: Boolean, whiteToMove: Boolean) {
-    if (position.hasCastlingRight(shortCastles, whiteToMove)) {
-        val rookSquare = position.square(if (whiteToMove) 1 else 8, if (shortCastles) 8 else 1)
-        val kingSquare = position.square(if (whiteToMove) 1 else 8, 5)
-        if (rookSquare.piece != if (whiteToMove) WHITE_ROOK else BLACK_ROOK) {
-            position.removeCastlingRight(shortCastles, whiteToMove)
-        } else if (kingSquare.piece != if (whiteToMove) WHITE_KING else BLACK_KING) {
-            position.removeCastlingRight(shortCastles, whiteToMove)
-        }
-    }
-}

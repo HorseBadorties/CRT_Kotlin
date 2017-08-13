@@ -2,9 +2,6 @@ package de.toto.crt.game
 
 enum class CastlingRight { WHITE_SHORT, WHITE_LONG, BLACK_SHORT, BLACK_LONG }
 
-const val SHORT_CASTLES = true
-const val LONG_CASTLES = false
-
 fun Position.hasCastlingRight(right: CastlingRight) = castlingRight.contains(right)
 
 fun Position.hasCastlingRight(shortCastles: Boolean, isWhite: Boolean): Boolean {
@@ -32,11 +29,6 @@ fun Position.defineCastlingRights(fenString: String): Position {
     return defineCastlingRights(*rights.toTypedArray())
 }
 
-fun Position.removeCastlingRights(vararg rights: CastlingRight): Position {
-    castlingRight.removeAll(rights)
-    return this
-}
-
 fun Position.removeCastlingRight(shortCastles: Boolean, isWhite: Boolean): Position {
     if (isWhite) {
         if (shortCastles) castlingRight.remove(CastlingRight.WHITE_SHORT)
@@ -47,5 +39,28 @@ fun Position.removeCastlingRight(shortCastles: Boolean, isWhite: Boolean): Posit
     }
     return this
 }
+
+private const val SHORT_CASTLES = true
+private const val LONG_CASTLES = false
+
+fun Position.checkCastleRights() {
+    checkCastleRight(SHORT_CASTLES, true)
+    checkCastleRight(SHORT_CASTLES, false)
+    checkCastleRight(LONG_CASTLES, true)
+    checkCastleRight(LONG_CASTLES, false)
+}
+
+private fun Position.checkCastleRight(shortCastles: Boolean, whiteToMove: Boolean) {
+    if (hasCastlingRight(shortCastles, whiteToMove)) {
+        val rookSquare = square(if (whiteToMove) 1 else 8, if (shortCastles) 8 else 1)
+        val kingSquare = square(if (whiteToMove) 1 else 8, 5)
+        if (rookSquare.piece != if (whiteToMove) Piece.WHITE_ROOK else Piece.BLACK_ROOK) {
+            removeCastlingRight(shortCastles, whiteToMove)
+        } else if (kingSquare.piece != if (whiteToMove) Piece.WHITE_KING else Piece.BLACK_KING) {
+            removeCastlingRight(shortCastles, whiteToMove)
+        }
+    }
+}
+
 
 

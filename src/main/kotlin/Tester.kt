@@ -1,8 +1,10 @@
 
+fun varargsTest(vararg s: String) = null
 
 fun main(args: Array<String>) {
-    val x = -5
-    print(Math.abs(x))
+    val list = listOf("1", "2")
+
+    varargsTest(*list.toTypedArray())
 
 }
 
