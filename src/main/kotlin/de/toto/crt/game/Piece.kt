@@ -31,12 +31,12 @@ enum class Piece (val type: PieceType, val color: PieceColor, val fenChar: Char,
     val figurine: String
         get() {
             when (type) {
-                PieceType.KING -> return if (isWhite) "\u265A" else "\u2654"
-                PieceType.QUEEN -> return if (isWhite) "\u265B" else "\u2655"
-                PieceType.ROOK -> return if (isWhite) "\u265C" else "\u2656"
-                PieceType.BISHOP -> return if (isWhite) "\u265D" else "\u2657"
-                PieceType.KNIGHT -> return if (isWhite) "\u265E" else "\u2658"
-                PieceType.PAWN -> return if (isWhite) "\u265F" else "\u2659"
+                PieceType.KING -> return if (isWhite) "\u2654" else "\u265A"
+                PieceType.QUEEN -> return if (isWhite) "\u2655" else "\u265B"
+                PieceType.ROOK -> return if (isWhite) "\u2656" else "\u265C"
+                PieceType.BISHOP -> return if (isWhite) "\u2657" else "\u265D"
+                PieceType.KNIGHT -> return if (isWhite) "\u2658" else "\u265E"
+                PieceType.PAWN -> return if (isWhite) "\u2659" else "\u265F"
             }
         }
 
@@ -47,6 +47,10 @@ enum class Piece (val type: PieceType, val color: PieceColor, val fenChar: Char,
         @JvmStatic
         fun getPieceByPGNCharAndColor(pgnChar: Char, white: Boolean) =
                 Piece.values().first { it.pgnChar == pgnChar && it.isWhite == white }
+
+        @JvmStatic
+        fun get(type: PieceType, white: Boolean) =
+                Piece.values().first { it.type == type && it.isWhite == white }
     }
 }
 

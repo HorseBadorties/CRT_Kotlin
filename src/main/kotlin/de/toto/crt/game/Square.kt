@@ -43,6 +43,7 @@ class Square {
         }
 
         fun fromName(name: String) = fromName(name, null)
+
     }
 
     /**
@@ -86,4 +87,6 @@ class Square {
 
 }
 
-fun Byte.isEven() = this % 2 == 0
+fun backRank(white: Boolean) = if (white) 1 else 8
+
+private fun Byte.isEven() = this % 2 == 0

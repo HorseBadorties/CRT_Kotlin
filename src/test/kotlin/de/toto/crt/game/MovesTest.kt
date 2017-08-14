@@ -10,15 +10,15 @@ class MovesTest {
     fun kingPossibleMoves() {
         assertTrue(Pos("Ke1", "ke8").movesFrom("e1").equal("d1","f1","d2","e2","f2"))
         assertTrue(with (Pos("Ke1", "Rh1", "ke8")) {
-            defineCastlingRights(CastlingRight.WHITE_SHORT)
+            setCastlingRights(CastlingRight.WHITE_SHORT)
             movesFrom("e1").equal("d1","f1","d2","e2","f2","g1")
         })
         assertTrue(with (Pos("Ke1", "Rh1", "Ra1", "ke8", "rd8")) {
-            defineCastlingRights(CastlingRight.WHITE_SHORT, CastlingRight.WHITE_LONG)
+            setCastlingRights(CastlingRight.WHITE_SHORT, CastlingRight.WHITE_LONG)
             movesFrom("e1").equal("f1","e2","f2","g1")
         })
         assertTrue(with (Pos("Ke1", "Rh1", "Ra1", "ke8", "rc8")) {
-            defineCastlingRights(CastlingRight.WHITE_SHORT, CastlingRight.WHITE_LONG)
+            setCastlingRights(CastlingRight.WHITE_SHORT, CastlingRight.WHITE_LONG)
             movesFrom("e1").equal("d1","f1","d2","e2","f2","g1")
         })
     }

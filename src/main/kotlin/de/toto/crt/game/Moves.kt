@@ -42,7 +42,7 @@ private fun Position.kingMovesFrom(from: Square): List<Square> {
     // try castling
     val isWhite = from.piece!!.isWhite
     if (!isAttacked(from, !isWhite)) {
-        if (hasCastlingRight(true, isWhite)) {
+        if (hasCastlingRight(if (isWhite) CastlingRight.WHITE_SHORT else CastlingRight.BLACK_SHORT)) {
             val fSquare = square(from.rank, 6)
             val gSquare = square(from.rank, 7)
             if (fSquare.isEmpty && !isAttacked(fSquare, !isWhite)
@@ -50,7 +50,7 @@ private fun Position.kingMovesFrom(from: Square): List<Square> {
                 addSquare(from, gSquare, result)
             }
         }
-        if (hasCastlingRight(false, isWhite)) {
+        if (hasCastlingRight((if (isWhite) CastlingRight.WHITE_LONG else CastlingRight.BLACK_LONG))) {
             val dSquare = square(from.rank, 4)
             val cSquare = square(from.rank, 3)
             if (dSquare.isEmpty && !isAttacked(dSquare, !isWhite)
@@ -151,7 +151,7 @@ private fun Position.pawnMovesFrom(from: Square): List<Square> {
     val whitePawn = from.piece!!.isWhite
     val startRank = if (whitePawn) 2 else 7
     // try move one square
-    with (square(if (whitePawn) from.rank + 1 else from.rank - 1, from.file)) {
+    with (square(advanceOneRank(from, whitePawn), from.file)) {
         if (this.isEmpty) {
             addSquare(from, this, result)
             if (from.rank == startRank) {
@@ -163,14 +163,14 @@ private fun Position.pawnMovesFrom(from: Square): List<Square> {
     // try normal or e.p. captures
     val epField = if (enPassantField != null) square(enPassantField) else null
     if (from.file > 1) {
-         with (square(if (whitePawn) from.rank + 1 else from.rank - 1, from.file - 1)) {
+         with (square(advanceOneRank(from, whitePawn), from.file - 1)) {
              if ((!isEmpty && piece!!.isWhite != whitePawn) || (this == epField && isEmpty)) {
                 addSquare(from, this, result)
              }
          }
     }
     if (from.file < 8) {
-        with (square(if (whitePawn) from.rank + 1 else from.rank - 1, from.file + 1)) {
+        with (square(advanceOneRank(from, whitePawn), from.file + 1)) {
             if ((!isEmpty && piece!!.isWhite != whitePawn) || (isEmpty && this == epField)) {
                 addSquare(from, this, result)
             }
@@ -178,6 +178,8 @@ private fun Position.pawnMovesFrom(from: Square): List<Square> {
     }
     return result
 }
+
+fun advanceOneRank(from: Square, white: Boolean) = if (white) from.rank + 1 else from.rank - 1
 
 /**
  * Adds `square` to `list` unless the square is occupied by one of our own pieces
@@ -191,7 +193,7 @@ private fun Position.addSquare(from: Square, to: Square, list: MutableList<Squar
         to.piece = from.piece
         from.piece = null
         try {
-            val kingsSquare = getPiecesByPiece(if (isWhite) Piece.WHITE_KING else Piece.BLACK_KING).first()
+            val kingsSquare = getPiecesByPiece(Piece.get(KING, isWhite)).first()
             if (!isAttacked(kingsSquare, !isWhite)) {
                 list.add(to)
             }

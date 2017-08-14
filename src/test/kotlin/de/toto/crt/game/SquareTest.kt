@@ -92,7 +92,7 @@ class SquareTest {
 
     @Test
     fun nameWithPieceFigurine() {
-        assertTrue(Square.fromName("a1", Piece.WHITE_ROOK).nameWithPieceFigurine == "♜a1")
+        assertTrue(Square.fromName("a1", Piece.BLACK_ROOK).nameWithPieceFigurine == "♜a1")
         assertTrue(Square.fromName("a3").nameWithPieceFigurine == "a3")
     }
 

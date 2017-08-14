@@ -82,6 +82,17 @@ class MoveParserTest {
         assertTrue(pos.moveNumber == 3)
     }
 
+    @Test
+    fun promotion() {
+        var pos = Position.fromFEN("4k3/P7/8/8/8/8/8/4K3 w - - 0 1")
+        pos = pos.createNextFromSAN("a8=Q")
+        assertTrue(pos.square("a8").piece == Piece.WHITE_QUEEN)
+
+        pos = Position.fromFEN("4k3/P7/8/8/8/8/8/4K3 w - - 0 1")
+        pos = pos.createNextFromSAN("a8Q")
+        assertTrue(pos.square("a8").piece == Piece.WHITE_QUEEN)
+    }
+
 }
 
 private fun Position.createNextFromSANs(moves: String): Position {

@@ -145,6 +145,11 @@ private fun Position.knightAttacks(square: Square, other: Square): Boolean {
     return false
 }
 
+fun Position.getPiecesByPiece(piece: Piece) = squares().filter { !it.isEmpty && it.piece == piece }
+
+fun Position.getPiecesByColor(white: Boolean) =
+        squares().filter { !it.isEmpty && it.piece?.isWhite == white }
+
 /**
  * With a PAWN on square does he attack the other Square?
  */

@@ -1,7 +1,7 @@
 package de.toto.crt.game
 
 class Position(
-    val move: String = "", //in Long Algebraic Notation, or "" for the starting position or "--" for a null move
+    val move: String = "", // as SAN, or "" for the starting position or "--" for a null move
     val whiteToMove: Boolean = true,
     val enPassantField: String? = null,
     val halfMoveCount: Int = 0,
@@ -33,14 +33,10 @@ class Position(
         with(Square.rankAndFileByName(name)) { return squares[first-1][second-1] }
     }
 
+    /**
+     * get a List of all Squares
+     */
     fun squares() = squares.flatten()
-
-    fun getPiecesByPiece(piece: Piece) = squares().filter { !it.isEmpty && it.piece == piece }
-
-    fun getPiecesByColor(white: Boolean) =
-            squares().filter { !it.isEmpty && it.piece?.isWhite == white }
-
-    companion object
 
 }
 
