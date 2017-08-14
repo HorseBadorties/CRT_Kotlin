@@ -11,6 +11,8 @@ class Position(
 
     val castlingRight = java.util.EnumSet.noneOf(CastlingRight::class.java)
     val next = mutableListOf<Position>()
+    var comment: String? = null
+    val nags = mutableListOf<NAG>()
 
     private val squares = Array(8) { iOuter -> Array(8)
         { iInner -> Square(iOuter + 1, iInner + 1)}
@@ -37,6 +39,8 @@ class Position(
      * get a List of all Squares
      */
     fun squares() = squares.flatten()
+
+    companion object
 
 }
 
