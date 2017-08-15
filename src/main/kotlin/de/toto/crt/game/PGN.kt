@@ -2,15 +2,14 @@ package de.toto.crt.game
 
 import java.nio.file.*
 
-class Tag(name: String, value: String)
-
 fun fromPGN(path: Path) {
-    var linenumber = 0
+    var lineNumber = 0
     var startOfFile = true
+    var tags = mutableListOf<Pair<String, String>>()
     val moves = StringBuilder()
-    var expectedResult: String
+    var expectedResult: String = ""
     for (line in Files.lines(path, Charsets.UTF_8)) {
-        linenumber++
+        lineNumber++
         var s = line.trim()
         if (s.isEmpty()) continue
         if (startOfFile) {
@@ -20,13 +19,17 @@ fun fromPGN(path: Path) {
         }
         if (s.startsWith('[') && moves.isEmpty()) {
             with (s.dropLast(1).drop(1)) {
-                val tag = Tag(substringBefore(' '), substringAfter(' ').replace('"', ' '))
+                val t = Pair(substringBefore(' '), substringAfter(' ').replace("\"", ""))
+                if ("Result" == t.first) expectedResult = t.second
+                tags.add(t)
             }
-
         } else {
-
+            if (moves.isEmpty()) {
+                require(!expectedResult.isEmpty()) {
+                    "Result tag missing"
+                }
+            }
         }
-        println(s)
     }
 }
 
