@@ -1,5 +1,5 @@
 <component name="libraryTable">
-  <library name="Gradle: de.dfki.mary:marytts-runtime:5.2">
+  <library name="Gradle: de.dfki.mary:marytts-runtime:5.2" type="kotlin.js">
     <CLASSES>
       <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/de.dfki.mary/marytts-runtime/5.2/c75f16642056cb3342588420dba9eac940f161ef/marytts-runtime-5.2.jar!/" />
     </CLASSES>
