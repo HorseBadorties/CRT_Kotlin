@@ -14,6 +14,9 @@ class MoveParserTest {
         var pos2 = pos.createNextFromSAN("e4")
         assertTrue(pos.next.contains(pos2))
         assertTrue(pos2.previous == pos)
+        pos = Position.fromFEN(FEN_STARTPOSITION)
+        pos = pos.createNextFromSANs("1.e4 e5 2.Nf3 Nc6 3.Bc4 d6 4.0-0 Bg4 5.Nc3 Qe7 6.a3 0-0-0")
+        assertTrue(pos.whiteToMove)
     }
 
     @Test
@@ -55,8 +58,6 @@ class MoveParserTest {
         assertTrue(pos.enPassantField == "c3")
     }
 
-
-
     @Test
     fun halfMoveCount() {
         var pos = Position.fromFEN(FEN_STARTPOSITION)
@@ -91,6 +92,15 @@ class MoveParserTest {
         pos = Position.fromFEN("4k3/P7/8/8/8/8/8/4K3 w - - 0 1")
         pos = pos.createNextFromSAN("a8Q")
         assertTrue(pos.square("a8").piece == Piece.WHITE_QUEEN)
+    }
+
+    @Test
+    fun enPassant() {
+        var pos = Position.fromFEN(FEN_STARTPOSITION)
+        pos = pos.createNextFromSANs("1.e4 d5 2.Nf3 d4 3.c4 dxc3")
+        assertTrue(pos.square("c3").piece == Piece.BLACK_PAWN)
+        assertTrue(pos.square("c4").isEmpty)
+        assertTrue(pos.square("d4").isEmpty)
     }
 
 }
