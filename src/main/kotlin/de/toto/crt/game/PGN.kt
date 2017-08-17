@@ -2,9 +2,11 @@ package de.toto.crt.game
 
 import java.nio.file.*
 
-fun fromPGN(path: Path) = PGNParser.parse(path)
+fun fromPGN(path: Path) = PGNParser().parse(path)
 
-private object PGNParser {
+fun fromPGN(pgn: String) = PGNParser().parse(pgn)
+
+private class PGNParser {
 
     var lineNumber = 0
     var startOfFile = true
@@ -22,10 +24,11 @@ private object PGNParser {
         return games
     }
 
-    fun parse(string: String) = {
+    fun parse(string: String): List<Game> {
         for (line in string.lines()) {
             parseLine(line)
         }
+        return games
     }
 
     private fun parseLine(line: String) {
