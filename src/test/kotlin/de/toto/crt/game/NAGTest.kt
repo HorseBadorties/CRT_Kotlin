@@ -1,4 +1,5 @@
 package de.toto.crt.game
+
 import org.junit.Test
 
 import org.junit.Assert.*

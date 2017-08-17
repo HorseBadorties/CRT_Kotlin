@@ -56,6 +56,7 @@ class MovesTest {
     fun bishopPossibleMoves() {
         assertTrue(Pos("Ba1", "Ke1", "ke8").movesFrom("a1").contains("h8"))
         assertTrue(Pos("Ba1", "Rc3", "Ke1", "ke8").movesFrom("a1").equal("b2"))
+        assertTrue(Pos("Bd4", "Ke1", "ke8").movesFrom("d4").contains("b2", "b6", "g7", "f2"))
     }
 
     @Test

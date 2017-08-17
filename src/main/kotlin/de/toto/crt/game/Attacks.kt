@@ -35,88 +35,60 @@ private fun Position.kingAttacks(square: Square, other: Square): Boolean {
     }
 }
 
+private fun Position.checkSquares(square: Square, other: Square, rankIncr: Int, fileIncr: Int): Boolean {
+    var rank = square.rank + rankIncr
+    var file = square.file + fileIncr
+    while (rank in 1..8 && file in 1..8) {
+        val s = square(rank, file)
+        if (other == s) return true
+        if (!s.isEmpty) break
+        rank += rankIncr
+        file += fileIncr
+    }
+    return false
+}
+
 /**
  * With a ROOK on square does he attack the other Square?
  */
 private fun Position.rookAttacks(square: Square, other: Square): Boolean {
     // up
     if (square.rank < other.rank && square.file == other.file) {
-        for (_rank in (square.rank + 1)..8) {
-            val s = square(_rank, square.file)
-            if (other == s) return true
-            if (!s.isEmpty) break
-        }
+        if (checkSquares(square, other, 1, 0)) return true
     }
     // down
     if (square.rank > other.rank && square.file == other.file) {
-        for (_rank in square.rank - 1 downTo 1) {
-            val s = square(_rank, square.file)
-            if (other == s) return true
-            if (!s.isEmpty) break
-        }
+        if (checkSquares(square, other, -1, 0)) return true
     }
     // right
     if (square.file < other.file && square.rank == other.rank) {
-        for (_file in (square.file + 1)..8) {
-            val s = square(square.rank, _file)
-            if (other == s) return true
-            if (!s.isEmpty) break
-        }
+        if (checkSquares(square, other, 0, 1)) return true
     }
     // left
     if (square.file > other.file && square.rank == other.rank) {
-        for (_file in square.file - 1 downTo 1) {
-            val s = square(square.rank, _file)
-            if (other == s) return true
-            if (!s.isEmpty) break
-        }
+        if (checkSquares(square, other, 0, -1)) return true
     }
     return false
 }
-
 /**
  * With a BISHOP on square does he attack the other Square?
  */
 private fun Position.bishopAttacks(square: Square, other: Square): Boolean {
     // up-right
     if (square.rank < other.rank && square.file < other.file) {
-        var rank = square.rank + 1
-        var file = square.file + 1
-        while (rank <= 8 && file <= 8) {
-            val s = square(rank++, file++)
-            if (other == s) return true
-            if (!s.isEmpty) break
-        }
+        if (checkSquares(square, other, 1, 1)) return true
     }
     // up-left
     if (square.rank < other.rank && square.file > other.file) {
-        var rank = square.rank + 1
-        var file = square.file - 1
-        while (rank <= 8 && file >= 1) {
-            val s = square(rank++, file--)
-            if (other == s) return true
-            if (!s.isEmpty) break
-        }
+        if (checkSquares(square, other, 1, -1)) return true
     }
     // down-right
     if (square.rank > other.rank && square.file < other.file) {
-        var rank = square.rank - 1
-        var file = square.file + 1
-        while (rank >= 1 && file <= 8) {
-            val s = square(rank--, file++)
-            if (other == s) return true
-            if (!s.isEmpty) break
-        }
+        if (checkSquares(square, other, -1, 1)) return true
     }
     // down-left
     if (square.rank > other.rank && square.file > other.file) {
-        var rank = square.rank - 1
-        var file = square.file - 1
-        while (rank >= 1 && file >= 1) {
-            val s = square(rank--, file--)
-            if (other == s) return true
-            if (!s.isEmpty) break
-        }
+        if (checkSquares(square, other, -1, -1)) return true
     }
     return false
 }

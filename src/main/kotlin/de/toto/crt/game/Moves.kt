@@ -62,11 +62,14 @@ private fun Position.kingMovesFrom(from: Square): List<Square> {
     return result
 }
 
-/**
- * With a `QUEEN` on `from`, which squares can she move to or capture on?
- */
-private fun Position.queenMovesFrom(from: Square): List<Square> {
-    return rookMovesFrom(from) + bishopMovesFrom(from)
+private fun Position.visitSquares(from: Square, rankIncr: Int, fileIncr: Int, list: MutableList<Square>) {
+    var rank = from.rank + rankIncr
+    var file = from.file + fileIncr
+    while (rank in 1..8 && file in 1..8) {
+        if (!addSquare(from, square(rank, file), list).isEmpty) break
+        rank += rankIncr
+        file += fileIncr
+    }
 }
 
 /**
@@ -74,22 +77,16 @@ private fun Position.queenMovesFrom(from: Square): List<Square> {
  */
 private fun Position.rookMovesFrom(from: Square): List<Square> {
     val result = mutableListOf<Square>()
+
     // up
-    for (_rank in (from.rank + 1)..8) {
-        if (!addSquare(from, square(_rank, from.file), result).isEmpty) break
-    }
+    visitSquares(from, 0, 1, result)
     // down
-   for (_rank in from.rank - 1 downTo 1) {
-       if (!addSquare(from, square(_rank, from.file), result).isEmpty) break
-   }
+    visitSquares(from, 0, -1, result)
     // right
-    for (_file in (from.file + 1)..8) {
-        if (!addSquare(from, square(from.rank, _file), result).isEmpty) break
-    }
+    visitSquares(from, 1, 0, result)
     // left
-    for (_file in from.file - 1 downTo 1) {
-        if (!addSquare(from, square(from.rank, _file), result).isEmpty) break
-    }
+    visitSquares(from, -1, 0, result)
+
     return result
 }
 
@@ -98,32 +95,23 @@ private fun Position.rookMovesFrom(from: Square): List<Square> {
  */
 private fun Position.bishopMovesFrom(from: Square): List<Square> {
     val result = mutableListOf<Square>()
+
     // up-right
-    var rank = from.rank
-    var file = from.file
-    while (++rank <= 8 && ++file <= 8) {
-        if (!addSquare(from, square(rank, file), result).isEmpty) break
-    }
+    visitSquares(from, 1, 1, result)
     // up-left
-    rank = from.rank
-    file = from.file
-    while (++rank <= 8 && --file >= 1) {
-        if (!addSquare(from, square(rank, file), result).isEmpty) break
-    }
+    visitSquares(from,1, -1, result)
     // down-right
-    rank = from.rank
-    file = from.file
-    while (--rank >= 1 && ++file <= 8) {
-        if (!addSquare(from, square(rank, file), result).isEmpty) break
-    }
+    visitSquares(from, -1, 1, result)
     // down-left
-    rank = from.rank
-    file = from.file
-    while (--rank >= 1 && --file >= 1) {
-        if (!addSquare(from, square(rank, file), result).isEmpty) break
-    }
+    visitSquares(from,-1, -1, result)
+
     return result
 }
+
+/**
+ * With a `QUEEN` on `from`, which squares can she move to or capture on?
+ */
+private fun Position.queenMovesFrom(from: Square) = rookMovesFrom(from) + bishopMovesFrom(from)
 
 /**
  * With a `KNIGHT` on `from`, which squares can he move to or capture on?
@@ -207,7 +195,7 @@ private fun Position.addSquare(from: Square, to: Square, list: MutableList<Squar
 }
 
 /**
- * Returns `addSquare(isWhite, square, list)`.
+ * Returns `addSquare(from, square, list)`.
  * Returns `null` if `rank` or `file` are invalid
  */
 private fun Position.addSquare(from: Square, toRank: Int, toFile: Int, list: MutableList<Square>): Square? {

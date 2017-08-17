@@ -6,7 +6,7 @@ buildscript {
 
     repositories {
         mavenCentral()
-
+        jcenter()
     }
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
@@ -20,42 +20,9 @@ sourceCompatibility = 1.8
 repositories {
     mavenCentral()
     jcenter()
-    maven {
-        url "https://maven.atlassian.com/content/repositories/atlassian-public/"
-    }
-    maven {
-        url "https://oss.sonatype.org/content/repositories/snapshots"
-    }
 }
 
 dependencies {
-
-    compileClasspath group: 'de.dfki.mary', name: 'marytts', version: '5.2'
-    compileClasspath group: 'de.dfki.mary', name: 'voice-dfki-prudence-hsmm', version: '5.2'
-
-    // https://mvnrepository.com/artifact/org.hsqldb/hsqldb
-    compileClasspath group: 'org.hsqldb', name: 'hsqldb', version: '2.4.0'
-
-    // https://mvnrepository.com/artifact/com.google.code.gson/gson
-    compileClasspath group: 'com.google.code.gson', name: 'gson', version: '2.8.1'
-
-    // https://mvnrepository.com/artifact/com.kitfox/kitfox-svg-salamander
-    compileClasspath group: 'com.kitfox', name: 'kitfox-svg-salamander', version: '1.0.3'
-
-    // https://mvnrepository.com/artifact/com.google.oauth-client/google-oauth-client-jetty
-    compileClasspath group: 'com.google.oauth-client', name: 'google-oauth-client-jetty', version: '1.22.0'
-
-    // https://mvnrepository.com/artifact/com.google.apis/google-api-services-drive
-    compileClasspath group: 'com.google.apis', name: 'google-api-services-drive', version: 'v3-rev79-1.22.0'
-
-    // https://mvnrepository.com/artifact/com.google.apis/google-api-services-calendar
-    compileClasspath group: 'com.google.apis', name: 'google-api-services-calendar', version: 'v3-rev252-1.22.0'
-
-    // https://mvnrepository.com/artifact/com.google.api-client/google-api-client
-    compileClasspath group: 'com.google.api-client', name: 'google-api-client', version: '1.22.0'
-
-    // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
-    compileClasspath group: 'org.apache.commons', name: 'commons-lang3', version: '3.6'
 
     compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
 

@@ -36,57 +36,8 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="Gradle: org.jetbrains.kotlin:kotlin-stdlib-jre8:1.1.4" level="project" />
-    <orderEntry type="library" name="Gradle: de.dfki.mary:voice-dfki-prudence-hsmm:5.2" level="project" />
-    <orderEntry type="library" name="Gradle: org.hsqldb:hsqldb:2.4.0" level="project" />
-    <orderEntry type="library" name="Gradle: com.google.code.gson:gson:2.8.1" level="project" />
-    <orderEntry type="library" name="Gradle: com.kitfox:kitfox-svg-salamander:1.0.3" level="project" />
-    <orderEntry type="library" name="Gradle: com.google.oauth-client:google-oauth-client-jetty:1.22.0" level="project" />
-    <orderEntry type="library" name="Gradle: com.google.apis:google-api-services-drive:v3-rev79-1.22.0" level="project" />
-    <orderEntry type="library" name="Gradle: com.google.apis:google-api-services-calendar:v3-rev252-1.22.0" level="project" />
-    <orderEntry type="library" name="Gradle: com.google.api-client:google-api-client:1.22.0" level="project" />
-    <orderEntry type="library" name="Gradle: org.apache.commons:commons-lang3:3.6" level="project" />
     <orderEntry type="library" name="Gradle: org.jetbrains.kotlin:kotlin-stdlib:1.1.4" level="project" />
     <orderEntry type="library" name="Gradle: org.jetbrains.kotlin:kotlin-stdlib-jre7:1.1.4" level="project" />
-    <orderEntry type="library" name="Gradle: de.dfki.mary:marytts-lang-en:5.2" level="project" />
-    <orderEntry type="library" name="Gradle: de.dfki.mary:marytts-runtime:5.2" level="project" />
-    <orderEntry type="library" name="Gradle: org.apache.ant:ant:1.8.1" level="project" />
-    <orderEntry type="library" name="Gradle: com.google.oauth-client:google-oauth-client-java6:1.22.0" level="project" />
-    <orderEntry type="library" name="Gradle: org.mortbay.jetty:jetty:6.1.26" level="project" />
-    <orderEntry type="library" name="Gradle: com.google.oauth-client:google-oauth-client:1.22.0" level="project" />
-    <orderEntry type="library" name="Gradle: com.google.http-client:google-http-client-jackson2:1.22.0" level="project" />
-    <orderEntry type="library" name="Gradle: com.google.guava:guava-jdk5:17.0" level="project" />
     <orderEntry type="library" name="Gradle: org.jetbrains:annotations:13.0" level="project" />
-    <orderEntry type="library" name="Gradle: de.dfki.mary:marytts-common:5.2" level="project" />
-    <orderEntry type="library" name="Gradle: de.dfki.mary:marytts-signalproc:5.2" level="project" />
-    <orderEntry type="library" name="Gradle: com.ibm.icu:icu4j:54.1.1" level="project" />
-    <orderEntry type="library" name="Gradle: commons-lang:commons-lang:2.6" level="project" />
-    <orderEntry type="library" name="Gradle: commons-collections:commons-collections:3.2.2" level="project" />
-    <orderEntry type="library" name="Gradle: de.dfki.mary:emotionml-checker-java:1.1" level="project" />
-    <orderEntry type="library" name="Gradle: de.dfki.lt.jtok:jtok-core:1.9.3" level="project" />
-    <orderEntry type="library" name="Gradle: com.google.guava:guava:14.0.1" level="project" />
-    <orderEntry type="library" name="Gradle: net.sf.trove4j:trove4j:2.0.2" level="project" />
-    <orderEntry type="library" name="Gradle: org.apache.httpcomponents:httpcore:4.1" level="project" />
-    <orderEntry type="library" name="Gradle: org.apache.httpcomponents:httpcore-nio:4.1" level="project" />
-    <orderEntry type="library" name="Gradle: org.apache.opennlp:opennlp-maxent:3.0.3" level="project" />
-    <orderEntry type="library" name="Gradle: org.apache.opennlp:opennlp-tools:1.5.3" level="project" />
-    <orderEntry type="library" name="Gradle: org.apache.ant:ant-launcher:1.8.1" level="project" />
-    <orderEntry type="library" name="Gradle: org.mortbay.jetty:jetty-util:6.1.26" level="project" />
-    <orderEntry type="library" name="Gradle: org.mortbay.jetty:servlet-api:2.5-20081211" level="project" />
-    <orderEntry type="library" name="Gradle: com.google.http-client:google-http-client:1.22.0" level="project" />
-    <orderEntry type="library" name="Gradle: com.google.code.findbugs:jsr305:1.3.9" level="project" />
-    <orderEntry type="library" name="Gradle: com.fasterxml.jackson.core:jackson-core:2.1.3" level="project" />
-    <orderEntry type="library" name="Gradle: commons-io:commons-io:2.5" level="project" />
-    <orderEntry type="library" name="Gradle: log4j:log4j:1.2.16" level="project" />
-    <orderEntry type="library" name="Gradle: com.twmacinta:fast-md5:2.7.1" level="project" />
-    <orderEntry type="library" name="Gradle: org.codehaus.groovy:groovy-all:2.4.5" level="project" />
-    <orderEntry type="library" name="Gradle: gov.nist.math:Jampack:1.0" level="project" />
-    <orderEntry type="library" name="Gradle: gov.nist.math:jama:1.0.3" level="project" />
-    <orderEntry type="library" name="Gradle: org.swinglabs:swing-layout:1.0.3" level="project" />
-    <orderEntry type="library" name="Gradle: org.slf4j:slf4j-api:1.6.1" level="project" />
-    <orderEntry type="library" name="Gradle: org.slf4j:slf4j-log4j12:1.6.1" level="project" />
-    <orderEntry type="library" name="Gradle: net.sf.jwordnet:jwnl:1.3.3" level="project" />
-    <orderEntry type="library" name="Gradle: org.apache.httpcomponents:httpclient:4.0.1" level="project" />
-    <orderEntry type="library" name="Gradle: commons-logging:commons-logging:1.1.1" level="project" />
-    <orderEntry type="library" name="Gradle: commons-codec:commons-codec:1.3" level="project" />
   </component>
 </module>

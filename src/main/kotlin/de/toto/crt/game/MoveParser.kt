@@ -3,16 +3,10 @@ package de.toto.crt.game
 import de.toto.crt.game.Piece.PieceType.*
 
 /**
- * Construct the next Position from a PGN-SAN move String.
+ * Construct the next Position from a PGN-SAN move String,
+ * either `asMainline` or as a new variation.
  */
-fun Position.createNextFromSAN(san: String): Position = doCreateNextFromSAN(san, false)
-
-/**
- * Construct a variation Position from a PGN-SAN move String.
- */
-fun Position.createVariationFromSAN(san: String): Position = doCreateNextFromSAN(san, true)
-
-private fun Position.doCreateNextFromSAN(san: String, asVariation: Boolean): Position {
+fun Position.createNextFromSAN(san: String, asMainline: Boolean = true): Position {
     try {
         // we don't use/validate check/checkmate as of yet (?!)
         var move = san.removeSuffix("+").removeSuffix("#")
@@ -75,14 +69,14 @@ private fun Position.doCreateNextFromSAN(san: String, asVariation: Boolean): Pos
         }
 
         // we got all information - create the new Position
-        val nextPosition = createPosition(san, newEnPassantField, newHalfMoveCount)
+        val nextPosition = createPosition(san, newEnPassantField, newHalfMoveCount, asMainline)
         // do the actual move
         nextPosition.doMove(whiteToMove, fromSquare, toSquare, piece, shortCastles, longCastles, promotionPiece)
         // copy and possibly adjust castling rights
         nextPosition.setCastlingRights(*this.castlingRight.toTypedArray())
         nextPosition.checkCastleRights()
         // add the new Position to our list of `next` Positions
-        next.add(if (asVariation) next.size - 1 else 0, nextPosition)
+        next.add(if (asMainline) 0 else next.size, nextPosition)
         return nextPosition
 
     } catch (ex: Exception) {
@@ -90,11 +84,17 @@ private fun Position.doCreateNextFromSAN(san: String, asVariation: Boolean): Pos
     }
 }
 
-private fun Position.createPosition(san: String, newEnPassantField: String?, newHalfMoveCount: Int): Position {
+private fun Position.createPosition(
+    san: String,
+    newEnPassantField: String?,
+    newHalfMoveCount: Int,
+    asMainline: Boolean
+): Position {
     val result = Position(
-            previous = this, move = san, whiteToMove = !whiteToMove,
-            enPassantField = newEnPassantField, halfMoveCount = newHalfMoveCount,
-            moveNumber = if (whiteToMove) moveNumber else moveNumber + 1
+        previous = this, move = san, whiteToMove = !whiteToMove,
+        enPassantField = newEnPassantField, halfMoveCount = newHalfMoveCount,
+        moveNumber = if (whiteToMove) moveNumber else moveNumber + 1,
+        variationLevel = if (asMainline) variationLevel else variationLevel + 1
     )
     // copy over piece placements
     for (rank in 1..8) {

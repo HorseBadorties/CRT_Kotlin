@@ -6,7 +6,8 @@ class Position(
     val enPassantField: String? = null,
     val halfMoveCount: Int = 0,
     val moveNumber: Int = 0,
-    val previous: Position? = null
+    val previous: Position? = null,
+    val variationLevel: Int = 0
 ) {
 
     val castlingRight = java.util.EnumSet.noneOf(CastlingRight::class.java)
@@ -40,9 +41,21 @@ class Position(
      */
     fun squares() = squares.flatten()
 
+
+    val hasNext: Boolean  get() { return !next.isEmpty() }
+
+    val hasVariation: Boolean  get() { return next.size > 1 }
+
     companion object
 
+    // TODO move somewhere else?
+    val moveWithMovenumber: String get() = "$moveNumber${if (whiteToMove) "." else "..."}$move"
+
+
 }
+
+
+
 
 
 
