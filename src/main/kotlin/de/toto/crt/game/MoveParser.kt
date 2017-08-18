@@ -17,6 +17,7 @@ fun Position.createNextFromSAN(san: String, asMainline: Boolean = true): Positio
         // consider both "0-0" (zeros) and "O-O" (Os)
         val longCastles = move.startsWith("0-0-0") || move.startsWith("O-O-O")
         val shortCastles = !longCastles && (move.startsWith("0-0") || move.startsWith("O-O"))
+        val isCastling = shortCastles || longCastles
 
         // consider both "c8=Q" and "c8Q"
         val promotionPiece: Piece? = if (move.last() in PGN_PROMOTION_PIECES)
@@ -27,7 +28,7 @@ fun Position.createNextFromSAN(san: String, asMainline: Boolean = true): Positio
         }
 
         var piece: Piece
-        if (shortCastles || longCastles) {
+        if (isCastling) {
             piece = Piece.get(KING, whiteToMove)
         } else {
             if (move[0] in PGN_PIECES) {
@@ -40,7 +41,7 @@ fun Position.createNextFromSAN(san: String, asMainline: Boolean = true): Positio
 
         val newHalfMoveCount = if (piece.type == PAWN && !isCapture) halfMoveCount + 1 else 0
 
-        val fromTo = getFromAndTo(move, piece, shortCastles || longCastles)
+        val fromTo = getFromAndTo(move, piece, isCastling)
         val fromSquare: Square = fromTo.first
         val toSquare: Square = fromTo.second
 
@@ -56,12 +57,12 @@ fun Position.createNextFromSAN(san: String, asMainline: Boolean = true): Positio
         // we got all information - create the new Position
         val nextPosition = createPosition(san, newEnPassantField, newHalfMoveCount, asMainline)
         // do the actual move
-        if (shortCastles || longCastles) {
+        if (isCastling) {
             nextPosition.castle(whiteToMove, shortCastles)
         } else {
             val isEnPassant = isCapture && piece.type == PAWN && toSquare.name == enPassantField
             if (isEnPassant) {
-                nextPosition.doEnPassantMove(piece, fromSquare, toSquare)
+                nextPosition.doEnPassantMove(fromSquare, toSquare, piece)
             } else {
                 nextPosition.doMove(fromSquare, toSquare, piece, promotionPiece)
             }
@@ -113,7 +114,7 @@ private fun Position.createPosition(
     val result = Position(
         previous = this, move = san, whiteToMove = !whiteToMove,
         enPassantField = newEnPassantField, halfMoveCount = newHalfMoveCount,
-        moveNumber = if (whiteToMove) moveNumber else moveNumber + 1,
+        moveNumber = if (whiteToMove) moveNumber + 1 else moveNumber,
         variationLevel = if (asMainline) variationLevel else variationLevel + 1
     )
     // copy over piece placements
@@ -149,7 +150,7 @@ private fun Position.doMove(
     square(toSquare.name).piece = promotionPiece ?: piece
 }
 
-private fun Position.doEnPassantMove(piece: Piece, fromSquare: Square, toSquare: Square) {
+private fun Position.doEnPassantMove(fromSquare: Square, toSquare: Square, piece: Piece) {
     square(fromSquare.name).piece = null
     square(toSquare.name).piece = piece
     val rankOfEnemyPawn = toSquare.rank + if (piece.isWhite) -1 else 1

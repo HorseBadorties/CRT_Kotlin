@@ -1,7 +1,7 @@
 package de.toto.crt.game
 
-const val FEN_STARTPOSITION = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-const val FEN_EMPTY_BOARD = "8/8/8/8/8/8/8/8 w KQkq - 0 1"
+const val FEN_STARTPOSITION = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 0"
+const val FEN_EMPTY_BOARD = "8/8/8/8/8/8/8/8 w KQkq - 0 0"
 
 /**
  * Constructs a Position according to the provided `fen`

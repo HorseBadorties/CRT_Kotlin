@@ -15,20 +15,12 @@ class PGNParserTest {
     @Test
     fun testX() {
         val moves = """
-[Event "Fernando 06.10"]
-[Site "?"]
-[Date "????.??.??"]
-[Round "?"]
-[White "Anti-Blumenfeld"]
-[Black "2.Nf3 3.Nc3"]
-[Result "*"]
-[ECO "A43"]
-[Annotator "Torsten"]
-[PlyCount "15"]
-
-1. d4 Nf6 2. Nf3 c5 3. d5 e6 4. Nc3 {#REP} exd5 5. Nxd5 Nxd5 6. Qxd5 Nc6 7. e4
-d6 8. Ng5 (8. Bc4 Be6 9. Qd3) (8. Bg5) *
+1. d4 Nf6 2. c4 c5 3. d5 b5 4. e3 (4. e4 Nxe4 5. Qf3 Nd6 (5... Nf6 ${'$'}4 6. d6))
+4... Qa5+ 5. Nc3 (5. Bd2 b4) (5. Nd2 bxc4 6. Bxc4 Ba6) 5... b4 6. Nce2 *
 """
-        assertTrue(fromPGN(moves).size  == 1)
+        val g = fromPGN(moves)[0]
+        assertTrue(g.getPosition("4... Qa5+").hasVariation("Nd2"))
+        assertTrue(g.getPosition("4... Qa5+").hasVariation("Nc3"))
+        assertTrue(g.getPosition("4... Qa5+").hasVariation("Bd2"))
     }
 }

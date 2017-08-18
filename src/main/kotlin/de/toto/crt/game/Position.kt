@@ -44,12 +44,12 @@ class Position(
 
     val hasNext: Boolean  get() { return !next.isEmpty() }
 
-    val hasVariation: Boolean  get() { return next.size > 1 }
+    fun hasVariation(san: String) = !next.filter { it.move == san }.isEmpty()
 
     companion object
 
     // TODO move somewhere else?
-    val moveWithMovenumber: String get() = "$moveNumber${if (whiteToMove) "." else "..."}$move"
+    fun moveWithMovenumber() = "$moveNumber${if (whiteToMove) "..." else "."} $move"
 
 
 }

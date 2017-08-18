@@ -39,28 +39,26 @@ private fun Position.kingMovesFrom(from: Square): List<Square> {
         addSquare(this, rank - 1, file - 1, result)
         addSquare(this, rank - 1, file + 1, result)
     }
+
     // try castling
-    val isWhite = from.piece!!.isWhite
-    if (!isAttacked(from, !isWhite)) {
-        if (hasCastlingRight(if (isWhite) CastlingRight.WHITE_SHORT else CastlingRight.BLACK_SHORT)) {
-            val fSquare = square(from.rank, 6)
-            val gSquare = square(from.rank, 7)
-            if (fSquare.isEmpty && !isAttacked(fSquare, !isWhite)
-                    && gSquare.isEmpty && !isAttacked(gSquare, !isWhite)) {
-                addSquare(from, gSquare, result)
-            }
+    fun checkCastlingPossible(first: Square, second: Square) {
+        if (emptyAndUnattacked(first, !whiteToMove) && emptyAndUnattacked(second, !whiteToMove)) {
+            addSquare(from, second, result)
         }
-        if (hasCastlingRight((if (isWhite) CastlingRight.WHITE_LONG else CastlingRight.BLACK_LONG))) {
-            val dSquare = square(from.rank, 4)
-            val cSquare = square(from.rank, 3)
-            if (dSquare.isEmpty && !isAttacked(dSquare, !isWhite)
-                    && cSquare.isEmpty && !isAttacked(cSquare, !isWhite)) {
-                addSquare(from, cSquare, result)
-            }
+    }
+    if (!isAttacked(from, !whiteToMove)) {
+        if (hasCastlingRight(if (whiteToMove) CastlingRight.WHITE_SHORT else CastlingRight.BLACK_SHORT)) {
+            checkCastlingPossible(square(from.rank, 6), square(from.rank, 7))
+        }
+        if (hasCastlingRight((if (whiteToMove) CastlingRight.WHITE_LONG else CastlingRight.BLACK_LONG))) {
+            checkCastlingPossible(square(from.rank, 4), square(from.rank, 3))
         }
     }
     return result
 }
+
+private fun Position.emptyAndUnattacked(square: Square, byWhite: Boolean) =
+        square.isEmpty && !isAttacked(square, byWhite)
 
 private fun Position.visitSquares(from: Square, rankIncr: Int, fileIncr: Int, list: MutableList<Square>) {
     var rank = from.rank + rankIncr
@@ -136,36 +134,34 @@ private fun Position.knightMovesFrom(from: Square): List<Square> {
  */
 private fun Position.pawnMovesFrom(from: Square): List<Square> {
     val result = mutableListOf<Square>()
-    val whitePawn = from.piece!!.isWhite
-    val startRank = if (whitePawn) 2 else 7
+    val startRank = if (whiteToMove) 2 else 7
     // try move one square
-    with (square(advanceOneRank(from, whitePawn), from.file)) {
+    with (square(advanceOneRank(from, whiteToMove), from.file)) {
         if (this.isEmpty) {
             addSquare(from, this, result)
             if (from.rank == startRank) {
                 // try move two squares
-                addSquare(from, square(if (whitePawn) from.rank + 2 else from.rank - 2, from.file), result)
+                addSquare(from, square(if (whiteToMove) from.rank + 2 else from.rank - 2, from.file), result)
             }
         }
     }
     // try normal or e.p. captures
     val epField = if (enPassantField != null) square(enPassantField) else null
+    fun checkSquare(square: Square) {
+        if (square.hasPieceOfColor(!whiteToMove) || (square == epField && square.isEmpty)) {
+            addSquare(from, square, result)
+        }
+    }
     if (from.file > 1) {
-         with (square(advanceOneRank(from, whitePawn), from.file - 1)) {
-             if ((!isEmpty && piece!!.isWhite != whitePawn) || (this == epField && isEmpty)) {
-                addSquare(from, this, result)
-             }
-         }
+        checkSquare(square(advanceOneRank(from, whiteToMove), from.file - 1))
     }
     if (from.file < 8) {
-        with (square(advanceOneRank(from, whitePawn), from.file + 1)) {
-            if ((!isEmpty && piece!!.isWhite != whitePawn) || (isEmpty && this == epField)) {
-                addSquare(from, this, result)
-            }
-        }
+        checkSquare(square(advanceOneRank(from, whiteToMove), from.file + 1))
     }
     return result
 }
+
+private fun Square.hasPieceOfColor(white: Boolean) =  piece?.isWhite == white
 
 fun advanceOneRank(from: Square, white: Boolean) = if (white) from.rank + 1 else from.rank - 1
 
@@ -175,14 +171,13 @@ fun advanceOneRank(from: Square, white: Boolean) = if (white) from.rank + 1 else
  */
 private fun Position.addSquare(from: Square, to: Square, list: MutableList<Square>): Square {
     val toPiece = to.piece
-    val isWhite = from.piece!!.isWhite
-    if (toPiece == null || toPiece.isWhite != isWhite) {
+    if (toPiece == null || toPiece.isWhite != whiteToMove) {
         // temporarily move the piece to `to`
         to.piece = from.piece
         from.piece = null
         try {
-            val kingsSquare = getPiecesByPiece(Piece.get(KING, isWhite)).first()
-            if (!isAttacked(kingsSquare, !isWhite)) {
+            val kingsSquare = getPiecesByPiece(Piece.get(KING, whiteToMove)).first()
+            if (!isAttacked(kingsSquare, !whiteToMove)) {
                 list.add(to)
             }
         } finally {

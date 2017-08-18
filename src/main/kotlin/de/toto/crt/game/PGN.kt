@@ -37,8 +37,10 @@ private class PGNParser {
             var s = line.trim()
             if (s.isEmpty()) return
             if (startOfFile) {
-                // Drop first 3 ChessBase "special characters"
-                s = s.dropWhile { it != '[' }
+                if (s.contains('[')) {
+                    // Drop first 3 ChessBase "special characters"
+                    s = s.dropWhile { it != '[' }
+                }
                 startOfFile = false
             }
             if (inMovetext) {

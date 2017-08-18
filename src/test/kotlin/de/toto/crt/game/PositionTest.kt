@@ -69,17 +69,17 @@ class PositionTest {
         assertTrue(Position.fromFEN(FEN_EMPTY_BOARD).getPiecesByColor(false).size == 0)
         assertTrue(Position.fromFEN(FEN_STARTPOSITION).getPiecesByColor(true).size == 16)
         assertTrue(Position.fromFEN(FEN_STARTPOSITION).getPiecesByColor(false).size == 16)
-        assertTrue(Pos("Ne4", "Re5", "Ke1", "ke8").getPiecesByColor(false).size == 1)
-        assertTrue(Pos("Ne4", "Re5", "Ke1", "ke8").getPiecesByColor(true).size == 3)
+        assertTrue(Pos("Ne4 Re5 Ke1 ke8").getPiecesByColor(false).size == 1)
+        assertTrue(Pos("Ne4 Re5 Ke1 ke8").getPiecesByColor(true).size == 3)
     }
 
 }
 
 // create a Position using FEN-Notation for Pieces, like "ke8" for "black king on e8 or "Ke1" for "white king on e1"
-fun Pos(vararg pieces : String): Position {
-    val result = Position()
+fun Pos(pieces : String, whiteToMove: Boolean = true): Position {
+    val result = Position(whiteToMove = whiteToMove)
     result.squares().forEach({ it.piece = null })
-    for (p in pieces) {
+    for (p in pieces.split(" ")) {
         result.square(p.substring(1, 3)).piece = Piece.getPieceByFenChar(p[0])
     }
     return result
