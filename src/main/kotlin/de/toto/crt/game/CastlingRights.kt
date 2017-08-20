@@ -1,13 +1,14 @@
 package de.toto.crt.game
 
 import de.toto.crt.game.CastlingRight.*
+import de.toto.crt.game.Piece.PieceType.*
 
 enum class CastlingRight {
 
     WHITE_SHORT, WHITE_LONG, BLACK_SHORT, BLACK_LONG;
 
-    fun white() = this == WHITE_SHORT || this == WHITE_LONG
-    fun shortCastle() = this == WHITE_SHORT || this == BLACK_SHORT
+    val isWhite:Boolean  get() = this == WHITE_SHORT || this == WHITE_LONG
+    val isShortCastle: Boolean get() = this == WHITE_SHORT || this == BLACK_SHORT
 
 }
 
@@ -18,24 +19,21 @@ fun Position.setCastlingRights(vararg rights: CastlingRight) {
     castlingRight.addAll(rights)
 }
 
-fun Position.checkCastleRights() {
+fun Position.checkCastleRights(): Position {
     checkCastleRight(WHITE_SHORT)
     checkCastleRight(WHITE_LONG)
     checkCastleRight(BLACK_SHORT)
     checkCastleRight(BLACK_LONG)
+    return this
 }
 
 private fun Position.checkCastleRight(right: CastlingRight) {
-    if (hasCastlingRight(right)) {
-        val white = right.white()
-        val shortCastle = right.shortCastle()
-        val rookSquare = square(backRank(white), if (shortCastle) 8 else 1)
-        val kingSquare = square(backRank(white), 5)
-        if (rookSquare.piece != Piece.get(Piece.PieceType.ROOK, white)) {
-            castlingRight.remove(right)
-        } else if (kingSquare.piece != Piece.get(Piece.PieceType.KING, white)) {
-            castlingRight.remove(right)
-        }
+    if (!hasCastlingRight(right)) return
+    val rookSquare = square(backRank(right.isWhite), if (right.isShortCastle) 8 else 1)
+    val kingSquare = square(backRank(right.isWhite), 5)
+    when {
+        rookSquare.piece != Piece.get(ROOK, right.isWhite) -> castlingRight.remove(right)
+        kingSquare.piece != Piece.get(KING, right.isWhite) -> castlingRight.remove(right)
     }
 }
 

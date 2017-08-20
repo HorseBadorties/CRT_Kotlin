@@ -2,9 +2,19 @@ package de.toto.crt.game
 
 import java.nio.file.*
 
-fun fromPGN(path: Path) = PGNParser().parse(path)
+fun fromPGN(path: Path, listener: (Game) -> Boolean) = PGNParser().parse(path, listener)
 
-fun fromPGN(pgn: String) = PGNParser().parse(pgn)
+fun fromPGN(path: Path): List<Game> {
+    val result = mutableListOf<Game>()
+    PGNParser().parse(path, { result.add(it) })
+    return result
+}
+
+fun fromPGN(pgn: String): List<Game> {
+    val result = mutableListOf<Game>()
+    PGNParser().parse(pgn, { result.add(it) })
+    return result
+}
 
 private class PGNParser {
 
@@ -13,29 +23,29 @@ private class PGNParser {
     var inMovetext = false
     var inComment = false
     var comment = StringBuilder()
-    var currentGame = Game()
+    var game = Game()
 
-    val games = mutableListOf<Game>()
+    private lateinit var listener: (Game) -> Boolean
 
-    fun parse(path: Path): List<Game> {
+    fun parse(path: Path, listener: (Game) -> Boolean) {
+        this.listener = listener
         for (line in Files.lines(path, Charsets.UTF_8)) {
-            parseLine(line)
+            if (!parseLine(line)) return
         }
-        return games
     }
 
-    fun parse(string: String): List<Game> {
-        for (line in string.lines()) {
-            parseLine(line)
+    fun parse(string: String, listener: (Game) -> Boolean) {
+        this.listener = listener
+        string.lines().forEach {
+            if (!parseLine(it)) return
         }
-        return games
     }
 
-    private fun parseLine(line: String) {
+    private fun parseLine(line: String): Boolean {
         lineNumber++
         try {
             var s = line.trim()
-            if (s.isEmpty()) return
+            if (s.isEmpty()) return true
             if (startOfFile) {
                 if (s.contains('[')) {
                     // Drop first 3 ChessBase "special characters"
@@ -44,60 +54,66 @@ private class PGNParser {
                 startOfFile = false
             }
             if (inMovetext) {
-                parseMovetext(s)
+                if (!parseMovetext(s)) return false
             } else {
                 if (s.startsWith('[') && s.endsWith(']')) {
                     with (s.dropLast(1).drop(1)) {
-                        currentGame.tags.put(substringBefore(' '),
+                        game.tags.put(substringBefore(' '),
                                 substringAfter(' ').replace("\"", ""))
                     }
                 } else {
                     inMovetext = true
+                    if (game.hasTag("FEN")) {
+                        game.startWithFen(game.getTag("FEN") ?: "")
+                    }
                     parseMovetext(s)
                 }
             }
+            return true
         } catch (e: Exception) {
             throw Exception("error on line $lineNumber", e)
         }
     }
 
-    private fun parseMovetext(line: String) {
+    private fun parseMovetext(line: String): Boolean {
         for (token in line.split(regex)) {
             if (!inComment) {
                 when {
                     token.isBlank() -> { /* do nothing */ }
                     token.isMoveNumber -> { /* do nothing */ }
-                    token.isNAG -> currentGame.currentPosition.nags.add(NAG.getNag(token))
+                    token.isNAG -> game.currentPosition.nags.add(NAG.getNag(token))
                     token.isGameResult -> {
                         inMovetext = false
-                        games.add(currentGame)
-                        currentGame = Game()
+                        if (!listener(game)) return false
+                        game = Game()
                     }
                     token.isCommentStart -> inComment = true
-                    token.isVariantStart -> currentGame.startVariation()
-                    token.isVariantEnd -> currentGame.endVariation()
-                    else -> currentGame.addMove(token)
+                    token.isVariantStart -> game.startVariation()
+                    token.isVariantEnd -> game.endVariation()
+                    else -> game.addMove(token)
                 }
             } else {
                 if (token.isCommentEnd) {
                     inComment = false
-                    currentGame.currentPosition.comment = comment.toString()
+                    game.currentPosition.comment = comment.toString()
                     comment = StringBuilder()
                 } else {
                     comment.append(token)
                 }
             }
         }
+        return true
     }
 
 }
 
-// split at "(", ")", ".", " ", "{", "}",
+// split at "(", ")", ".", " ", "{" and "}"
 private val delimiters = "(). {}"
 
 // split string including delimiters
 private val regex = Regex("(?<=[$delimiters])|(?=[$delimiters])")
 
+// legal PGN result Strings
 private val RESULTS = setOf("*", "1-0", "0-1", "1/2-1/2")
 
 private val String.isGameResult: Boolean get() { return this in RESULTS }

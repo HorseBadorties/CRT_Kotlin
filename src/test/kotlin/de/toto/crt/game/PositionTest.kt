@@ -40,16 +40,16 @@ class PositionTest {
     fun doFailSquare(rank: Int, file: Int) {
         try {
             Position().square(rank, file)
-            fail("IllegalArgumentException expected")
-        } catch (e: IllegalArgumentException) {
+            fail("ArrayIndexOutOfBoundsException expected")
+        } catch (e: ArrayIndexOutOfBoundsException) {
         }
     }
 
     fun doFailSquare(name: String) {
         try {
             Position().square(name)
-            fail("IllegalArgumentException expected")
-        } catch (e: IllegalArgumentException) {
+            fail("ArrayIndexOutOfBoundsException expected")
+        } catch (e: ArrayIndexOutOfBoundsException) {
         }
     }
 

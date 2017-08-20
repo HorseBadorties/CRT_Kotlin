@@ -46,7 +46,7 @@ enum class Piece (val type: PieceType, val color: PieceColor, val fenChar: Char,
 
         @JvmStatic
         fun getPieceByPGNCharAndColor(pgnChar: Char, white: Boolean) =
-                Piece.values().first { it.pgnChar == pgnChar && it.isWhite == white }
+                Piece.values().firstOrNull { it.pgnChar == pgnChar && it.isWhite == white }
 
         @JvmStatic
         fun get(type: PieceType, white: Boolean) =

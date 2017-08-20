@@ -20,7 +20,7 @@ Description of the universal chess interface (UCI)    April  2006
   If you use Engine and GUI in the same OS this should be no problem if you communicate in text mode,
   but be aware of this when for example running a Linux engine in a Windows GUI.
 
-* arbitrary white space between tokens is allowed
+* arbitrary isWhite space between tokens is allowed
   Example: "debug on\n" and  "   debug     on  \n" and "\t  debug \t  \t\ton\t  \n"
   all set the debug mode of the engine on.
 
@@ -47,7 +47,7 @@ Move format:
 
 The move format is in long algebraic notation.
 A nullmove from the Engine to the GUI should be sent as 0000.
-Examples:  e2e4, e7e5, e1g1 (white short castling), e7e8q (for promotion)
+Examples:  e2e4, e7e5, e1g1 (isWhite short castling), e7e8q (for promotion)
 
 
 
@@ -148,11 +148,11 @@ These are all the command the engine gets from the interface.
 		likely to be misinterpreted by the GUI because the GUI expects the engine to ponder
 	   on the suggested move.
 	* wtime <x>
-		white has x msec left on the clock
+		isWhite has x msec left on the clock
 	* btime <x>
 		black has x msec left on the clock
 	* winc <x>
-		white increment per move in mseconds if x > 0
+		isWhite increment per move in mseconds if x > 0
 	* binc <x>
 		black increment per move in mseconds if x > 0
 	* movestogo <x>
@@ -392,7 +392,7 @@ Engine to GUI:
 			this is either the path to the folder on the hard disk containing the Shredder endgame databases or
 			the path and filename of one Shredder endgame datbase.
 	   * <id> = UCI_SetPositionValue, type string
-	      the GUI can send this to the engine to tell the engine to use a certain value in centipawns from white's
+	      the GUI can send this to the engine to tell the engine to use a certain value in centipawns from isWhite's
 	      point of view if evaluating this specifix position. 
 	      The string can have the formats:
 	      <value> + <fen> | clear + <fen> | clearall
@@ -530,15 +530,15 @@ it should send the command 'option name UCI_Chess960 type check default false'
 to the GUI at program startup.
 Whenever a Chess960 game is played, the GUI should set this engine option to 'true'.
 
-Castling is different in Chess960 and the white king move when castling short is not always e1g1.
+Castling is different in Chess960 and the isWhite king move when castling short is not always e1g1.
 A king move could both be the castling king move or just a normal king move.
 This is why castling moves are sent in the form king "takes" his own rook.
-Example: e1h1 for the white short castle move in the normal chess start position.
+Example: e1h1 for the isWhite short castle move in the normal chess start position.
 
 In EPD and FEN position strings specifying the castle rights with w and q is not enough as
 there could be more than one rook on the right or left side of the king.
 This is why the castle rights are specified with the letter of the castle rook's line.
-Upper case letters for white's and lower case letters for black's castling rights.
+Upper case letters for isWhite's and lower case letters for black's castling rights.
 Example: The normal chess position would be:
 rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w AHah -
 

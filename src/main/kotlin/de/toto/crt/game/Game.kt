@@ -17,6 +17,11 @@ class Game {
         return next()
     }
 
+    fun startWithFen(fen: String): Position {
+        currentPosition = Position.fromFEN(fen)
+        return currentPosition
+    }
+
     fun addMove(san: String, asMainline: Boolean = !currentPosition.hasNext): Position {
         currentPosition = currentPosition.createNextFromSAN(san, asMainline)
         return currentPosition
@@ -34,7 +39,7 @@ class Game {
 
     fun getStartPosition(): Position {
         var result = currentPosition
-        while (result.previous != null) result = result?.previous ?: result
+        while (result.previous != null) result = result.previous ?: result
         return result
     }
 
@@ -55,5 +60,9 @@ class Game {
         currentPosition = getPosition(sanWithMoveNumber)
         return currentPosition
     }
+
+    fun hasTag(tagName: String) = tags.containsKey(tagName)
+
+    fun getTag(tagName: String) = tags[tagName]
 
 }

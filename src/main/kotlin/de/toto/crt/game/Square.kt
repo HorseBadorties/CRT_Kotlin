@@ -10,40 +10,11 @@ class Square {
     var piece: Piece? = null
 
     constructor(rank: Int, file: Int)  {
-        require (file in 1..8 && rank in 1..8) {
-            "Illegal Square: rank:$rank file $file"
-        }
+//        require (file in 1..8 && rank in 1..8) {
+//            "Illegal Square: rank:$rank file $file"
+//        }
         _rank = rank.toByte()
         _file = file.toByte()
-    }
-
-    constructor(rank: Int, file: Int, piece: Piece?) : this(rank, file) {
-        this.piece = piece
-    }
-
-    companion object {
-        /**
-         * e.g. "b4" -> 2, 4;
-         */
-        fun rankAndFileByName(name: String) : Pair<Int, Int> {
-            require (name.length == 2) {
-                "Illegal Square name $name"
-            }
-            val file = name[0] - 'a' + 1
-            val rank = name[1].toString().toInt()
-            require (file in 1..8 && rank in 1..8) {
-                "Illegal Square name $name"
-            }
-            return Pair(rank, file)
-        }
-
-        fun fromName(name: String, piece: Piece?) : Square {
-            val rankAndFile = rankAndFileByName(name)
-            return Square(rankAndFile.first, rankAndFile.second, piece)
-        }
-
-        fun fromName(name: String) = fromName(name, null)
-
     }
 
     /**
@@ -76,7 +47,7 @@ class Square {
     /**
      * e.g. "a1 black"
      */
-    override fun toString() = "$nameWithPieceFigurine, ${if (isWhite) "white" else "black"} "
+    override fun toString() = "$nameWithPieceFigurine, ${if (isWhite) "isWhite" else "black"} "
 
     /**
      * A Square equals another Square if they have the same coordinates.

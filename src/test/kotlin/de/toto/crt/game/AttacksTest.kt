@@ -99,7 +99,7 @@ class AttacksTest {
 private fun Position.pieceAttacks(piece: Piece, from: String, to: String): Boolean {
     val sFrom = square(from)
     sFrom.piece = piece
-    return isAttacked(this.square(to), piece.isWhite)
+    return squareIsAttackedBy(this.square(to), piece.isWhite)
 }
 
 private fun Position.knightAttacks(from: String, to: String) = pieceAttacks(Piece.WHITE_KNIGHT, from ,to)

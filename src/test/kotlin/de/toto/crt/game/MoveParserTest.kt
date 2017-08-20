@@ -47,6 +47,14 @@ class MoveParserTest {
         assertFalse(pos.hasCastlingRight(WHITE_SHORT))
         assertFalse(pos.hasCastlingRight(BLACK_SHORT))
         assertTrue(pos.hasCastlingRight(BLACK_LONG))
+        pos = Position.fromFEN(FEN_STARTPOSITION)
+        pos = pos.createNextFromSANs("1.e4 e5 2.Nf3 Nc6 3.Bc4 d6 4.0-0")
+        assertFalse(pos.hasCastlingRight(WHITE_SHORT))
+        assertFalse(pos.hasCastlingRight(WHITE_LONG))
+        assertTrue(pos.hasCastlingRight(BLACK_SHORT))
+        assertTrue(pos.hasCastlingRight(BLACK_LONG))
+        pos = pos.createNextFromSANs("4...Bg4 5.h3 Qe7 6.a3 0-0-0")
+        assertTrue(pos.castlingRight.isEmpty())
     }
 
     @Test
@@ -61,26 +69,31 @@ class MoveParserTest {
     @Test
     fun halfMoveCount() {
         var pos = Position.fromFEN(FEN_STARTPOSITION)
-        pos = pos.createNextFromSANs("1.e4 d5 2.Nf3")
         assertTrue(pos.halfMoveCount == 0)
-        pos = pos.createNextFromSANs("2...d4 3.c4")
+        pos = pos.createNextFromSANs("1.e4 e5 2.Nf3")
+        assertTrue(pos.halfMoveCount == 1)
+        pos = pos.createNextFromSANs("2...Nf6")
         assertTrue(pos.halfMoveCount == 2)
-        pos = pos.createNextFromSANs("2...dxc3")
+        pos = pos.createNextFromSANs("3.Bc4")
+        assertTrue(pos.halfMoveCount == 3)
+        pos = pos.createNextFromSANs("3...Bc5 4.0-0")
+        assertTrue(pos.halfMoveCount == 5)
+        pos = pos.createNextFromSANs("4...d6")
         assertTrue(pos.halfMoveCount == 0)
     }
 
     @Test
     fun moveNumber() {
         var pos = Position.fromFEN(FEN_STARTPOSITION)
-        assertTrue(pos.moveNumber == 1)
+        assertTrue(pos.moveNumber == 0)
         pos = pos.createNextFromSAN("e4")
         assertTrue(pos.moveNumber == 1)
         pos = pos.createNextFromSAN("c5")
-        assertTrue(pos.moveNumber == 2)
+        assertTrue(pos.moveNumber == 1)
         pos = pos.createNextFromSAN("Nf3")
         assertTrue(pos.moveNumber == 2)
         pos = pos.createNextFromSAN("d6")
-        assertTrue(pos.moveNumber == 3)
+        assertTrue(pos.moveNumber == 2)
     }
 
     @Test
@@ -101,6 +114,13 @@ class MoveParserTest {
         assertTrue(pos.square("c3").piece == Piece.BLACK_PAWN)
         assertTrue(pos.square("c4").isEmpty)
         assertTrue(pos.square("d4").isEmpty)
+    }
+
+    @Test
+    fun nullMove() {
+        var pos = Position.fromFEN(FEN_STARTPOSITION)
+        pos = pos.createNextFromSANs("1.e4 d5 2.-- d4 3.c4 dxc3")
+        assertTrue(pos.square("c3").piece == Piece.BLACK_PAWN)
     }
 
 }

@@ -3,10 +3,10 @@ package de.toto.crt.game
 import de.toto.crt.game.Piece.PieceType.*
 
 /**
- * Returns a list of Squares where the Piece on `square` can legally move to or capture on.
- * Returns an empty list if `square` is empty or the Piece can not move or capture at all.
+ * Returns a list of `Square`s where in this `Position` the `Piece` on `square` can legally move to or capture on.
+ * Returns an empty list if `square` is empty or the `Piece` can not move or capture at all.
  */
-fun Position.movesFrom(square: Square): List<Square> {
+fun Position.legalMovesFrom(square: Square): List<Square> {
     when (square.piece?.type) {
         KING -> return kingMovesFrom(square)
         QUEEN -> return queenMovesFrom(square)
@@ -19,56 +19,40 @@ fun Position.movesFrom(square: Square): List<Square> {
 }
 
 /**
- * Returns a list of Squares where the Piece on `square` can legally move to or capture on.
- * Returns an empty list if `square` is empty or the Piece can not move or capture at all.
- */
-fun Position.movesFrom(squareName: String) = movesFrom(square(squareName))
-
-/**
  * With a `KING` on `from`, which squares can he move to or capture on?
  */
 private fun Position.kingMovesFrom(from: Square): List<Square> {
     val result = mutableListOf<Square>()
     with (from) {
-        addSquare(this, rank + 1, file, result)
-        addSquare(this, rank + 1, file - 1, result)
-        addSquare(this, rank + 1, file + 1, result)
-        addSquare(this, rank, file - 1, result)
-        addSquare(this, rank, file + 1, result)
-        addSquare(this, rank - 1, file, result)
-        addSquare(this, rank - 1, file - 1, result)
-        addSquare(this, rank - 1, file + 1, result)
+        trySquare(this, rank + 1, file, result)
+        trySquare(this, rank + 1, file - 1, result)
+        trySquare(this, rank + 1, file + 1, result)
+        trySquare(this, rank, file - 1, result)
+        trySquare(this, rank, file + 1, result)
+        trySquare(this, rank - 1, file, result)
+        trySquare(this, rank - 1, file - 1, result)
+        trySquare(this, rank - 1, file + 1, result)
     }
 
     // try castling
-    fun checkCastlingPossible(first: Square, second: Square) {
-        if (emptyAndUnattacked(first, !whiteToMove) && emptyAndUnattacked(second, !whiteToMove)) {
-            addSquare(from, second, result)
+    fun checkCastlingPossible(intermediateSquare: Square, kingsTargetSquare: Square) {
+        if (emptyAndUnattacked(!whiteToMove, intermediateSquare, kingsTargetSquare)) {
+            trySquare(from, kingsTargetSquare, result)
         }
     }
-    if (!isAttacked(from, !whiteToMove)) {
+    if (!squareIsAttackedBy(from, !whiteToMove)) {
         if (hasCastlingRight(if (whiteToMove) CastlingRight.WHITE_SHORT else CastlingRight.BLACK_SHORT)) {
             checkCastlingPossible(square(from.rank, 6), square(from.rank, 7))
         }
-        if (hasCastlingRight((if (whiteToMove) CastlingRight.WHITE_LONG else CastlingRight.BLACK_LONG))) {
+        if (hasCastlingRight(if (whiteToMove) CastlingRight.WHITE_LONG else CastlingRight.BLACK_LONG)) {
             checkCastlingPossible(square(from.rank, 4), square(from.rank, 3))
         }
     }
     return result
 }
 
-private fun Position.emptyAndUnattacked(square: Square, byWhite: Boolean) =
-        square.isEmpty && !isAttacked(square, byWhite)
-
-private fun Position.visitSquares(from: Square, rankIncr: Int, fileIncr: Int, list: MutableList<Square>) {
-    var rank = from.rank + rankIncr
-    var file = from.file + fileIncr
-    while (rank in 1..8 && file in 1..8) {
-        if (!addSquare(from, square(rank, file), list).isEmpty) break
-        rank += rankIncr
-        file += fileIncr
-    }
-}
+private fun Position.emptyAndUnattacked(byWhite: Boolean, vararg squares: Square) =
+        squares.all { it.isEmpty && !squareIsAttackedBy(it, byWhite) }
 
 /**
  * With a `ROOK` on `from`, which squares can he move to or capture on?
@@ -77,13 +61,13 @@ private fun Position.rookMovesFrom(from: Square): List<Square> {
     val result = mutableListOf<Square>()
 
     // up
-    visitSquares(from, 0, 1, result)
+    trySquares(from, 0, 1, result)
     // down
-    visitSquares(from, 0, -1, result)
+    trySquares(from, 0, -1, result)
     // right
-    visitSquares(from, 1, 0, result)
+    trySquares(from, 1, 0, result)
     // left
-    visitSquares(from, -1, 0, result)
+    trySquares(from, -1, 0, result)
 
     return result
 }
@@ -95,13 +79,13 @@ private fun Position.bishopMovesFrom(from: Square): List<Square> {
     val result = mutableListOf<Square>()
 
     // up-right
-    visitSquares(from, 1, 1, result)
+    trySquares(from, 1, 1, result)
     // up-left
-    visitSquares(from,1, -1, result)
+    trySquares(from,1, -1, result)
     // down-right
-    visitSquares(from, -1, 1, result)
+    trySquares(from, -1, 1, result)
     // down-left
-    visitSquares(from,-1, -1, result)
+    trySquares(from,-1, -1, result)
 
     return result
 }
@@ -117,14 +101,14 @@ private fun Position.queenMovesFrom(from: Square) = rookMovesFrom(from) + bishop
 private fun Position.knightMovesFrom(from: Square): List<Square> {
     val result = mutableListOf<Square>()
     with (from) {
-        addSquare(from, rank + 2, file + 1, result)
-        addSquare(from, rank + 2, file - 1, result)
-        addSquare(from, rank + 1, file + 2, result)
-        addSquare(from, rank + 1, file - 2, result)
-        addSquare(from, rank - 1, file + 2, result)
-        addSquare(from, rank - 1, file - 2, result)
-        addSquare(from, rank - 2, file + 1, result)
-        addSquare(from, rank - 2, file - 1, result)
+        trySquare(from, rank + 2, file + 1, result)
+        trySquare(from, rank + 2, file - 1, result)
+        trySquare(from, rank + 1, file + 2, result)
+        trySquare(from, rank + 1, file - 2, result)
+        trySquare(from, rank - 1, file + 2, result)
+        trySquare(from, rank - 1, file - 2, result)
+        trySquare(from, rank - 2, file + 1, result)
+        trySquare(from, rank - 2, file - 1, result)
     }
     return result
 }
@@ -138,10 +122,10 @@ private fun Position.pawnMovesFrom(from: Square): List<Square> {
     // try move one square
     with (square(advanceOneRank(from, whiteToMove), from.file)) {
         if (this.isEmpty) {
-            addSquare(from, this, result)
+            trySquare(from, this, result)
             if (from.rank == startRank) {
                 // try move two squares
-                addSquare(from, square(if (whiteToMove) from.rank + 2 else from.rank - 2, from.file), result)
+                trySquare(from, square(if (whiteToMove) from.rank + 2 else from.rank - 2, from.file), result)
             }
         }
     }
@@ -149,15 +133,11 @@ private fun Position.pawnMovesFrom(from: Square): List<Square> {
     val epField = if (enPassantField != null) square(enPassantField) else null
     fun checkSquare(square: Square) {
         if (square.hasPieceOfColor(!whiteToMove) || (square == epField && square.isEmpty)) {
-            addSquare(from, square, result)
+            trySquare(from, square, result, square == epField)
         }
     }
-    if (from.file > 1) {
-        checkSquare(square(advanceOneRank(from, whiteToMove), from.file - 1))
-    }
-    if (from.file < 8) {
-        checkSquare(square(advanceOneRank(from, whiteToMove), from.file + 1))
-    }
+    if (from.file > 1) checkSquare(square(advanceOneRank(from, whiteToMove), from.file - 1))
+    if (from.file < 8) checkSquare(square(advanceOneRank(from, whiteToMove), from.file + 1))
     return result
 }
 
@@ -169,33 +149,61 @@ fun advanceOneRank(from: Square, white: Boolean) = if (white) from.rank + 1 else
  * Adds `square` to `list` unless the square is occupied by one of our own pieces
  * and unless the resulting position would leave our king in check
  */
-private fun Position.addSquare(from: Square, to: Square, list: MutableList<Square>): Square {
-    val toPiece = to.piece
-    if (toPiece == null || toPiece.isWhite != whiteToMove) {
-        // temporarily move the piece to `to`
-        to.piece = from.piece
-        from.piece = null
-        try {
-            val kingsSquare = getPiecesByPiece(Piece.get(KING, whiteToMove)).first()
-            if (!isAttacked(kingsSquare, !whiteToMove)) {
-                list.add(to)
-            }
-        } finally {
-            // restore original position
-            from.piece = to.piece
-            to.piece = toPiece
+private fun Position.trySquare(from: Square, to: Square, list: MutableList<Square>, isEnPassant: Boolean = false) {
+    if (to.hasPieceOfColor(whiteToMove)) return
+
+    val undoMoves = object {
+        val squares = mutableMapOf<Square, Piece?>()
+        fun add(vararg s: Square) = s.forEach { squares.put(it, it.piece) }
+    }
+
+    undoMoves.add(from, to)
+    // temporarily do the move
+    to.piece = from.piece
+    from.piece = null
+    if (isEnPassant) {
+        with (square(to.rank + if (whiteToMove) -1 else 1, to.file)) {
+            undoMoves.add(this)
+            this.piece = null
         }
     }
-    return to
+    try {
+        // check if the resulting position is legal
+        val kingsSquare = getPiecesByPiece(Piece.get(KING, whiteToMove)).first()
+        if (!squareIsAttackedBy(kingsSquare, !whiteToMove)) {
+            // move is possible and legal - add it to the list
+            list.add(to)
+        }
+    } finally {
+        // restore original position
+        undoMoves.squares.forEach { it.key.piece = it.value }
+    }
 }
 
 /**
- * Returns `addSquare(from, square, list)`.
+ * Returns `trySquare(from, square, list)`.
  * Returns `null` if `rank` or `file` are invalid
  */
-private fun Position.addSquare(from: Square, toRank: Int, toFile: Int, list: MutableList<Square>): Square? {
-    if (toRank !in 1..8 || toFile !in 1..8) return null
-    with (square(toRank, toFile)) {
-        return addSquare(from, this, list)
+private fun Position.trySquare(from: Square, toRank: Int, toFile: Int, list: MutableList<Square>) {
+    if (toRank !in 1..8 || toFile !in 1..8) return
+    trySquare(from, square(toRank, toFile), list)
+}
+
+/**
+ * Tries to add squares to the `list` of legal moves while looping over the incremented rank and file
+ * of the `from` square.
+ */
+private fun Position.trySquares(from: Square, rankIncr: Int, fileIncr: Int, list: MutableList<Square>) {
+    var rank = from.rank + rankIncr
+    var file = from.file + fileIncr
+    while (rank in 1..8 && file in 1..8) {
+        with(square(rank, file)) {
+            trySquare(from, this, list)
+            if (!this.isEmpty) {
+                return
+            }
+        }
+        rank += rankIncr
+        file += fileIncr
     }
 }

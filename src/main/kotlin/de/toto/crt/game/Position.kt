@@ -15,7 +15,7 @@ class Position(
     var comment: String? = null
     val nags = mutableListOf<NAG>()
 
-    private val squares = Array(8) { iOuter -> Array(8)
+    val squares = Array(8) { iOuter -> Array(8)
         { iInner -> Square(iOuter + 1, iInner + 1)}
     }
 
@@ -23,9 +23,6 @@ class Position(
      * get a Square by 1-based `rank` and `file`
      */
     fun square(rank: Int, file: Int): Square {
-        require (rank in 1..8 && file in 1..8) {
-            "Illegal Square rank:$rank file:$file"
-        }
         return squares[rank-1][file-1]
     }
 
@@ -33,7 +30,9 @@ class Position(
      * get a Square by `name`
      */
     fun square(name: String): Square {
-        with(Square.rankAndFileByName(name)) { return squares[first-1][second-1] }
+        val file = name[0] - 'a'
+        val rank = name[1].toString().toInt() - 1
+        return squares[rank][file]
     }
 
     /**
@@ -44,14 +43,14 @@ class Position(
 
     val hasNext: Boolean  get() { return !next.isEmpty() }
 
-    fun hasVariation(san: String) = !next.filter { it.move == san }.isEmpty()
+    fun hasVariation(san: String) = next.any { it.move == san }
 
     companion object
 
     // TODO move somewhere else?
     fun moveWithMovenumber() = "$moveNumber${if (whiteToMove) "..." else "."} $move"
 
-
+    val moveWithMovenumber: String get() { return "$moveNumber${if (whiteToMove) "..." else "."} $move" }
 }
 
 
