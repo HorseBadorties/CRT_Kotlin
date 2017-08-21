@@ -30,28 +30,30 @@ class PGNParserTest {
     @Test
     fun test() {
         val moves = """
-            1. d4 Nf6 2. c4 e6 3. Nc3 Bb4 4. Qc2 d5 5. a3 Bxc3+ 6. Qxc3 Ne4 7. Qc2 c5 8.
-dxc5 Nc6 9. cxd5 exd5 10. e3 Bf5 11. Bd3 Qa5+ 12. b4 Nxb4 13. axb4 Qxa1 14. Ne2
-Bd7 15. Nf4 Ba4 16. Qb2 Qxb2 17. Bxb2 Nf6 18. Bxf6 gxf6 19. Kd2 Kf8 20. Ra1 Bb3
-21. Kc3 Bc4 22. Bxc4 dxc4 23. Kxc4 Kg7 24. b5 Rhc8 25. Nd5 f5 26. Ne7 Rc7 27.
-Nxf5+ Kf6 28. Nd4 Ke5 29. Ra3 Rac8 30. Nb3 b6 31. c6 Rd8 32. Nd4 Rd5 33. f4+
-Ke4 34. Ne2 Rc5+ 35. Kb4 Kf5 36. Nc3 Ke6 37. e4 f5 38. e5 a5+ 39. bxa6 R7xc6
-40. Ne2 Rc4+ 41. Kb3 Re4 42. a7 Re3+ 43. Kb4 Rc4+ 44. Kxc4 Rxa3 45. Nd4+ Kf7
-46. Nc6 Ke6 47. Kb5 1-0
+            1. d4 Nf6 2. c4 c5 3. d5 b5 4. cxb5 a6 5. Nc3 axb5 6. e4 (6. Nxb5 Qa5+ 7. Nc3
+Bb7 8. Bd2 Qb6 9. e4 e6 10. Bc4 Nxe4) 6... Qa5 {recommended by GM Ramirez} (
+6... b4 7. Nb5 d6 (7... Nxe4 ${'$'}4 8. Qe2 {[%cal Gb5d6]} f5 9. f3) 8. Bd3 (8. Bf4
+g5 ${'$'}1 9. Bxg5 Nxe4 10. Bf4 Nf6 ${'$'}1 {[%cal Gb8d7,Gf8g7,Ge8g8,Gh8f8]} 11. Qe2 Ra6)
+(8. Bc4 Nbd7 (8... Nxe4 ${'$'}6 9. Qe2 Nf6 10. Bf4 ${'$'}16 Ra6 11. Nxd6+ Rxd6 12. Bb5+)
+9. Nf3 Nb6) (8. Nf3 Nxe4 9. Bc4 g6 10. Qe2 f5) 8... e6 9. dxe6 Bxe6 10. a4 bxa3
+11. Rxa3 Rxa3 12. Nxa3 Be7 ${'$'}11 {[%cal Ge8g8,Gh8f8,Gb8c6]}) 7. Bd2 b4 8. e5 (8.
+Nb5 Nxe4 9. Qe2 Ba6 10. Qxe4 Bxb5 11. Bxb5 Qxb5 12. d6 Nc6) 8... bxc3 9. Bxc3
+Qa4 (9... Qb6 10. exf6 gxf6 11. Nf3 d6 12. Be2 Nd7 13. O-O Bh6 14. a4) 10. Qxa4
+Rxa4 11. exf6 gxf6 {[%csl Rd5][%cal Rh8g8,Rg8g2,Ra4a2]} *
 """
-        fromPGN(moves)
+        val game = fromPGN(moves).first()
+        game.gotoPosition("6... Qa5")
     }
 
     @Test
     fun test2() {
         val moves = """
+[Event "20th OIBM 2016"]
 1. d4 Nf6 2. c4 g6 3. Nc3 Bg7 4. e4 d6 5. Nf3 O-O 6. h3 e5 7. d5 Na6 8. Be3 Nh5
-9. Nh2 Qe8 10. Be2 Nf4 11. Bf3 f5 12. a3 Nc5 13. Bxc5 dxc5 14. O-O Qe7 15. Re1
-a6 16. Ne2 Qd6 17. Nf1 Bd7 18. Rb1 b6 19. Nd2 Bh6 20. Nxf4 Bxf4 21. b4 Rae8 22.
-Qc2 Rf6 23. Qc3 Qf8 24. Nb3 cxb4 25. axb4 Bg5 26. Rb2 Rf7 27. Nc1 Qh6 28. Nd3
-fxe4 29. Bxe4 Bxh3 30. gxh3 Qxh3 31. Bg2 Qh4 32. Re4 Qh5 33. Rbe2 Ref8 34. c5
-Bf4 35. Nxe5 Qh2+ 36. Kf1 Rf5 37. Nf3 Qh5 38. Re7 Bh6 39. R2e5 bxc5 40. bxc5
-Rxf3 41. Bxf3 -- 42. Ke1 Qh1+ 1-0"""
+9. Qe8 10. Be2 Nf4 1-0
+
+[Event "20th OIBM 2016"]
+1. d4 Nf6 1-0"""
         fromPGN(moves)
     }
 
@@ -85,7 +87,8 @@ Ra1 Rb5 37. Rxa6 Ke7 38. Ra7+ Kd6 39. Rh7 Rxb6 40. Rxh6+ Ke5 41. Kf2 Kf5
     @Test
     fun testBig() {
         var count = 0
-        fromPGN(Paths.get("C:\\Users\\Torsten\\Downloads\\2015-2017.pgn"), { count++; true })
+//        fromPGN(Paths.get("C:\\Users\\080064\\Downloads\\twic_BULK.pgn"), { count++; true })
+//        fromPGN(Paths.get("C:\\Users\\Torsten\\Downloads\\2015-2017.pgn"), { count++; true })
         println(count)
     }
 }

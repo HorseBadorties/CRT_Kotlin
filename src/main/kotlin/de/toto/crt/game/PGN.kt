@@ -1,5 +1,6 @@
 package de.toto.crt.game
 
+import de.toto.crt.game.rules.NAG
 import java.nio.file.*
 
 fun fromPGN(path: Path, listener: (Game) -> Boolean) = PGNParser().parse(path, listener)

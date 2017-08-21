@@ -1,4 +1,6 @@
-package de.toto.crt.game
+package de.toto.crt.game.rules
+
+import de.toto.crt.game.Position
 
 const val FEN_STARTPOSITION = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 0"
 const val FEN_EMPTY_BOARD = "8/8/8/8/8/8/8/8 w KQkq - 0 0"
@@ -6,7 +8,7 @@ const val FEN_EMPTY_BOARD = "8/8/8/8/8/8/8/8 w KQkq - 0 0"
 /**
  * Constructs a Position according to the provided `fen`
  */
-fun Position.Companion.fromFEN(fen: String): Position {
+fun fromFEN(fen: String): Position {
     val fenFields = fen.trim().split(" ")
     try {
         val epField = if (fenFields[3] == "-") null else fenFields[3]

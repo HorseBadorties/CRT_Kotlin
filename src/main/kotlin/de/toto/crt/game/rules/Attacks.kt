@@ -1,12 +1,13 @@
-package de.toto.crt.game
+package de.toto.crt.game.rules
 
-import de.toto.crt.game.Piece.PieceType.*
+import de.toto.crt.game.Position
+import de.toto.crt.game.rules.Piece.PieceType.*
 
 /**
  * Is any Piece of color `byWhitePieces` attacking the `square`?
  */
 fun Position.squareIsAttackedBy(square: Square, byWhitePieces: Boolean): Boolean {
-    for (squareWithPiece in getPiecesByColor(byWhitePieces)) {
+    for (squareWithPiece in filterSquares { !it.isEmpty && it.piece?.isWhite == byWhitePieces }) {
         when (squareWithPiece.piece?.type) {
             KING -> if (kingAttacks(squareWithPiece, square)) return true
             QUEEN -> if (queenAttacks(squareWithPiece, square)) return true
@@ -17,56 +18,6 @@ fun Position.squareIsAttackedBy(square: Square, byWhitePieces: Boolean): Boolean
         }
     }
     return false
-}
-
-/**
- * Returns a list of all squares with pieces of type `piece` on them
- */
-fun Position.getPiecesByPiece(piece: Piece): List<Square> {
-    /*
-    more straight forward implementation was a lot slower:
-    squares().filter { !it.isEmpty && it.piece == piece }
-     */
-    val result = mutableListOf<Square>()
-    for (rank in 0..7) {
-        for (file in 0..7) {
-            with (squares[rank][file]) {
-                if (!this.isEmpty && this.piece == piece) result.add(this)
-            }
-        }
-    }
-    return result
-}
-
-inline fun Position.filterPieces(predicate: (Square) -> Boolean): List<Square> {
-    val result = mutableListOf<Square>()
-    for (rank in 0..7) {
-        for (file in 0..7) {
-            with (squares[rank][file]) {
-                if (predicate(this)) result.add(this)
-            }
-        }
-    }
-    return result
-}
-
-/**
- * Returns a list of all squares with pieces of a certain color on them
- */
-fun Position.getPiecesByColor(white: Boolean): List<Square> {
-    /*
-    more straight forward implementation was a lot slower:
-    squares().filter { !it.isEmpty && it.piece?.isWhite == white }
-     */
-    val result = mutableListOf<Square>()
-    for (rank in 0..7) {
-        for (file in 0..7) {
-            with (squares[rank][file]) {
-                if (!this.isEmpty && this.piece?.isWhite == white) result.add(this)
-            }
-        }
-    }
-    return result
 }
 
 /**
@@ -154,16 +105,14 @@ private fun Position.queenAttacks(square: Square, other: Square): Boolean {
  * With a KNIGHT on square does it attack the other Square?
  */
 private fun knightAttacks(square: Square, other: Square): Boolean {
-    val otherRank = other.rank
-    val otherFile = other.file
-    if (square.rank + 2 == otherRank && square.file + 1 == otherFile) return true
-    if (square.rank + 2 == otherRank && square.file - 1 == otherFile) return true
-    if (square.rank + 1 == otherRank && square.file + 2 == otherFile) return true
-    if (square.rank + 1 == otherRank && square.file - 2 == otherFile) return true
-    if (square.rank - 1 == otherRank && square.file + 2 == otherFile) return true
-    if (square.rank - 1 == otherRank && square.file - 2 == otherFile) return true
-    if (square.rank - 2 == otherRank && square.file + 1 == otherFile) return true
-    if (square.rank - 2 == otherRank && square.file - 1 == otherFile) return true
+    if (square.rank + 2 == other.rank && square.file + 1 == other.file) return true
+    if (square.rank + 2 == other.rank && square.file - 1 == other.file) return true
+    if (square.rank + 1 == other.rank && square.file + 2 == other.file) return true
+    if (square.rank + 1 == other.rank && square.file - 2 == other.file) return true
+    if (square.rank - 1 == other.rank && square.file + 2 == other.file) return true
+    if (square.rank - 1 == other.rank && square.file - 2 == other.file) return true
+    if (square.rank - 2 == other.rank && square.file + 1 == other.file) return true
+    if (square.rank - 2 == other.rank && square.file - 1 == other.file) return true
     return false
 }
 
@@ -171,8 +120,7 @@ private fun knightAttacks(square: Square, other: Square): Boolean {
  * With a PAWN on square does he attack the other Square?
  */
 private fun pawnAttacks(isWhitePawn: Boolean, square: Square, other: Square): Boolean {
-    val rank = square.rank + if (isWhitePawn) 1 else -1
-    return other.rank == rank
+    return other.rank == (square.rank + if (isWhitePawn) 1 else -1)
             && (other.file == square.file + 1 || other.file == square.file - 1)
 }
 

@@ -1,4 +1,4 @@
-package de.toto.crt.game
+package de.toto.crt.game.rules
 
 /**
  * Enumeration of all chess pieces, including their associated FEN and PGN characters.

@@ -1,4 +1,4 @@
-package de.toto.crt.game
+package de.toto.crt.game.rules
 
 class Square {
 

@@ -1,7 +1,8 @@
-package de.toto.crt.game
+package de.toto.crt.game.rules
 
-import de.toto.crt.game.CastlingRight.*
-import de.toto.crt.game.Piece.PieceType.*
+import de.toto.crt.game.rules.CastlingRight.*
+import de.toto.crt.game.Position
+import de.toto.crt.game.rules.Piece.PieceType.*
 
 enum class CastlingRight {
 

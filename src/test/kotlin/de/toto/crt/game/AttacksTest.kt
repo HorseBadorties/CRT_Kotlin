@@ -1,5 +1,7 @@
 package de.toto.crt.game
 
+import de.toto.crt.game.rules.Piece
+import de.toto.crt.game.rules.squareIsAttackedBy
 import org.junit.Assert
 import org.junit.Test
 

@@ -1,5 +1,9 @@
 package de.toto.crt.game
 
+import de.toto.crt.game.rules.CastlingRight
+import de.toto.crt.game.rules.NAG
+import de.toto.crt.game.rules.Square
+
 class Position(
     val move: String = "", // as SAN, or "" for the starting position or "--" for a null move
     val whiteToMove: Boolean = true,
@@ -16,7 +20,7 @@ class Position(
     val nags = mutableListOf<NAG>()
 
     val squares = Array(8) { iOuter -> Array(8)
-        { iInner -> Square(iOuter + 1, iInner + 1)}
+        { iInner -> Square(iOuter + 1, iInner + 1) }
     }
 
     /**
@@ -36,20 +40,38 @@ class Position(
     }
 
     /**
-     * get a List of all Squares
+     * Returns a list of squares that match the `predicate`
      */
-    fun squares() = squares.flatten()
+    inline fun filterSquares(predicate: (Square) -> Boolean): List<Square> {
+        val result = mutableListOf<Square>()
+        for (rank in 0..7) {
+            for (file in 0..7) {
+                with (squares[rank][file]) { if (predicate(this)) result.add(this) }
+            }
+        }
+        return result
+    }
+
+    /**
+     * Returns the first square that matches the `predicate`.
+     * Throws an `IllegalArgumentException` if no match was found
+     */
+    inline fun findSquare(predicate: (Square) -> Boolean): Square {
+        for (rank in 0..7) {
+            for (file in 0..7) {
+                with (squares[rank][file]) { if (predicate(this)) return this }
+            }
+        }
+        throw IllegalArgumentException("no square matches the predicate")
+    }
+
 
 
     val hasNext: Boolean  get() { return !next.isEmpty() }
 
     fun hasVariation(san: String) = next.any { it.move == san }
 
-    companion object
-
     // TODO move somewhere else?
-    fun moveWithMovenumber() = "$moveNumber${if (whiteToMove) "..." else "."} $move"
-
     val moveWithMovenumber: String get() { return "$moveNumber${if (whiteToMove) "..." else "."} $move" }
 }
 

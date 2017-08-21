@@ -1,5 +1,6 @@
 package de.toto.crt.game
 
+import de.toto.crt.game.rules.*
 import org.junit.Test
 
 import org.junit.Assert.*
@@ -29,7 +30,7 @@ class MovesTest {
         assertFalse(Pos("Qa1 Ke1 ke8").legalMovesFrom("a1").contains("e1"))
         assertTrue(Pos("Qa1 Ke1 ke8").legalMovesFrom("a1").contains("h8"))
         assertTrue(Pos("Qa1 Ke1 ke8").legalMovesFrom("a1").contains("b2"))
-        assertTrue(Position.fromFEN(FEN_STARTPOSITION).legalMovesFrom("d1").isEmpty())
+        assertTrue(fromFEN(FEN_STARTPOSITION).legalMovesFrom("d1").isEmpty())
         assertFalse(Pos("ra1 Qb1 Ke1 ke8").legalMovesFrom("b1").contains("b2"))
         assertTrue(Pos("ra1 Qb1 Ke1 ke8").legalMovesFrom("b1").equal("a1", "c1", "d1"))
         assertTrue(Pos("ba3 Qb2 Kc1 ke8").legalMovesFrom("b2").equal("a3"))
@@ -46,7 +47,7 @@ class MovesTest {
         assertFalse(Pos("Ra1 Ke1 ke8").legalMovesFrom("a1").contains("e1"))
         assertFalse(Pos("Ra1 Ke1 ke8").legalMovesFrom("a1").contains("f1"))
         assertFalse(Pos("Ra1 Ke1 ke8").legalMovesFrom("a1").contains("b2"))
-        assertTrue(Position.fromFEN(FEN_STARTPOSITION).legalMovesFrom("a1").isEmpty())
+        assertTrue(fromFEN(FEN_STARTPOSITION).legalMovesFrom("a1").isEmpty())
         assertFalse(Pos("ra1 Rb1 Ke1 ke8").legalMovesFrom("b1").contains("b2"))
         assertTrue(Pos("ra1 Rb1 Ke1 ke8").legalMovesFrom("b1").equal("a1", "c1", "d1"))
         assertTrue(Pos("ba3 Rb2 Kc1 ke8").legalMovesFrom("b2").isEmpty())

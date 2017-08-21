@@ -1,25 +1,19 @@
 package de.toto.crt.game
 
+import de.toto.crt.game.rules.FEN_EMPTY_BOARD
+import de.toto.crt.game.rules.FEN_STARTPOSITION
+import de.toto.crt.game.rules.Piece
+import de.toto.crt.game.rules.fromFEN
 import org.junit.Test
 
 import org.junit.Assert.*
 
 class PositionTest {
 
-
     @Test
     fun constructorWithFen() {
-        assertNotNull(Position.fromFEN(FEN_EMPTY_BOARD))
-        assertNotNull(Position.fromFEN(FEN_STARTPOSITION))
-    }
-
-
-    fun doFailConstructorWithFen(fen: String) {
-        try {
-            Position.fromFEN(fen)
-            fail("IllegalArgumentException expected")
-        } catch (e: IllegalArgumentException) {
-        }
+        assertNotNull(fromFEN(FEN_EMPTY_BOARD))
+        assertNotNull(fromFEN(FEN_STARTPOSITION))
     }
 
     @Test
@@ -29,28 +23,12 @@ class PositionTest {
         doFailConstructorWithFen("PPPPPPPPP/8/8/8/8/8/8/8 w KQkq - 0 1")
     }
 
-        @Test
+    @Test
     fun square() {
         assertTrue(Position().square(1, 1).name == "a1")
         assertTrue(Position().square(1, 8).name == "h1")
         assertTrue(Position().square(2, 1).name == "a2")
         assertTrue(Position().square(3, 8).name == "h3")
-    }
-
-    fun doFailSquare(rank: Int, file: Int) {
-        try {
-            Position().square(rank, file)
-            fail("ArrayIndexOutOfBoundsException expected")
-        } catch (e: ArrayIndexOutOfBoundsException) {
-        }
-    }
-
-    fun doFailSquare(name: String) {
-        try {
-            Position().square(name)
-            fail("ArrayIndexOutOfBoundsException expected")
-        } catch (e: ArrayIndexOutOfBoundsException) {
-        }
     }
 
     @Test
@@ -63,24 +41,39 @@ class PositionTest {
         doFailSquare("i1")
     }
 
-    @Test
-    fun getPiecesByColor() {
-        assertTrue(Position.fromFEN(FEN_EMPTY_BOARD).getPiecesByColor(true).size == 0)
-        assertTrue(Position.fromFEN(FEN_EMPTY_BOARD).getPiecesByColor(false).size == 0)
-        assertTrue(Position.fromFEN(FEN_STARTPOSITION).getPiecesByColor(true).size == 16)
-        assertTrue(Position.fromFEN(FEN_STARTPOSITION).getPiecesByColor(false).size == 16)
-        assertTrue(Pos("Ne4 Re5 Ke1 ke8").getPiecesByColor(false).size == 1)
-        assertTrue(Pos("Ne4 Re5 Ke1 ke8").getPiecesByColor(true).size == 3)
+
+
+    private fun doFailSquare(rank: Int, file: Int) {
+        try {
+            Position().square(rank, file)
+            fail("ArrayIndexOutOfBoundsException expected")
+        } catch (e: ArrayIndexOutOfBoundsException) { }
+    }
+
+    private fun doFailSquare(name: String) {
+        try {
+            Position().square(name)
+            fail("ArrayIndexOutOfBoundsException expected")
+        } catch (e: ArrayIndexOutOfBoundsException) { }
+    }
+
+    private fun doFailConstructorWithFen(fen: String) {
+        try {
+            fromFEN(fen)
+            fail("IllegalArgumentException expected")
+        } catch (e: IllegalArgumentException) {
+        }
     }
 
 }
 
 // create a Position using FEN-Notation for Pieces, like "ke8" for "black king on e8 or "Ke1" for "white king on e1"
 fun Pos(pieces : String, whiteToMove: Boolean = true): Position {
-    val result = Position(whiteToMove = whiteToMove)
-    result.squares().forEach({ it.piece = null })
-    for (p in pieces.split(" ")) {
-        result.square(p.substring(1, 3)).piece = Piece.getPieceByFenChar(p[0])
+    with (Position(whiteToMove = whiteToMove)) {
+        squares.flatten().forEach({ it.piece = null })
+        for (p in pieces.split(" ")) {
+            square(p.substring(1, 3)).piece = Piece.getPieceByFenChar(p[0])
+        }
+        return this
     }
-    return result
 }

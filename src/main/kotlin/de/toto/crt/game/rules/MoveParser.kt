@@ -1,6 +1,7 @@
-package de.toto.crt.game
+package de.toto.crt.game.rules
 
-import de.toto.crt.game.Piece.PieceType.*
+import de.toto.crt.game.Position
+import de.toto.crt.game.rules.Piece.PieceType.*
 
 /**
  * Construct the next Position from a SAN move String, either `asMainline` (default) or as a new variation.
@@ -27,7 +28,7 @@ private fun Position.parseSAN(san: String, asMainline: Boolean): Position {
         return createPosition(san, null, halfMoveCount + 1, asMainline).castle(isLongCastles)
     }
 
-    // we don't use/validate check/checkmate as of yet (?!)
+    // we don't use/validate check and checkmate as of yet (?!)
     var move = san.removeSuffix("+").removeSuffix("#")
     // capture?
     val isCapture = move.contains('x')
@@ -42,7 +43,12 @@ private fun Position.parseSAN(san: String, asMainline: Boolean): Position {
     val piece = Piece.getPieceByPGNCharAndColor(move.first(), whiteToMove) ?: Piece.get(PAWN, whiteToMove)
     if (piece.type != PAWN) move = move.drop(1)
     // from where to where?
-    val (fromSquare, toSquare) = getFromAndToSquares(move, piece, isCapture)
+    val toSquare = square(move.takeLast(2))
+    move = move.dropLast(2)
+    val fromSquare = when {
+        move.length == 2 -> square(move)
+        else -> findSquare { isFromSquare(it, move, piece, toSquare, isCapture) }
+    }
 
     val newEnPassantField = getEnPassantField(piece, fromSquare, toSquare)
     val newHalfMoveCount = if (piece.type == PAWN || isCapture) 0 else halfMoveCount + 1
@@ -58,36 +64,34 @@ private fun Position.parseSAN(san: String, asMainline: Boolean): Position {
 }
 
 // TODO cleanup code
-private fun Position.getEnPassantField(piece: Piece, fromSquare: Square, toSquare: Square): String? {
-    if (piece.type == PAWN && Math.abs(fromSquare.rank - toSquare.rank) == 2) {
+private fun Position.getEnPassantField(piece: Piece, from: Square, to: Square): String? {
+    // was it a two-squares pawn move?
+    if (piece.type == PAWN && Math.abs(from.rank - to.rank) == 2) {
+        // is there an opponent pawn on a square next to `to` ?
         val opponentPawn = Piece.get(PAWN, !whiteToMove)
-        if (toSquare.file > 1 && square(toSquare.rank, toSquare.file - 1).piece == opponentPawn
-                || toSquare.file < 8 && square(toSquare.rank, toSquare.file + 1).piece == opponentPawn) {
-            return square(advanceOneRank(toSquare, !whiteToMove), toSquare.file).name
+        if (to.file > 1 && square(to.rank, to.file - 1).piece == opponentPawn
+                || to.file < 8 && square(to.rank, to.file + 1).piece == opponentPawn) {
+            return square(advanceOneRank(to, !whiteToMove), to.file).name
         }
     }
     return null
 }
 
-// TODO cleanup code
-private fun Position.getFromAndToSquares(move: String, piece: Piece, isCapture: Boolean): Pair<Square, Square> {
-    val toSquare = square(move.takeLast(2))
-    val from = move.dropLast(2)
-    if (from.length == 2) return Pair(square(from), toSquare)
-    val fromSquare = filterPieces { isFromSquare(it, from, piece, toSquare, isCapture) }.firstOrNull()
-            ?: throw IllegalArgumentException("failed to identify the square the move originated from")
-    return Pair(fromSquare, toSquare)
-}
-
 // use some heuristics before calling the "expensive" `legalMovesFrom`
-private fun Position.isFromSquare(fromSquare: Square, from: String, piece: Piece, toSquare: Square, isCapture: Boolean) = when {
-    fromSquare.piece != piece -> false
-    fromSquare.piece?.type == PAWN && !isCapture && fromSquare.file != toSquare.file -> false
-    fromSquare.piece?.type == PAWN && isCapture && Math.abs(fromSquare.file - toSquare.file) > 1 -> false
-    fromSquare.piece?.type == BISHOP && fromSquare.isWhite != toSquare.isWhite -> false
-    fromSquare.piece?.type == ROOK && fromSquare.rank != toSquare.rank && fromSquare.file != toSquare.file -> false
-    fromSquare.piece?.type == KNIGHT && (Math.abs(fromSquare.rank - toSquare.rank) > 2 || Math.abs(fromSquare.file - toSquare.file) > 2) -> false
-    (from.isEmpty() || fromSquare.name.contains(from)) && legalMovesFrom(fromSquare).contains(toSquare) -> true
+private fun Position.isFromSquare(
+        s: Square, // the square to check
+        from: String, // either empty or contains a rank number or file character
+        piece: Piece, // the piece that is moving to `toSquare`
+        toSquare: Square, // the target square of the move
+        isCapture: Boolean
+) = when {
+    s.piece != piece -> false
+    s.piece?.type == PAWN && !isCapture && s.file != toSquare.file -> false
+    s.piece?.type == PAWN && isCapture && Math.abs(s.file - toSquare.file) > 1 -> false
+    s.piece?.type == BISHOP && s.isWhite != toSquare.isWhite -> false
+    s.piece?.type == ROOK && s.rank != toSquare.rank && s.file != toSquare.file -> false
+    s.piece?.type == KNIGHT && (Math.abs(s.rank - toSquare.rank) > 2 || Math.abs(s.file - toSquare.file) > 2) -> false
+    (from.isEmpty() || s.name.contains(from)) && legalMovesFrom(s).contains(toSquare) -> true
     else -> false
 }
 
@@ -136,8 +140,8 @@ private fun Position.doNormalMove(
     fromSquare: Square, toSquare: Square,
     piece: Piece, promotionPiece: Piece?
 ) {
-    squares[fromSquare.rank-1][fromSquare.file-1].piece = null
-    squares[toSquare.rank-1][toSquare.file-1].piece = promotionPiece ?: piece
+    square(fromSquare.rank, fromSquare.file).piece = null
+    square(toSquare.rank, toSquare.file).piece = promotionPiece ?: piece
     checkCastleRights()
 }
 

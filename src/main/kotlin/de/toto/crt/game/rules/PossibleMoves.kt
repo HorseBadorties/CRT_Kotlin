@@ -1,6 +1,7 @@
-package de.toto.crt.game
+package de.toto.crt.game.rules
 
-import de.toto.crt.game.Piece.PieceType.*
+import de.toto.crt.game.Position
+import de.toto.crt.game.rules.Piece.PieceType.*
 
 /**
  * Returns a list of `Square`s where in this `Position` the `Piece` on `square` can legally move to or capture on.
@@ -169,8 +170,8 @@ private fun Position.trySquare(from: Square, to: Square, list: MutableList<Squar
     }
     try {
         // check if the resulting position is legal
-        val kingsSquare = getPiecesByPiece(Piece.get(KING, whiteToMove)).first()
-        if (!squareIsAttackedBy(kingsSquare, !whiteToMove)) {
+        val king = Piece.get(KING, whiteToMove)
+        if (!squareIsAttackedBy(findSquare { it.piece == king }, !whiteToMove)) {
             // move is possible and legal - add it to the list
             list.add(to)
         }

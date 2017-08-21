@@ -1,9 +1,13 @@
 package de.toto.crt.game
 
+import de.toto.crt.game.rules.FEN_STARTPOSITION
+import de.toto.crt.game.rules.createNextFromSAN
+import de.toto.crt.game.rules.fromFEN
+
 class Game {
 
     val tags = mutableMapOf<String, String>()
-    var currentPosition: Position = Position.fromFEN(FEN_STARTPOSITION)
+    var currentPosition: Position = fromFEN(FEN_STARTPOSITION)
         private set
 
     fun startVariation() = back()
@@ -18,7 +22,7 @@ class Game {
     }
 
     fun startWithFen(fen: String): Position {
-        currentPosition = Position.fromFEN(fen)
+        currentPosition = fromFEN(fen)
         return currentPosition
     }
 
@@ -45,7 +49,7 @@ class Game {
 
     fun getPosition(sanWithMoveNumber: String): Position {
         var result = getStartPosition()
-        while (result.moveWithMovenumber() != sanWithMoveNumber) {
+        while (result.moveWithMovenumber != sanWithMoveNumber) {
             if (!result.hasNext) {
                 throw IllegalArgumentException(
                         "move $sanWithMoveNumber does not exist")
