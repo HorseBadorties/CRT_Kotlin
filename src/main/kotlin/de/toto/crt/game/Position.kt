@@ -65,14 +65,58 @@ class Position(
         throw IllegalArgumentException("no square matches the predicate")
     }
 
-
-
     val hasNext: Boolean  get() { return !next.isEmpty() }
 
-    fun hasVariation(san: String) = next.any { it.move == san }
+    /**
+     * Two Positions are considered equal if
+     * - the same side is to move
+     * - all squares contain the same pieces
+     * - they have equal castling rights
+     * - they have the same en passant square
+     */
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as Position
+
+        if (whiteToMove != other.whiteToMove) return false
+        for (rank in 0..7) {
+            for (file in 0..7) {
+                if (squares[rank][file].piece != other.squares[rank][file].piece) return false
+            }
+        }
+        if (castlingRight != other.castlingRight) return false
+        if (enPassantField != other.enPassantField) return false
+
+        return true
+    }
+
+    /**
+     * The `hashCode` of a  Position is calculated based on
+     * - the side to move
+     * - all squares including their pieces
+     * - castling rights
+     * - en passant square
+     */
+    override fun hashCode(): Int {
+        var result = whiteToMove.hashCode()
+        result = 31 * result + (enPassantField?.hashCode() ?: 0)
+        result = 31 * result + (castlingRight?.hashCode() ?: 0)
+        for (rank in 0..7) {
+            for (file in 0..7) {
+                result = 31 * result + squares[rank][file].hashCode()
+            }
+        }
+        return result
+    }
+
+    override fun toString() = move
 
     // TODO move somewhere else?
-    val moveWithMovenumber: String get() { return "$moveNumber${if (whiteToMove) "..." else "."} $move" }
+//    val moveWithMovenumber: String get() { return "$moveNumber${if (whiteToMove) "..." else "."} $move" }
+    fun moveWithMovenumber() = "$moveNumber${if (whiteToMove) "..." else "."} $move"
+
 }
 
 

@@ -64,8 +64,8 @@ private class PGNParser {
                     }
                 } else {
                     inMovetext = true
-                    if (game.hasTag("FEN")) {
-                        game.startWithFen(game.getTag("FEN") ?: "")
+                    if ("FEN" in game.tags) {
+                        game.startWithFen(game.tags["FEN"] ?: "")
                     }
                     parseMovetext(s)
                 }

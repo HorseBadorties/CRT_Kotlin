@@ -10,9 +10,6 @@ class Square {
     var piece: Piece? = null
 
     constructor(rank: Int, file: Int)  {
-//        require (file in 1..8 && rank in 1..8) {
-//            "Illegal Square: rank:$rank file $file"
-//        }
         _rank = rank.toByte()
         _file = file.toByte()
     }
@@ -54,7 +51,7 @@ class Square {
      */
     override fun equals(other: Any?) = other is Square && this.hashCode() == other.hashCode()
 
-    override fun hashCode() = 10*rank+file
+    override fun hashCode() = 31 * (10 * rank + file) + (piece?.hashCode() ?: 0)
 
 }
 

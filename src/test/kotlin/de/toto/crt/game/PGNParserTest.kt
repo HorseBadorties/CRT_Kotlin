@@ -42,11 +42,10 @@ Qa4 (9... Qb6 10. exf6 gxf6 11. Nf3 d6 12. Be2 Nd7 13. O-O Bh6 14. a4) 10. Qxa4
 Rxa4 11. exf6 gxf6 {[%csl Rd5][%cal Rh8g8,Rg8g2,Ra4a2]} *
 """
         val game = fromPGN(moves).first()
-        game.gotoPosition("6... Qa5")
     }
 
     @Test
-    fun test2() {
+    fun skipInvalidGame() {
         val moves = """
 [Event "20th OIBM 2016"]
 1. d4 Nf6 2. c4 g6 3. Nc3 Bg7 4. e4 d6 5. Nf3 O-O 6. h3 e5 7. d5 Na6 8. Be3 Nh5
@@ -91,4 +90,18 @@ Ra1 Rb5 37. Rxa6 Ke7 38. Ra7+ Kd6 39. Rh7 Rxb6 40. Rxh6+ Ke5 41. Kf2 Kf5
 //        fromPGN(Paths.get("C:\\Users\\Torsten\\Downloads\\2015-2017.pgn"), { count++; true })
         println(count)
     }
+}
+
+fun Position.hasVariation(san: String) = next.any { it.move == san }
+
+fun Game.getPosition(sanWithMoveNumber: String): Position {
+    var result = startPosition()
+    while (result.moveWithMovenumber() != sanWithMoveNumber) {
+        if (!result.hasNext) {
+            throw IllegalArgumentException("move $sanWithMoveNumber does not exist")
+        } else {
+            result = result.next.first()
+        }
+    }
+    return result
 }

@@ -13,7 +13,7 @@ fun Position.createNextFromSAN(san: String, asMainline: Boolean = true): Positio
         next.add(if (asMainline) 0 else next.size, result)
         return result
     } catch (ex: Exception) {
-        throw IllegalArgumentException("failed to parse SAN $san as next move for $moveWithMovenumber", ex)
+        throw IllegalArgumentException("failed to parse SAN $san as next move for ${moveWithMovenumber()}", ex)
     }
 }
 

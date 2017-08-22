@@ -1,4 +1,4 @@
-package de.toto.crt.game
+package de.toto.crt.game.rules
 
 import de.toto.crt.game.rules.Piece
 import org.junit.Test

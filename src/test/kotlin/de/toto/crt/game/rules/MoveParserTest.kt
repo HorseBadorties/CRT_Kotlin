@@ -1,5 +1,6 @@
-package de.toto.crt.game
+package de.toto.crt.game.rules
 
+import de.toto.crt.game.Position
 import de.toto.crt.game.rules.*
 import org.junit.Test
 
@@ -126,7 +127,7 @@ class MoveParserTest {
 
 }
 
-private fun Position.createNextFromSANs(moves: String): Position {
+fun Position.createNextFromSANs(moves: String): Position {
     var result = this
     for (move in moves.split(" ")) {
         result = result.createNextFromSAN(move.removeMoveNumber())

@@ -1,14 +1,49 @@
 package de.toto.crt.game
 
-import de.toto.crt.game.rules.FEN_EMPTY_BOARD
-import de.toto.crt.game.rules.FEN_STARTPOSITION
-import de.toto.crt.game.rules.Piece
-import de.toto.crt.game.rules.fromFEN
+import de.toto.crt.game.rules.*
 import org.junit.Test
 
 import org.junit.Assert.*
 
 class PositionTest {
+
+    @Test
+    fun equal() {
+        assertEquals(fromFEN(FEN_EMPTY_BOARD), fromFEN(FEN_EMPTY_BOARD))
+        assertEquals(fromFEN(FEN_STARTPOSITION), fromFEN(FEN_STARTPOSITION))
+        // equal position after repetition
+        assertEquals(
+                fromFEN(FEN_STARTPOSITION).createNextFromSANs("1.e4 e5 2.Qe2"),
+                fromFEN(FEN_STARTPOSITION).createNextFromSANs("1.e4 e5 2.Qe2 Qe7 3.Qd1 Qd8 4.Qe2"))
+    }
+
+    @Test
+    fun notEqual() {
+        assertNotEquals(fromFEN(FEN_EMPTY_BOARD), fromFEN(FEN_STARTPOSITION))
+        assertNotEquals(fromFEN(FEN_EMPTY_BOARD), null)
+        // different side to move:
+        assertNotEquals(
+                fromFEN(FEN_STARTPOSITION).createNextFromSANs("1.e4 e5 2.Qe2"),
+                fromFEN(FEN_STARTPOSITION).createNextFromSANs("1.e4 e5 2.Qf3 Qe7 3.Qe2 Qd8"))
+        // different castling rights:
+        assertNotEquals(
+                fromFEN(FEN_STARTPOSITION).createNextFromSANs("1.e4 e5 2.Nf3 Nf6 3.Bc4 Bc5"),
+                fromFEN(FEN_STARTPOSITION).createNextFromSANs("1.e4 e5 2.Nf3 Nf6 3.Bc4 Bc5 4.Ke2 Qe7 5.Ke1 Qd8"))
+        // different en passant fields
+        assertNotEquals(
+                fromFEN(FEN_STARTPOSITION).createNextFromSANs("1.e4 d5 2.Nf3 d4 3.c4"),
+                fromFEN(FEN_STARTPOSITION).createNextFromSANs("1.e4 d5 2.Nf3 d4 3.c4 Qd7 4.Qe2 Qd8 5.Qd1"))
+    }
+
+
+    @Test
+    fun testHashCode() {
+        assertEquals(fromFEN(FEN_EMPTY_BOARD).hashCode(), fromFEN(FEN_EMPTY_BOARD).hashCode())
+        assertEquals(fromFEN(FEN_STARTPOSITION).hashCode(), fromFEN(FEN_STARTPOSITION).hashCode())
+        assertNotEquals(fromFEN(FEN_EMPTY_BOARD).hashCode(), fromFEN(FEN_STARTPOSITION).hashCode())
+        assertEquals(fromFEN(FEN_STARTPOSITION).createNextFromSANs("1.e4 e5 2.Qe2").hashCode(),
+                fromFEN(FEN_STARTPOSITION).createNextFromSANs("1.e4 e5 2.Qe2 Qe7 3.Qd1 Qd8 4.Qe2").hashCode())
+    }
 
     @Test
     fun constructorWithFen() {
@@ -25,10 +60,10 @@ class PositionTest {
 
     @Test
     fun square() {
-        assertTrue(Position().square(1, 1).name == "a1")
-        assertTrue(Position().square(1, 8).name == "h1")
-        assertTrue(Position().square(2, 1).name == "a2")
-        assertTrue(Position().square(3, 8).name == "h3")
+        assertEquals(Position().square(1, 1).name, "a1")
+        assertEquals(Position().square(1, 8).name, "h1")
+        assertEquals(Position().square(2, 1).name, "a2")
+        assertEquals(Position().square(3, 8).name, "h3")
     }
 
     @Test

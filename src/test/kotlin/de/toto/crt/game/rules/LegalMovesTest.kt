@@ -1,5 +1,7 @@
-package de.toto.crt.game
+package de.toto.crt.game.rules
 
+import de.toto.crt.game.Pos
+import de.toto.crt.game.Position
 import de.toto.crt.game.rules.*
 import org.junit.Test
 
