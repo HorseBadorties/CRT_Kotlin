@@ -2,7 +2,7 @@ group 'CRT_Kotlin'
 version '1.0-SNAPSHOT'
 
 buildscript {
-    ext.kotlin_version = '1.1.4-release-IJ2017.2-2'
+    ext.kotlin_version = '1.1.4'
 
     repositories {
         mavenCentral()
@@ -24,6 +24,7 @@ repositories {
 
 dependencies {
 
+    compile group: 'com.metsci.ext.com.kitfox.svg', name: 'svg-salamander', version: '0.1.19'
     compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
 
     testCompile group: 'junit', name: 'junit', version: '4.12'
