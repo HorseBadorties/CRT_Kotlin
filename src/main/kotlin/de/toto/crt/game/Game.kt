@@ -4,6 +4,7 @@ import de.toto.crt.game.rules.FEN_STARTPOSITION
 
 import de.toto.crt.game.rules.createNextFromSAN
 import de.toto.crt.game.rules.fromFEN
+import java.util.*
 
 class Game {
 
@@ -53,6 +54,25 @@ class Game {
         currentPosition = startPosition()
         return currentPosition
     }
+
+    /**
+     * Return the first Position that matches the `predicate`,
+     * or `null` if no match was found
+     */
+    fun get(predicate: (Position) -> Boolean): Position? {
+        val queue = LinkedList<Position>()
+        queue.add(startPosition())
+        while (!queue.isEmpty()) {
+            val p = queue.poll()
+            if (predicate(p)) return p
+            for (n in p.next) {
+                queue.add(n)
+            }
+        }
+        return null
+    }
+
+    fun contains(pos: Position):Boolean = get { it == pos } != null
 
     fun mergeIn(otherGame: Game) {
         var ourPos = startPosition()

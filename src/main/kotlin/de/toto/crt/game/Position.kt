@@ -3,6 +3,7 @@ package de.toto.crt.game
 import de.toto.crt.game.rules.CastlingRight
 import de.toto.crt.game.rules.NAG
 import de.toto.crt.game.rules.Square
+import java.util.*
 
 class Position(
     val move: String = "", // as SAN, or "" for the starting position or "--" for a null move
@@ -66,6 +67,23 @@ class Position(
     }
 
     val hasNext: Boolean  get() { return !next.isEmpty() }
+
+    /**
+     * Returns a breadth-first ordered Set of all following Positions with all their variations.
+     */
+    fun breadthFirst(): Set<Position> {
+        val queue = LinkedList<Position>()
+        val result = mutableSetOf<Position>()
+        queue.add(this)
+        while (!queue.isEmpty()) {
+            val p = queue.poll()
+            if (p !== this) result.add(p)
+            for (n in p.next) {
+                if (n !in result) queue.add(n)
+            }
+        }
+        return result
+    }
 
     /**
      * Two Positions are considered equal if
