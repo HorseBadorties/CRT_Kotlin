@@ -19,9 +19,9 @@ class PGNParserTest {
 4... Qa5+ 5. Nc3 (5. Bd2 b4) (5. Nd2 bxc4 6. Bxc4 Ba6) 5... b4 6. Nce2 *
 """
         with (fromPGN(moves).first()) {
-            assertTrue(this.getPosition("4... Qa5+").hasVariation("Nd2"))
-            assertTrue(this.getPosition("4... Qa5+").hasVariation("Nc3"))
-            assertTrue(this.getPosition("4... Qa5+").hasVariation("Bd2"))
+            assertTrue(this.getPosition("4...Qa5+").hasVariation("Nd2"))
+            assertTrue(this.getPosition("4...Qa5+").hasVariation("Nc3"))
+            assertTrue(this.getPosition("4...Qa5+").hasVariation("Bd2"))
             false
         }
 
@@ -87,7 +87,7 @@ Ra1 Rb5 37. Rxa6 Ke7 38. Ra7+ Kd6 39. Rh7 Rxb6 40. Rxh6+ Ke5 41. Kf2 Kf5
     fun testBig() {
         var count = 0
 //        fromPGN(Paths.get("C:\\Users\\080064\\Downloads\\twic_BULK.pgn"), { count++; true })
-//        fromPGN(Paths.get("C:\\Users\\Torsten\\Downloads\\2015-2017.pgn"), { count++; true })
+        fromPGN(Paths.get("C:\\Users\\Torsten\\Downloads\\2015-2017.pgn"), { count++; true })
         println(count)
     }
 }

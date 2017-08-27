@@ -14,8 +14,8 @@ import java.awt.image.BufferedImage
 
 class SVGSalamanderTest: Application() {
 
-    val size = 1100
-    val image = "/images/pieces/merida/wR.svg"
+    val size = 150
+    val image = "/images/pieces/merida/wQ.svg"
 
     override fun start(stage: Stage?) {
         stage?.title = "SVGSalamanderTest-JavaFX"

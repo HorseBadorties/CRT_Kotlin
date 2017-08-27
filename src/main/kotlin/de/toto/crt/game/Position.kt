@@ -69,19 +69,36 @@ class Position(
     val hasNext: Boolean  get() { return !next.isEmpty() }
 
     /**
-     * Returns a breadth-first ordered Set of all following Positions with all their variations.
+     * Returns a breadth-first ordered List of all following Positions with all their variations.
      */
-    fun breadthFirst(): Set<Position> {
+    fun breadthFirst(): List<Position> {
         val queue = LinkedList<Position>()
-        val result = mutableSetOf<Position>()
+        val result = mutableListOf<Position>()
         queue.add(this)
         while (!queue.isEmpty()) {
             val p = queue.poll()
             if (p !== this) result.add(p)
-            for (n in p.next) {
-                if (n !in result) queue.add(n)
+            p.next.filterTo(queue) { it !in result }
+        }
+        return result
+    }
+
+    /**
+     * Returns a preorder depth-first List of all following Positions with all their variations.
+     */
+    fun preOrderDepthFirst(filter: (Position) -> Boolean = { true }): List<Position> {
+        val result = mutableListOf<Position>()
+
+        fun preOrder(pos: Position) {
+            pos.next.forEach {
+                if (filter(it)) {
+                    result.add(it)
+                    preOrder(it)
+                }
             }
         }
+
+        preOrder(this)
         return result
     }
 
@@ -133,7 +150,7 @@ class Position(
 
     // TODO move somewhere else?
 //    val moveWithMovenumber: String get() { return "$moveNumber${if (whiteToMove) "..." else "."} $move" }
-    fun moveWithMovenumber() = "$moveNumber${if (whiteToMove) "..." else "."} $move"
+    fun moveWithMovenumber() = "$moveNumber${if (whiteToMove) "..." else "."}$move"
 
 }
 

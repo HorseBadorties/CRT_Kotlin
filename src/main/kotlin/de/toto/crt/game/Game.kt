@@ -95,4 +95,14 @@ class Game {
         }
     }
 
+    fun mergeIn2(otherGame: Game) {
+        fun find(pos: Position?) = get { it == pos }
+
+        otherGame.startPosition().breadthFirst().forEach {
+            if (!contains(it)) {
+                find(it.previous)?.next?.add(it)
+            }
+        }
+    }
+
 }
