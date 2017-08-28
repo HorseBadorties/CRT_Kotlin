@@ -4,9 +4,12 @@ import com.kitfox.svg.SVGUniverse
 import com.kitfox.svg.app.beans.SVGIcon
 import de.toto.crt.game.Position
 import javafx.embed.swing.SwingFXUtils
+import javafx.event.EventType
 import javafx.scene.canvas.Canvas
-import javafx.scene.canvas.GraphicsContext
 import javafx.scene.image.Image
+import javafx.scene.image.WritableImage
+import javafx.scene.input.ClipboardContent
+import javafx.scene.input.TransferMode
 import javafx.scene.layout.Pane
 import javafx.scene.paint.Color
 import java.awt.Dimension
@@ -14,23 +17,70 @@ import java.awt.image.BufferedImage
 
 
 
-class SquareData(var topLeft: Pair<Double, Double>, val isWhite: Boolean)
+class SquareData(
+    var rank: Int,
+    var file: Int,
+    var top: Double,
+    var left: Double,
+    val isWhite: Boolean,
+    var image: Image?)
 
 class ChessBoard : Pane() {
 
     private var position: Position = Position()
     private val canvas = Canvas()
-    private var boardImageScaled: Image? = null
     private val pieceIcons = loadPieces()
     private val scaledPieces = mutableMapOf<String, Image>()
     private val squareData = mutableMapOf<Pair<Int, Int>, SquareData>()
+    private var dragging = false
+    private var dragSquare: SquareData? = null
+    private var dropSquare: SquareData? = null
 
     init {
+        canvas.setOnDragDetected { e ->
+            println("DragDetected on ${rankAndFileAt(e.sceneX, e.sceneY)}")
+            val dragboard = canvas.startDragAndDrop(*TransferMode.ANY)
+            val content = ClipboardContent()
+            content.putString("foo")
+            dragboard.setContent(content)
+            dragging = true
+            val rankAndFile = rankAndFileAt(e.sceneX, e.sceneY)
+            dragSquare = squareData[rankAndFile]
+            drawSquare(dragSquare!!.rank, dragSquare!!.file)
+            e.consume()
+        }
+        canvas.setOnDragOver { e ->
+            e.acceptTransferModes(*TransferMode.ANY);
+            e.consume();
+            val rankAndFile = rankAndFileAt(e.sceneX, e.sceneY)
+            val formerDropSquare = dropSquare
+            dropSquare = squareData[rankAndFile]
+            if (formerDropSquare != dropSquare) {
+                if (formerDropSquare != null) {
+                    drawSquare(formerDropSquare.rank, formerDropSquare.file)
+                }
+                drawSquare(dropSquare!!.rank, dropSquare!!.file)
+            }
+        }
+        canvas.setOnDragDropped { e ->
+            println("Dropped on ${rankAndFileAt(e.sceneX, e.sceneY)}")
+            e.isDropCompleted = true
+            e.consume()
+        }
+        canvas.setOnDragDone { e ->
+            dragging = false
+            dragSquare = null
+            dropSquare = null
+            draw()
+            e.consume()
+        }
+
         children.add(canvas)
         for (rank in 0..7) {
             for (file in 0..7) {
                 val square = position.squares[rank][file]
-                squareData.put(Pair(rank, file), SquareData(Pair(0.0, 0.0), square.isWhite))
+                squareData.put(Pair(rank, file),
+                        SquareData(rank, file, 0.0, 0.0, square.isWhite, null))
             }
         }
     }
@@ -43,93 +93,128 @@ class ChessBoard : Pane() {
     }
 
     override fun layoutChildren() {
-        val size = Math.min(width, height)
+        // our size has to be always divisible by 8
+        var s = Math.min(width, height).toInt()
+        while (s % 8 != 0) s--
+        val size = s.toDouble()
         if (size > 0 && size != canvas.width) {
             canvas.width = size
             canvas.height = width
-            scalePieces()
-        }
-        val squareSize = squareSize()
-        for (rank in 0..7) {
-            for (file in 0..7) {
-                val x = file * squareSize
-                val y = canvas.width - (rank+1) * squareSize
-                squareData[Pair(rank, file)]?.topLeft = Pair(x, y)
+            scaleAll()
+            for (rank in 0..7) {
+                for (file in 0..7) {
+                    val x = file * squareSize
+                    val y = canvas.width - (rank+1) * squareSize
+                    with (squareData[Pair(rank, file)]!!) {
+                        top = x
+                        left = y
+                    }
+                }
             }
         }
         draw()
     }
 
+    /**
+     * 1. square background
+     * 2. square coordinates
+     * 3. colored squares of last move
+     * 4. colored squares of highlights
+     * 5. pieces
+     * 6. D&D squares highlight
+     * 7. D&D piece
+     * 8. arrows
+     */
     private fun draw() {
-        val squareSize = squareSize()
-        with (canvas.graphicsContext2D) {
-
-            if (boardImageScaled != null) {
-                drawImage(boardImageScaled, 0.0, 0.0)
+        for (rank in 0..7) {
+            for (file in 0..7) {
+                drawSquare(rank, file)
             }
-            for (rank in 0..7) {
-                for (file in 0..7) {
-                    val squareData = squareData[Pair(rank, file)]
-                    val (x, y) = squareData!!.topLeft
-                    if (boardImageScaled == null) {
-                        // draw squares
-                        fill = if (squareData.isWhite) Color.LIGHTGREY else Color.GRAY
-                        fillRect(x, y, squareSize, squareSize)
-                    }
-                    // draw pieces
-                    position.squares[rank][file].piece?.let {
-//                        val image = scaledPieces[it.fenChar.toString()]
-//                        if (image != null) {
-//                            render(this, image,
-//                                    0, 0, squareSize.toInt(), squareSize.toInt(), x.toInt(), y.toInt())
-//                        }
-                        drawImage(scaledPieces[it.fenChar.toString()], x, y)
-                    }
+        }
+    }
+
+    private fun drawSquare(rank: Int, file: Int) {
+        with (canvas.graphicsContext2D) {
+            val squareData = squareData[Pair(rank, file)]
+            val x = squareData!!.top
+            val y = squareData.left
+            // draw squares
+            if (squareData.image != null) {
+                drawImage(squareData.image, x, y)
+            } else {
+                colorSquare(x, y, if (squareData.isWhite) Color.LIGHTGREY else Color.GRAY)
+            }
+            // drag square
+            if (squareData === dragSquare || squareData === dropSquare) {
+                colorSquare(x, y, Color.YELLOW, 0.4)
+            }
+            // draw pieces
+            if (squareData !== dragSquare) {
+                position.squares[rank][file].piece?.let {
+                    drawImage(scaledPieces[it.fenChar.toString()], x, y)
                 }
             }
         }
     }
 
-    private fun squareSize() = canvas.width / 8
+    private fun colorSquare(x: Double, y: Double, color: Color, alpha: Double = 1.0) {
+        with (canvas.graphicsContext2D) {
+            globalAlpha = alpha
+            fill = color
+            fillRect(x, y, squareSize, squareSize)
+            globalAlpha = 1.0
+        }
+    }
+
+    private fun rankAndFileAt(x: Double, y: Double): Pair<Int, Int> {
+        val rank = 8 - y / squareSize
+        val file = x / squareSize
+        return Pair(rank.toInt(), file.toInt())
+    }
+
+    private var squareSize = canvas.width / 8
 
     private fun loadPieces(): Map<String, SVGIcon> {
 
+        // "wK" -> "K"; "bK" -> "k"
         fun toFen(str: String) = if (str.first() == 'w') str.drop(1) else str.drop(1).toLowerCase()
 
         return listOf("wK", "wQ", "wR", "wB", "wN", "wP", "bK", "bQ", "bR", "bB", "bN", "bP").associate {
             val svgUniverse = SVGUniverse()
             val svgIcon = SVGIcon()
             svgIcon.svgURI = svgUniverse.loadSVG(javaClass.getResource("/images/pieces/merida/$it.svg"))
+            svgIcon.isScaleToFit = true
+            svgIcon.antiAlias = true
             Pair(toFen(it), svgIcon)
         }
     }
 
-    private fun scalePieces() {
-//        boardImageScaled = Image("/images/board/maple.jpg", canvas.width, canvas.width, true, true)
+    private fun scaleAll() {
+        squareSize = canvas.width / 8
+        val squareSizeInt = squareSize.toInt()
+        try {
+            val imgFile = "maple.jpg"
+            val boardImageScaled = Image("/images/board/$imgFile", canvas.width, canvas.width, true, true)
+            for (rank in 0..7) {
+                for (file in 0..7) {
+                    val x = file * squareSizeInt
+                    val y = canvas.width.toInt() - (rank + 1) * squareSizeInt
+                    squareData[Pair(rank, file)]?.image =
+                            WritableImage(boardImageScaled.pixelReader, x, y, squareSizeInt, squareSizeInt)
+                }
+            }
+        } catch (ex:  Exception) {
+            ex.printStackTrace()
+        }
+
         scaledPieces.clear()
-        val size = squareSize().toInt()
         for ((name, icon) in pieceIcons) {
-            val bufferedAWTImage = BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB_PRE)
+            val bufferedAWTImage = BufferedImage(squareSizeInt, squareSizeInt, BufferedImage.TYPE_INT_ARGB)
             val awtGraphics = bufferedAWTImage.createGraphics()
-            icon.isScaleToFit = true
-            icon.antiAlias = true
-            icon.preferredSize = Dimension(size, size)
+            icon.preferredSize = Dimension(squareSizeInt, squareSizeInt)
             icon.paintIcon(null, awtGraphics, 0, 0)
             awtGraphics.dispose()
             scaledPieces.put(name, SwingFXUtils.toFXImage(bufferedAWTImage, null))
-        }
-    }
-
-    fun render(context: GraphicsContext, image: Image, sx: Int, sy: Int, sw: Int, sh: Int, tx: Int, ty: Int) {
-        val reader = image.pixelReader
-        val writer = context.pixelWriter
-        for (x in 0..sw - 1) {
-            for (y in 0..sh - 1) {
-                val color = reader.getColor(sx + x, sy + y)
-                if (color.isOpaque) {
-                    writer.setColor(tx + x, ty + y, color)
-                }
-            }
         }
     }
 

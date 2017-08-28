@@ -1,41 +1,45 @@
 package de.toto.crt.game.gui.javafx
 
-import de.toto.crt.game.gui.swing.ChessBoard
+import de.toto.crt.game.fromPGN
 import de.toto.crt.game.rules.FEN_STARTPOSITION
 import de.toto.crt.game.rules.fromFEN
 import javafx.application.Application
-import javafx.embed.swing.SwingNode
 import javafx.scene.Scene
 import javafx.scene.layout.BorderPane
 import javafx.stage.Stage
-import java.awt.Dimension
-import javax.swing.SwingUtilities
+import java.nio.file.Paths
+import javafx.scene.input.KeyCode
+import javafx.scene.input.KeyCodeCombination
+import javafx.scene.input.KeyCombination
+
 
 fun main(args: Array<String>) {
     Application.launch(App::class.java, *args)
 }
 
-
 class App: Application() {
 
+    val pane = BorderPane()
+    val board = ChessBoard()
+    val game = fromPGN(Paths.get(javaClass.getResource("/pgn/Repertoire_Black.pgn").toURI()))[0]
+
     override fun start(stage: Stage?) {
-        stage?.title = "JavaFX-Tester"
-        val border = BorderPane()
+        stage?.title = "JavaFX-Tester with FX ChessBoard"
 
-//        val board = ChessBoard()
-//        board.setPosition(fromFEN(FEN_STARTPOSITION))
-//        border.center = board
 
-        val swingNode = SwingNode()
-        val board = ChessBoard()
-        board.setPosition(fromFEN(FEN_STARTPOSITION))
-        board.preferredSize = Dimension(1600,1600)
-        board.rescale()
-        swingNode.content = board
-        border.center = swingNode
+        board.setPosition(game.gotoStartPosition())
+        pane.center = board
 
-        stage?.scene = Scene(border, 800.0, 800.0)
-        println("${border.boundsInLocal},${border.boundsInParent}")
+        val scene = Scene(pane, 800.0, 800.0)
+        with (scene.getAccelerators()) {
+            put(KeyCodeCombination(KeyCode.LEFT, KeyCombination.SHORTCUT_DOWN), Runnable {
+                    board.setPosition(game.back())
+            })
+            put(KeyCodeCombination(KeyCode.RIGHT, KeyCombination.SHORTCUT_DOWN ), Runnable {
+                board.setPosition(game.next())
+            })
+        }
+        stage?.scene = scene
         stage?.show()
     }
 
