@@ -5,6 +5,7 @@ import com.kitfox.svg.app.beans.SVGIcon
 import de.toto.crt.game.Position
 import javafx.embed.swing.SwingFXUtils
 import javafx.event.EventType
+import javafx.geometry.Point2D
 import javafx.scene.canvas.Canvas
 import javafx.scene.image.Image
 import javafx.scene.image.WritableImage
@@ -30,37 +31,37 @@ class ChessBoard : Pane() {
     private var position: Position = Position()
     private val canvas = Canvas()
     private val pieceIcons = loadPieces()
-    private val scaledPieces = mutableMapOf<String, Image>()
+    private val scaledPieces = mutableMapOf<Char, Image>()
     private val squareData = mutableMapOf<Pair<Int, Int>, SquareData>()
-    private var dragging = false
     private var dragSquare: SquareData? = null
+    private var dragImage: Image? = null
     private var dropSquare: SquareData? = null
+    private val dragAffectedSquares = mutableSetOf<Pair<Int, Int>>()
 
     init {
         canvas.setOnDragDetected { e ->
-            println("DragDetected on ${rankAndFileAt(e.sceneX, e.sceneY)}")
-            val dragboard = canvas.startDragAndDrop(*TransferMode.ANY)
-            val content = ClipboardContent()
-            content.putString("foo")
-            dragboard.setContent(content)
-            dragging = true
             val rankAndFile = rankAndFileAt(e.sceneX, e.sceneY)
-            dragSquare = squareData[rankAndFile]
-            drawSquare(dragSquare!!.rank, dragSquare!!.file)
+            val piece = position.squares[rankAndFile.first][rankAndFile.second].piece
+            if (piece != null) {
+                val dragboard = canvas.startDragAndDrop(*TransferMode.ANY)
+                val content = ClipboardContent()
+                content.putString("")
+                dragboard.setContent(content)
+                e.consume()
+                dragSquare = squareData[rankAndFile]
+                dragImage = scaledPieces[piece.fenChar]
+                drawDropPiece(Point2D(e.sceneX, e.sceneY))
+            }
             e.consume()
         }
         canvas.setOnDragOver { e ->
-            e.acceptTransferModes(*TransferMode.ANY);
-            e.consume();
             val rankAndFile = rankAndFileAt(e.sceneX, e.sceneY)
-            val formerDropSquare = dropSquare
-            dropSquare = squareData[rankAndFile]
-            if (formerDropSquare != dropSquare) {
-                if (formerDropSquare != null) {
-                    drawSquare(formerDropSquare.rank, formerDropSquare.file)
-                }
-                drawSquare(dropSquare!!.rank, dropSquare!!.file)
+            if (rankAndFile.first in 0..7 && rankAndFile.second in 0..7) {
+                e.acceptTransferModes(*TransferMode.ANY)
+                dropSquare = squareData[rankAndFile]
+                drawDropPiece(Point2D(e.sceneX, e.sceneY))
             }
+            e.consume()
         }
         canvas.setOnDragDropped { e ->
             println("Dropped on ${rankAndFileAt(e.sceneX, e.sceneY)}")
@@ -68,11 +69,8 @@ class ChessBoard : Pane() {
             e.consume()
         }
         canvas.setOnDragDone { e ->
-            dragging = false
-            dragSquare = null
-            dropSquare = null
-            draw()
             e.consume()
+            drawDropPiece(null)
         }
 
         children.add(canvas)
@@ -151,9 +149,35 @@ class ChessBoard : Pane() {
             // draw pieces
             if (squareData !== dragSquare) {
                 position.squares[rank][file].piece?.let {
-                    drawImage(scaledPieces[it.fenChar.toString()], x, y)
+                    drawImage(scaledPieces[it.fenChar], x, y)
                 }
             }
+        }
+    }
+
+    private fun drawDropPiece(point: Point2D?) {
+        dragAffectedSquares.forEach {
+            drawSquare(it.first, it.second)
+        }
+        dragAffectedSquares.clear()
+        if (point != null) {
+            canvas.graphicsContext2D.drawImage(dragImage, point.x - squareSize / 2, point.y - squareSize / 2)
+            with (dragAffectedSquares) {
+                add(rankAndFileAt(point.x - squareSize / 2, point.y - squareSize / 2))
+                add(rankAndFileAt(point.x - squareSize / 2 + squareSize, point.y - squareSize / 2))
+                add(rankAndFileAt(point.x - squareSize / 2 + squareSize, point.y - squareSize / 2 + squareSize))
+                add(rankAndFileAt(point.x - squareSize / 2, point.y - squareSize / 2 + squareSize))
+            }
+        } else {
+            dragImage = null
+            val dragRank = dragSquare!!.rank
+            val dragFile = dragSquare!!.file
+            val dropRank = dropSquare!!.rank
+            val dropFile = dropSquare!!.file
+            dragSquare = null
+            dropSquare = null
+            drawSquare(dragRank, dragFile)
+            drawSquare(dropRank, dropFile)
         }
     }
 
@@ -174,10 +198,10 @@ class ChessBoard : Pane() {
 
     private var squareSize = canvas.width / 8
 
-    private fun loadPieces(): Map<String, SVGIcon> {
+    private fun loadPieces(): Map<Char, SVGIcon> {
 
-        // "wK" -> "K"; "bK" -> "k"
-        fun toFen(str: String) = if (str.first() == 'w') str.drop(1) else str.drop(1).toLowerCase()
+        // "wK" -> 'K'; "bK" -> 'k'
+        fun toFen(str: String): Char = if (str.first() == 'w') str.drop(1)[0] else str.drop(1).toLowerCase()[0]
 
         return listOf("wK", "wQ", "wR", "wB", "wN", "wP", "bK", "bQ", "bR", "bB", "bN", "bP").associate {
             val svgUniverse = SVGUniverse()
