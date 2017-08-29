@@ -11,7 +11,7 @@ class Position(
     val enPassantField: String? = null,
     val halfMoveCount: Int = 0,
     val moveNumber: Int = 0,
-    val previous: Position? = null,
+    var previous: Position? = null,
     val variationLevel: Int = 0
 ) {
 

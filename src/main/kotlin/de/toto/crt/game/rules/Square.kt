@@ -44,7 +44,7 @@ class Square {
     /**
      * e.g. "a1 black"
      */
-    override fun toString() = "$nameWithPieceFigurine, ${if (isWhite) "isWhite" else "black"} "
+    override fun toString() = name
 
     /**
      * A Square equals another Square if they have the same coordinates.

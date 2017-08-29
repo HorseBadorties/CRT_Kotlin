@@ -54,13 +54,6 @@ class GameTest {
         println(repertoire.startPosition().breadthFirst().size)
     }
 
-    @Test
-    fun mergeIn2() {
-        val games = fromPGN(Paths.get(javaClass.getResource("/pgn/Repertoire_Black.pgn").toURI()))
-        val repertoire = games.first()
-        games.forEach { if (it !== repertoire) repertoire.mergeIn2(it) }
-        println(repertoire.startPosition().breadthFirst().size)
-    }
 
     @Test
     fun contains() {
@@ -74,7 +67,7 @@ class GameTest {
     fun mergeInVariation() {
         val game1 = fromPGN("e4 e5 Nf3 Nc6 Bb5 a6 *")[0]
         val game2 = fromPGN("1.e4 e5 2.Nf3 Nc6 (2..Nf6 3.Nxe5) 3.Bb5 Nf6 *")[0]
-        game1.mergeIn2(game2)
+        game1.mergeIn(game2)
         assertEquals(game1.pos("Nf3")?.next?.size, 2)
         assertEquals(game2.pos("3...Nf6")?.next?.size, 0)
     }

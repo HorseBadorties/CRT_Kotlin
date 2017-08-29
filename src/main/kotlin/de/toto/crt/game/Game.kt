@@ -13,20 +13,23 @@ class Game {
     var currentPosition: Position = fromFEN(FEN_STARTPOSITION)
         private set
 
-    fun startVariation() = back()
+    fun startVariation(): Position {
+        currentPosition = currentPosition.previous ?: currentPosition
+        return currentPosition
+    }
 
     fun endVariation(): Position {
         // find previous with variationLevel - 1 and then to his next in main line
         while (currentPosition.variationLevel == currentPosition.previous?.variationLevel) {
-            back()
+            currentPosition = currentPosition.previous ?: currentPosition
         }
-        back()
-        return next()
+        currentPosition = currentPosition.previous ?: currentPosition
+        currentPosition = currentPosition.next.first()
+        return currentPosition
     }
 
     fun startWithFen(fen: String): Position {
-        currentPosition = fromFEN(fen)
-        return currentPosition
+        return gotoPosition(fromFEN(fen))
     }
 
     fun addMove(san: String, asMainline: Boolean = !currentPosition.hasNext): Position {
@@ -35,13 +38,11 @@ class Game {
     }
 
     fun back(): Position {
-        currentPosition = currentPosition.previous ?: currentPosition
-        return currentPosition
+        return gotoPosition(currentPosition.previous ?: currentPosition)
     }
 
     fun next(): Position {
-        currentPosition = if (currentPosition.hasNext) currentPosition.next.first() else currentPosition
-        return currentPosition
+        return gotoPosition(if (currentPosition.hasNext) currentPosition.next.first() else currentPosition)
     }
 
     fun startPosition(): Position {
@@ -51,9 +52,15 @@ class Game {
     }
 
     fun gotoStartPosition(): Position {
-        currentPosition = startPosition()
+        return gotoPosition(startPosition())
+    }
+
+    fun gotoPosition(pos: Position): Position {
+        currentPosition = pos
+        println("currentPosition $currentPosition - previous ${currentPosition.previous} - next ${currentPosition.next}")
         return currentPosition
     }
+
 
     /**
      * Return the first Position that matches the `predicate`,
@@ -75,32 +82,13 @@ class Game {
     fun contains(pos: Position):Boolean = get { it == pos } != null
 
     fun mergeIn(otherGame: Game) {
-        var ourPos = startPosition()
-        var otherPos = otherGame.startPosition()
-
-        while (otherPos.hasNext) {
-            otherPos = otherPos.next.first()
-            val idx = ourPos.next.indexOf(otherPos)
-            if (idx > -1) {
-                ourPos = ourPos.next[idx]
-            } else {
-                for (otherVariation in otherPos.previous!!.next) {
-                    if (otherVariation !in ourPos.next) {
-                        ourPos.next.add(otherVariation)
-                        otherVariation.comment = otherGame.toString()
-                    }
-                }
-                break
-            }
-        }
-    }
-
-    fun mergeIn2(otherGame: Game) {
         fun find(pos: Position?) = get { it == pos }
 
-        otherGame.startPosition().breadthFirst().forEach {
-            if (!contains(it)) {
-                find(it.previous)?.next?.add(it)
+        otherGame.startPosition().breadthFirst().forEach { otherPos ->
+            if (!contains(otherPos)) {
+                val ourPos = find(otherPos.previous)
+                ourPos?.next?.add(otherPos)
+                otherPos.previous = ourPos
             }
         }
     }
