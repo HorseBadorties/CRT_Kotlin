@@ -19,8 +19,7 @@ import java.awt.image.BufferedImage
 
 private class SquareData(
     val square: Square,
-    var top: Double,
-    var left: Double,
+    var topLeft: Point2D,
     var scaledImage: Image?)
 
 class ChessBoard : Region() {
@@ -90,7 +89,7 @@ class ChessBoard : Region() {
         val result = mutableListOf<SquareData>()
         for (rank in 1..8) {
             for (file in 1..8) {
-                result.add(SquareData(Square(rank, file), 0.0, 0.0, null))
+                result.add(SquareData(Square(rank, file), Point2D(0.0, 0.0), null))
             }
         }
         return result.toList()
@@ -117,8 +116,7 @@ class ChessBoard : Region() {
                     val x = (file-1) * squareSize
                     val y = canvas.width - rank * squareSize
                     squareDataOf(rank, file).let {
-                        it.top = x.toDouble()
-                        it.left = y
+                        it.topLeft = Point2D(x.toDouble(),y)
                     }
                 }
             }
@@ -152,8 +150,8 @@ class ChessBoard : Region() {
      */
     private fun drawSquare(rank: Int, file: Int) {
         squareDataOf(rank, file).let {
-            val x = it.top
-            val y = it.left
+            val x = it.topLeft.x
+            val y = it.topLeft.y
             // 1. square background
             if (it.scaledImage != null) {
                 canvas.graphicsContext2D.drawImage(it.scaledImage, x, y)
@@ -227,6 +225,14 @@ class ChessBoard : Region() {
         val rank = 8 - y.toInt() / squareSize
         val file = x.toInt() / squareSize + 1
         return Square(rank, file)
+    }
+
+    // for TestFX
+    fun squareCenter(square: Square): Point2D {
+
+        with (squareDataOf(square)) {
+            return Point2D(topLeft.x + squareSize / 2, topLeft.y + squareSize / 2)
+        }
     }
 
     private fun loadPieces(): Map<Char, SVGIcon> {

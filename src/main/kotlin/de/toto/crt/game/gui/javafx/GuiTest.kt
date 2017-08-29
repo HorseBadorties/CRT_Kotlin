@@ -36,7 +36,7 @@ class App: Application() {
 
         board.setPosition(game.gotoStartPosition())
         board.addListener(object: ChessBoardListener {
-            override fun squareClicked(square: Square) {}
+            override fun squareClicked(square: Square) = println("User clicked sqaure $square")
 
             override fun moveIssued(from: Square, to: Square) {
                 val pos = game.currentPosition.next.firstOrNull { it.move.contains(to.name) }
@@ -48,10 +48,10 @@ class App: Application() {
 
         val scene = Scene(pane, 800.0, 800.0)
         with (scene.getAccelerators()) {
-            put(KeyCodeCombination(KeyCode.LEFT, KeyCombination.SHORTCUT_DOWN), Runnable {
+            put(KeyCodeCombination(KeyCode.LEFT), Runnable {
                     board.setPosition(game.back())
             })
-            put(KeyCodeCombination(KeyCode.RIGHT, KeyCombination.SHORTCUT_DOWN ), Runnable {
+            put(KeyCodeCombination(KeyCode.RIGHT), Runnable {
                 board.setPosition(game.next())
             })
         }

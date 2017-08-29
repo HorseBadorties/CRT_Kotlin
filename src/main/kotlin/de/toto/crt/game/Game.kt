@@ -57,7 +57,6 @@ class Game {
 
     fun gotoPosition(pos: Position): Position {
         currentPosition = pos
-        println("currentPosition $currentPosition - previous ${currentPosition.previous} - next ${currentPosition.next}")
         return currentPosition
     }
 
@@ -86,9 +85,9 @@ class Game {
 
         otherGame.startPosition().breadthFirst().forEach { otherPos ->
             if (!contains(otherPos)) {
-                val ourPos = find(otherPos.previous)
-                ourPos?.next?.add(otherPos)
-                otherPos.previous = ourPos
+                val ourVariationStart = find(otherPos.previous)
+                ourVariationStart?.next?.add(otherPos)
+                otherPos.previous = ourVariationStart
             }
         }
     }

@@ -17,7 +17,8 @@ class PositionTreeNode(val position: Position): TreeNode {
 
     override fun getParent() = PositionTreeNode(position.previous!!)
 
-    override fun getChildAt(childIndex: Int) = PositionTreeNode(position.next[childIndex]!!)
+    override fun getChildAt(childIndex: Int) = PositionTreeNode(position.next[childIndex]
+    )
 
     override fun getAllowsChildren() = false
 
