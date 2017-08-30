@@ -24,6 +24,14 @@ private class SquareData(
 
 class ChessBoard : Region() {
 
+    var isOrientationWhite = true
+        set(value) {
+            field = value
+            calcSquarePoints()
+            draw()
+        }
+    fun flip() { isOrientationWhite = !isOrientationWhite }
+
     private val canvas = Canvas()
     private var squareSize: Int = 0
     private var position = Position()
@@ -45,7 +53,7 @@ class ChessBoard : Region() {
 
         // Drag&Drop handling
         canvas.setOnDragDetected { e ->
-            val s = squareAt(e.sceneX, e.sceneY)
+            val s = squareAt(e.x, e.y)
             if (s.rank in 1..8 && s.file in 1..8) {
                 val piece = position.square(s.rank, s.file).piece
                 if (piece != null) {
@@ -63,11 +71,11 @@ class ChessBoard : Region() {
             e.consume()
         }
         canvas.setOnDragOver { e ->
-            val s = squareAt(e.sceneX, e.sceneY)
+            val s = squareAt(e.x, e.y)
             if (s.rank in 1..8 && s.file in 1..8) {
                 e.acceptTransferModes(*TransferMode.ANY)
                 dropSquare = squareDataOf(s)
-                drawDragPiece(Point2D(e.sceneX, e.sceneY))
+                drawDragPiece(Point2D(e.x, e.y))
             }
             e.consume()
         }
@@ -80,7 +88,7 @@ class ChessBoard : Region() {
             drawDragPiece(null)
         }
         canvas.setOnMouseClicked { e ->
-            listener.forEach { it.squareClicked(squareAt(e.sceneX, e.sceneY)) }
+            listener.forEach { it.squareClicked(squareAt(e.x, e.y)) }
         }
 
     }
@@ -103,25 +111,59 @@ class ChessBoard : Region() {
     }
 
     override fun layoutChildren() {
+        scaleAll()
+        draw()
+    }
+
+    private fun scaleAll() {
         // canvas size has to be always divisible by 8
         var s = Math.min(width, height).toInt()
         while (s % 8 != 0) s--
         val size = s.toDouble()
-        if (size > 0 && size != canvas.width) {
-            canvas.width = size
-            canvas.height = width
-            scaleAll()
-            for (rank in 1..8) {
-                for (file in 1..8) {
-                    val x = (file-1) * squareSize
-                    val y = canvas.width - rank * squareSize
-                    squareDataOf(rank, file).let {
-                        it.topLeft = Point2D(x.toDouble(),y)
+        canvas.width = size
+        canvas.height = width
+        // calc new squareSize
+        squareSize = (canvas.width / 8).toInt()
+        // scale square images
+        if (boardImageURL != null) {
+            try {
+                val boardImageScaled = Image(boardImageURL, canvas.width, canvas.width, true, true)
+                for (rank in 1..8) {
+                    for (file in 1..8) {
+                        squareDataOf(rank, file).scaledImage =
+                                WritableImage(boardImageScaled.pixelReader, 0, 0, squareSize, squareSize)
                     }
+                }
+            } catch (ex: Exception) {
+                ex.printStackTrace()
+            }
+        }
+        // scale piece images
+        scaledPieces.clear()
+        for ((name, icon) in pieceIcons) {
+            val bufferedAWTImage = BufferedImage(squareSize, squareSize, BufferedImage.TYPE_INT_ARGB)
+            val awtGraphics = bufferedAWTImage.createGraphics()
+            icon.preferredSize = Dimension(squareSize, squareSize)
+            icon.paintIcon(null, awtGraphics, 0, 0)
+            awtGraphics.dispose()
+            scaledPieces.put(name, SwingFXUtils.toFXImage(bufferedAWTImage, null))
+        }
+        // calc square topLeft points
+        calcSquarePoints()
+    }
+
+    private fun calcSquarePoints() {
+        for (rank in 1..8) {
+            for (file in 1..8) {
+                val x = if (isOrientationWhite) ((file - 1) * squareSize).toDouble()
+                else canvas.width - file  * squareSize
+                val y = if (isOrientationWhite) canvas.width - rank * squareSize
+                else ((rank - 1) * squareSize).toDouble()
+                squareDataOf(rank, file).let {
+                    it.topLeft = Point2D(x, y)
                 }
             }
         }
-        draw()
     }
 
     /**
@@ -222,8 +264,10 @@ class ChessBoard : Region() {
             squares.first { it.square.rank == rank && it.square.file == file }
 
     private fun squareAt(x: Double, y: Double): Square {
-        val rank = 8 - y.toInt() / squareSize
-        val file = x.toInt() / squareSize + 1
+        val rank =  if (isOrientationWhite) 8 - y.toInt() / squareSize
+                    else y.toInt() / squareSize + 1
+        val file =  if (isOrientationWhite) x.toInt() / squareSize + 1
+                    else 8 - x.toInt() / squareSize
         return Square(rank, file)
     }
 
@@ -251,33 +295,7 @@ class ChessBoard : Region() {
         }
     }
 
-    private fun scaleAll() {
-        squareSize = (canvas.width / 8).toInt()
 
-        if (boardImageURL != null) {
-            try {
-                val boardImageScaled = Image(boardImageURL, canvas.width, canvas.width, true, true)
-                for (rank in 1..8) {
-                    for (file in 1..8) {
-                        squareDataOf(rank, file).scaledImage =
-                                WritableImage(boardImageScaled.pixelReader, 0, 0, squareSize, squareSize)
-                    }
-                }
-            } catch (ex: Exception) {
-                ex.printStackTrace()
-            }
-        }
-
-        scaledPieces.clear()
-        for ((name, icon) in pieceIcons) {
-            val bufferedAWTImage = BufferedImage(squareSize, squareSize, BufferedImage.TYPE_INT_ARGB)
-            val awtGraphics = bufferedAWTImage.createGraphics()
-            icon.preferredSize = Dimension(squareSize, squareSize)
-            icon.paintIcon(null, awtGraphics, 0, 0)
-            awtGraphics.dispose()
-            scaledPieces.put(name, SwingFXUtils.toFXImage(bufferedAWTImage, null))
-        }
-    }
 
 }
 

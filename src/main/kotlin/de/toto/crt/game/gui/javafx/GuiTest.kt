@@ -2,17 +2,18 @@ package de.toto.crt.game.gui.javafx
 
 import de.toto.crt.game.Game
 import de.toto.crt.game.fromPGN
-import de.toto.crt.game.rules.FEN_STARTPOSITION
 import de.toto.crt.game.rules.Square
-import de.toto.crt.game.rules.fromFEN
 import javafx.application.Application
+import javafx.event.EventHandler
 import javafx.scene.Scene
-import javafx.scene.layout.BorderPane
-import javafx.stage.Stage
-import java.nio.file.Paths
+import javafx.scene.control.Button
+import javafx.scene.control.ToolBar
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyCodeCombination
 import javafx.scene.input.KeyCombination
+import javafx.scene.layout.BorderPane
+import javafx.stage.Stage
+import java.nio.file.Paths
 
 
 fun main(args: Array<String>) {
@@ -36,7 +37,7 @@ class App: Application() {
 
         board.setPosition(game.gotoStartPosition())
         board.addListener(object: ChessBoardListener {
-            override fun squareClicked(square: Square) = println("User clicked sqaure $square")
+            override fun squareClicked(square: Square) = println("User clicked square $square")
 
             override fun moveIssued(from: Square, to: Square) {
                 val pos = game.currentPosition.next.firstOrNull { it.move.contains(to.name) }
@@ -46,6 +47,13 @@ class App: Application() {
         })
         pane.center = board
 
+        // ToolBar
+        val btnDrill = Button("Drill")
+        val btnFlip = Button("Flip")
+        btnFlip.onAction = EventHandler { board.flip() }
+        val toolBar = ToolBar(btnDrill, btnFlip)
+        pane.top = toolBar
+
         val scene = Scene(pane, 800.0, 800.0)
         with (scene.getAccelerators()) {
             put(KeyCodeCombination(KeyCode.LEFT), Runnable {
@@ -53,6 +61,9 @@ class App: Application() {
             })
             put(KeyCodeCombination(KeyCode.RIGHT), Runnable {
                 board.setPosition(game.next())
+            })
+            put(KeyCodeCombination(KeyCode.F, KeyCombination.CONTROL_DOWN), Runnable {
+                board.flip()
             })
         }
         stage?.scene = scene

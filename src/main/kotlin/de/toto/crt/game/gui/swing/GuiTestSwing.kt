@@ -1,6 +1,5 @@
-package de.toto.crt.game.gui.javafx
+package de.toto.crt.game.gui.swing
 
-import de.toto.crt.game.gui.swing.ChessBoard
 import de.toto.crt.game.rules.FEN_STARTPOSITION
 import de.toto.crt.game.rules.fromFEN
 import javafx.application.Application
