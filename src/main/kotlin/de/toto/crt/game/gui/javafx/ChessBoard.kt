@@ -4,7 +4,6 @@ import com.kitfox.svg.SVGUniverse
 import com.kitfox.svg.app.beans.SVGIcon
 import de.toto.crt.game.Position
 import de.toto.crt.game.rules.Square
-import de.toto.crt.game.rules.legalMovesFrom
 import javafx.embed.swing.SwingFXUtils
 import javafx.geometry.Point2D
 import javafx.scene.canvas.Canvas
@@ -32,6 +31,8 @@ class ChessBoard : Region() {
         }
     fun flip() { isOrientationWhite = !isOrientationWhite }
 
+    val listener = mutableListOf<ChessBoardListener>()
+
     private val canvas = Canvas()
     private var squareSize: Int = 0
     private var position = Position()
@@ -42,11 +43,8 @@ class ChessBoard : Region() {
     private var dragSquare: SquareData? = null
     private var dragImage: Image? = null
     private var dropSquare: SquareData? = null
-    private val dragAffectedSquares = mutableSetOf<Square>()
 
-    private val listener = mutableListOf<ChessBoardListener>()
-    fun addListener(l: ChessBoardListener) = listener.add(l)
-    fun removeListener(l: ChessBoardListener) = listener.remove(l)
+    private val dragAffectedSquares = mutableSetOf<Square>()
 
     init {
         children.add(canvas)
@@ -85,6 +83,7 @@ class ChessBoard : Region() {
         }
         canvas.setOnDragDone { e ->
             e.consume()
+            listener.forEach { it.moveIssued(dragSquare!!.square, dropSquare!!.square) }
             drawDragPiece(null)
         }
         canvas.setOnMouseClicked { e ->
@@ -97,6 +96,7 @@ class ChessBoard : Region() {
         val result = mutableListOf<SquareData>()
         for (rank in 1..8) {
             for (file in 1..8) {
+                TODO("set positions squares....")
                 result.add(SquareData(Square(rank, file), Point2D(0.0, 0.0), null))
             }
         }
@@ -124,14 +124,18 @@ class ChessBoard : Region() {
         canvas.height = width
         // calc new squareSize
         squareSize = (canvas.width / 8).toInt()
+        // calc square topLeft points
+        calcSquarePoints()
         // scale square images
         if (boardImageURL != null) {
             try {
                 val boardImageScaled = Image(boardImageURL, canvas.width, canvas.width, true, true)
                 for (rank in 1..8) {
                     for (file in 1..8) {
-                        squareDataOf(rank, file).scaledImage =
-                                WritableImage(boardImageScaled.pixelReader, 0, 0, squareSize, squareSize)
+                        with (squareDataOf(rank, file)) {
+                            scaledImage = WritableImage(boardImageScaled.pixelReader,
+                                    topLeft.x.toInt(), topLeft.y.toInt(), squareSize, squareSize)
+                        }
                     }
                 }
             } catch (ex: Exception) {
@@ -148,8 +152,7 @@ class ChessBoard : Region() {
             awtGraphics.dispose()
             scaledPieces.put(name, SwingFXUtils.toFXImage(bufferedAWTImage, null))
         }
-        // calc square topLeft points
-        calcSquarePoints()
+
     }
 
     private fun calcSquarePoints() {
@@ -233,19 +236,10 @@ class ChessBoard : Region() {
             _add(x + squareSize, y + squareSize)
         } else {
             // d&d finished - clear all d&d related stuff
-            userMove(dragSquare!!.square, dropSquare!!.square)
             dragImage = null
             dragSquare = null
             dropSquare = null
             draw()
-        }
-    }
-
-    private fun userMove(from: Square, to: Square) {
-        with (position) {
-            if (legalMovesFrom(square(from.rank, from.file)).contains(square(to.rank, to.file))) {
-                listener.forEach { it.moveIssued(from, to) }
-            }
         }
     }
 

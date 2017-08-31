@@ -36,7 +36,7 @@ class App: Application() {
         stage?.title = "JavaFX-Tester with FX ChessBoard"
 
         board.setPosition(game.gotoStartPosition())
-        board.addListener(object: ChessBoardListener {
+        board.listener.add(object: ChessBoardListener {
             override fun squareClicked(square: Square) = println("User clicked square $square")
 
             override fun moveIssued(from: Square, to: Square) {
