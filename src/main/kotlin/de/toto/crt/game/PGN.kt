@@ -96,13 +96,14 @@ private class PGNParser {
             } else {
                 if (token.isCommentEnd) {
                     inComment = false
-                    game.currentPosition.comment = comment.toString()
+                    game.currentPosition.comment = comment.toString().trim()
                     comment = StringBuilder()
                 } else {
                     comment.append(token)
                 }
             }
         }
+        if (inComment) comment.append(" ")
         return true
     }
 

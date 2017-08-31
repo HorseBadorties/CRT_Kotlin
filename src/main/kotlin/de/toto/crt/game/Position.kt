@@ -3,6 +3,7 @@ package de.toto.crt.game
 import de.toto.crt.game.rules.CastlingRight
 import de.toto.crt.game.rules.NAG
 import de.toto.crt.game.rules.Square
+import javafx.scene.paint.Color
 import java.util.*
 
 class Position(
@@ -18,10 +19,39 @@ class Position(
     val castlingRight = java.util.EnumSet.noneOf(CastlingRight::class.java)
     val next = mutableListOf<Position>()
     var comment: String? = null
+        set(value) {
+            // may contain graphics comments such as [%csl Ge5][%cal Ge5b2]
+            if (value != null) {
+                with (Regex("\\[(.*?)\\]")) {
+                    findAll(value).forEach { parseGraphicsComment(it.value) }
+                    field = replace(value, "")
+                }
+            } else field = null
+        }
+    val graphicsComments = mutableListOf<GraphicsComment>()
     val nags = mutableListOf<NAG>()
 
     val squares = Array(8) { iOuter -> Array(8)
         { iInner -> Square(iOuter + 1, iInner + 1) }
+    }
+
+    /**
+     * - square coloring like [%csl Rb5,Rd5,Rg2]
+     * - colored arrows like [%cal Gf3d2,Gd2c4]
+     */
+    private fun parseGraphicsComment(gc: String) {
+        gc.drop(1).dropLast(1).split(" ")[1].split(",").forEach {
+            if (!it.isEmpty()) {
+                val color = when (it[0]) {
+                    'R' -> Color.RED
+                    'Y' -> Color.YELLOW
+                    else -> Color.GREEN
+                }
+                val firstSquare = Square.fromName(it.substring(1, 3))
+                val secondSquare = if (it.length > 3) Square.fromName(it.substring(3, 5)) else null
+                graphicsComments.add(GraphicsComment(firstSquare, secondSquare, color))
+            }
+        }
     }
 
     /**
@@ -153,6 +183,8 @@ class Position(
     fun moveWithMovenumber() = "$moveNumber${if (whiteToMove) "..." else "."}$move"
 
 }
+
+data class GraphicsComment(val firstSquare: Square, val secondSquare: Square?, val color: Color)
 
 
 

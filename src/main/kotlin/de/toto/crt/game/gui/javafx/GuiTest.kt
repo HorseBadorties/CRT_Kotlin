@@ -1,6 +1,7 @@
 package de.toto.crt.game.gui.javafx
 
 import de.toto.crt.game.Game
+import de.toto.crt.game.GameListener
 import de.toto.crt.game.fromPGN
 import de.toto.crt.game.rules.Square
 import javafx.application.Application
@@ -13,6 +14,7 @@ import javafx.scene.input.KeyCodeCombination
 import javafx.scene.input.KeyCombination
 import javafx.scene.layout.BorderPane
 import javafx.stage.Stage
+import org.controlsfx.control.StatusBar
 import java.nio.file.Paths
 
 
@@ -25,6 +27,7 @@ class App: Application() {
     val pane = BorderPane()
     val board = ChessBoard()
     var game: Game
+    val statusBar = StatusBar()
 
     init {
         val games = fromPGN(Paths.get(javaClass.getResource("/pgn/Repertoire_Black.pgn").toURI()))
@@ -35,16 +38,10 @@ class App: Application() {
     override fun start(stage: Stage?) {
         stage?.title = "JavaFX-Tester with FX ChessBoard"
 
-        board.setPosition(game.gotoStartPosition())
-        board.listener.add(object: ChessBoardListener {
-            override fun squareClicked(square: Square) = println("User clicked square $square")
+        game.listener.add(gameListener)
 
-            override fun moveIssued(from: Square, to: Square) {
-                val pos = game.currentPosition.next.firstOrNull { it.move.contains(to.name) }
-                if (pos != null) board.setPosition(game.gotoPosition(pos))
-            }
-
-        })
+        board.position = game.gotoStartPosition()
+        board.listener.add(chessBoardListener)
         pane.center = board
 
         // ToolBar
@@ -54,13 +51,15 @@ class App: Application() {
         val toolBar = ToolBar(btnDrill, btnFlip)
         pane.top = toolBar
 
+        pane.bottom = statusBar
+
         val scene = Scene(pane, 800.0, 800.0)
         with (scene.getAccelerators()) {
             put(KeyCodeCombination(KeyCode.LEFT), Runnable {
-                    board.setPosition(game.back())
+                    board.position = game.back()
             })
             put(KeyCodeCombination(KeyCode.RIGHT), Runnable {
-                board.setPosition(game.next())
+                board.position =  game.next()
             })
             put(KeyCodeCombination(KeyCode.F, KeyCombination.CONTROL_DOWN), Runnable {
                 board.flip()
@@ -70,6 +69,24 @@ class App: Application() {
         stage?.show()
     }
 
+    val chessBoardListener = object: ChessBoardListener {
+        override fun squareClicked(square: Square) = println("User clicked square $square")
+
+        override fun moveIssued(from: Square, to: Square) {
+            val pos = game.currentPosition.next.firstOrNull { it.move.contains(to.name) }
+            if (pos != null) board.position = game.gotoPosition(pos)
+        }
+    }
+
+    val gameListener = object: GameListener {
+        override fun positionChanged() {
+            updateStatusBar()
+        }
+    }
+
+    private fun updateStatusBar() {
+        statusBar.text = game.currentPosition.comment
+    }
 
 }
 

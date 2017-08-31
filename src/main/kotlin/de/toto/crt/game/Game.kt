@@ -8,6 +8,8 @@ import java.util.*
 
 class Game {
 
+    val listener = mutableListOf<GameListener>()
+
     val tags = mutableMapOf<String, String>()
 
     var currentPosition: Position = fromFEN(FEN_STARTPOSITION)
@@ -57,6 +59,7 @@ class Game {
 
     fun gotoPosition(pos: Position): Position {
         currentPosition = pos
+        listener.forEach { it.positionChanged() }
         return currentPosition
     }
 
@@ -92,4 +95,8 @@ class Game {
         }
     }
 
+}
+
+interface GameListener {
+    fun positionChanged()
 }

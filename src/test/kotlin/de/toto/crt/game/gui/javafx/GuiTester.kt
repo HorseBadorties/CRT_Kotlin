@@ -67,7 +67,7 @@ class GuiTester: ApplicationTest() {
 
 }
 
-fun square(name: String): Square = Square(name.drop(1).toInt(), name[0].toInt() - 'a'.toInt() + 1)
+fun square(name: String) = Square.fromName(name)
 
 fun scaleFactor() = when (Screen.getPrimary().dpi.toInt()) {
     in 0..96 -> 1.0

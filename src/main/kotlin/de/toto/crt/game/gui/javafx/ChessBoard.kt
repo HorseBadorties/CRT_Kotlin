@@ -17,13 +17,17 @@ import java.awt.Dimension
 import java.awt.image.BufferedImage
 
 private class SquareData(
-    val square: Square,
-    var topLeft: Point2D,
-    var scaledImage: Image?)
+    var square: Square,
+    var topLeft: Point2D = Point2D(0.0, 0.0),
+    var scaledImage: Image? = null,
+    var color: Color? = null,
+    var lastMoveSquare: Boolean = false)
 
 class ChessBoard : Region() {
 
-    var isOrientationWhite = true
+    val listener = mutableListOf<ChessBoardListener>()
+
+    private var isOrientationWhite = true
         set(value) {
             field = value
             calcSquarePoints()
@@ -31,20 +35,25 @@ class ChessBoard : Region() {
         }
     fun flip() { isOrientationWhite = !isOrientationWhite }
 
-    val listener = mutableListOf<ChessBoardListener>()
+    var position = Position()
+        set(value) {
+            if (value != position) {
+                field = value
+                positionSquaresToSquareData()
+                draw()
+            }
+        }
 
     private val canvas = Canvas()
     private var squareSize: Int = 0
-    private var position = Position()
     private val boardImageURL: String? = null // "/images/board/maple.jpg"
     private val pieceIcons: Map<Char, SVGIcon> = loadPieces()
     private val scaledPieces = mutableMapOf<Char, Image>()
     private val squares: List<SquareData> = squareData()
     private var dragSquare: SquareData? = null
     private var dragImage: Image? = null
-    private var dropSquare: SquareData? = null
-
     private val dragAffectedSquares = mutableSetOf<Square>()
+    private var dropSquare: SquareData? = null
 
     init {
         children.add(canvas)
@@ -96,18 +105,10 @@ class ChessBoard : Region() {
         val result = mutableListOf<SquareData>()
         for (rank in 1..8) {
             for (file in 1..8) {
-                TODO("set positions squares....")
-                result.add(SquareData(Square(rank, file), Point2D(0.0, 0.0), null))
+                result.add(SquareData(position.square(rank, file)))
             }
         }
         return result.toList()
-    }
-
-    fun setPosition(newPosition: Position) {
-        if (newPosition != position) {
-            position = newPosition
-            draw()
-        }
     }
 
     override fun layoutChildren() {
@@ -203,6 +204,18 @@ class ChessBoard : Region() {
             } else {
                 colorSquare(x, y, if (it.square.isWhite) Color.LIGHTGREY else Color.GRAY)
             }
+            // TODO 2. square coordinates
+
+            // TODO 3. colored squares of last move
+            if (it.lastMoveSquare && dragSquare == null) {
+                colorSquare(x, y, Color.YELLOW, 0.4)
+            }
+
+            // TODO 4. colored squares of highlights
+            if (it.color != null && dragSquare == null) {
+                colorSquare(x, y, it.color!!, 0.4)
+            }
+
             // 5. draw pieces
             if (it !== dragSquare) {
                 position.square(rank, file).piece?.let {
@@ -267,7 +280,6 @@ class ChessBoard : Region() {
 
     // for TestFX
     fun squareCenter(square: Square): Point2D {
-
         with (squareDataOf(square)) {
             return Point2D(topLeft.x + squareSize / 2, topLeft.y + squareSize / 2)
         }
@@ -289,7 +301,18 @@ class ChessBoard : Region() {
         }
     }
 
-
+    private fun positionSquaresToSquareData() {
+        val coloredSquares = position.graphicsComments.filter { it.secondSquare == null }
+        for (rank in 1..8) {
+            for (file in 1..8) {
+                with (squareDataOf(rank, file)) {
+                    square = position.square(rank, file)
+                    color = coloredSquares.firstOrNull { it.firstSquare.rank == square.rank && it.firstSquare.file == square.file }?.color
+                    lastMoveSquare = false // TODO lastMoveSquare
+                }
+            }
+        }
+    }
 
 }
 

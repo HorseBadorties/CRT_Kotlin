@@ -31,11 +31,11 @@ fun fromFEN(fen: String): Position {
             return this
         }
     } catch (ex: Exception) {
-        throw IllegalArgumentException("failed to parse FEN: " + fen, ex)
+        throw IllegalArgumentException("failed to parse FEN: $fen", ex)
     }
 }
 
-fun Position.setCastlingRights(fenString: String) {
+private fun Position.setCastlingRights(fenString: String) {
     val rights = mutableListOf<CastlingRight>()
     if (fenString.contains("K")) rights.add(CastlingRight.WHITE_SHORT)
     if (fenString.contains("Q")) rights.add(CastlingRight.WHITE_LONG)
