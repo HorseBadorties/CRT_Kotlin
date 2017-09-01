@@ -39,18 +39,29 @@ class Position(
      * - square coloring like [%csl Rb5,Rd5,Rg2]
      * - colored arrows like [%cal Gf3d2,Gd2c4]
      */
-    private fun parseGraphicsComment(gc: String) {
-        gc.drop(1).dropLast(1).split(" ")[1].split(",").forEach {
-            if (!it.isEmpty()) {
-                val color = when (it[0]) {
-                    'R' -> Color.RED
-                    'Y' -> Color.YELLOW
-                    else -> Color.GREEN
-                }
-                val firstSquare = Square.fromName(it.substring(1, 3))
-                val secondSquare = if (it.length > 3) Square.fromName(it.substring(3, 5)) else null
-                graphicsComments.add(GraphicsComment(firstSquare, secondSquare, color))
-            }
+    private fun parseGraphicsComment(graphicsComment: String) {
+        try {
+            graphicsComment
+                    .drop(1)
+                    .dropLast(1)
+                    .split(" ")[1]
+                    .split(",")
+                    .forEach {
+                        if (!it.isEmpty()) {
+                            val color = when (it[0]) {
+                                'R' -> Color.RED
+                                'Y' -> Color.YELLOW
+                                else -> Color.GREEN
+                            }
+                            val s1 = Square.fromName(it.substring(1, 3))
+                            val s2 = if (it.length > 3) Square.fromName(it.substring(3, 5)) else null
+                            val gc = if (s2 != null) ColoredArrow(s1, s2, color)
+                                        else ColoredSquare(s1, color)
+                            graphicsComments.add(gc)
+                        }
+                    }
+        } catch (ex: Exception) {
+            ex.printStackTrace()
         }
     }
 
@@ -184,7 +195,9 @@ class Position(
 
 }
 
-data class GraphicsComment(val firstSquare: Square, val secondSquare: Square?, val color: Color)
+sealed class GraphicsComment
+data class ColoredSquare(val square: Square, val color: Color) : GraphicsComment()
+data class ColoredArrow(val from: Square, val to: Square, val color: Color) : GraphicsComment()
 
 
 

@@ -1,0 +1,12 @@
+﻿[Event "Fernando 01.01"]
+[Site "?"]
+[Date "????.??.??"]
+[Round "?"]
+[White "Benko/Volga "]
+[Black "4.Nf3"]
+[Result "*"]
+[ECO "E10"]
+[PlyCount "8"]
+
+1. d4 {[%cal Gg1d5]} Nf6 $1 {[%csl Re4]} 2. c4 {[%csl Gd5]} c5 {[%csl Yd4]} 3. d5 b5 4. Nf3 e6 {Blumenfeld Gambit} *
+

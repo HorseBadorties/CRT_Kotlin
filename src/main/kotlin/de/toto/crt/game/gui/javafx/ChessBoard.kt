@@ -2,8 +2,11 @@ package de.toto.crt.game.gui.javafx
 
 import com.kitfox.svg.SVGUniverse
 import com.kitfox.svg.app.beans.SVGIcon
+import de.toto.crt.game.ColoredArrow
+import de.toto.crt.game.ColoredSquare
 import de.toto.crt.game.Position
 import de.toto.crt.game.rules.Square
+import de.toto.crt.game.rules.squaresOfMove
 import javafx.embed.swing.SwingFXUtils
 import javafx.geometry.Point2D
 import javafx.scene.canvas.Canvas
@@ -11,6 +14,7 @@ import javafx.scene.image.Image
 import javafx.scene.image.WritableImage
 import javafx.scene.input.ClipboardContent
 import javafx.scene.input.TransferMode
+import javafx.scene.layout.Pane
 import javafx.scene.layout.Region
 import javafx.scene.paint.Color
 import java.awt.Dimension
@@ -23,7 +27,7 @@ private class SquareData(
     var color: Color? = null,
     var lastMoveSquare: Boolean = false)
 
-class ChessBoard : Region() {
+class ChessBoard : Pane() {
 
     val listener = mutableListOf<ChessBoardListener>()
 
@@ -45,6 +49,7 @@ class ChessBoard : Region() {
         }
 
     private val canvas = Canvas()
+    private val arrowCanvas = Canvas()
     private var squareSize: Int = 0
     private val boardImageURL: String? = null // "/images/board/maple.jpg"
     private val pieceIcons: Map<Char, SVGIcon> = loadPieces()
@@ -55,8 +60,17 @@ class ChessBoard : Region() {
     private val dragAffectedSquares = mutableSetOf<Square>()
     private var dropSquare: SquareData? = null
 
+    // TODO move into CSS
+    private val squareSelectionColor = Color(0.3, 0.4, 0.5, 0.6);
+    private val lightBrown = Color.rgb(208, 192, 160);
+    private val darkBrown = Color.rgb(160, 128, 80);
+    private val highlightColorGreen = Color(0.0, 1.0, 0.0, 0.4);
+    private val highlightColorRed = Color(1.0, 0.0, 0.0, 0.4);
+    private val highlightColorYellow = Color(1.0, 1.0, 0.0, 0.4);
+
     init {
         children.add(canvas)
+        children.add(arrowCanvas)
 
         // Drag&Drop handling
         canvas.setOnDragDetected { e ->
@@ -73,6 +87,7 @@ class ChessBoard : Region() {
                     dragSquare = squareDataOf(s)
                     dragImage = scaledPieces[piece.fenChar]
                     draw() // get rid of possible arrows
+                    drawDragPiece(Point2D(e.x, e.y))
                 }
             }
             e.consume()
@@ -123,6 +138,8 @@ class ChessBoard : Region() {
         val size = s.toDouble()
         canvas.width = size
         canvas.height = width
+        arrowCanvas.width = size
+        arrowCanvas.height = width
         // calc new squareSize
         squareSize = (canvas.width / 8).toInt()
         // calc square topLeft points
@@ -171,19 +188,27 @@ class ChessBoard : Region() {
     }
 
     /**
-     * 1. fill canvas with white
+     * 1. clear canvas
      * 2. draw squares
      * 3. draw arrows
      */
     private fun draw() {
-        canvas.graphicsContext2D.fill = Color.WHITE
-        canvas.graphicsContext2D.fillRect(0.0, 0.0, width, height)
+        with (arrowCanvas.graphicsContext2D) {
+            clearRect(0.0, 0.0, width, height)
+        }
+        with (canvas.graphicsContext2D) {
+            clearRect(0.0, 0.0, width, height)
+        }
         for (rank in 1..8) {
             for (file in 1..8) {
                 drawSquare(rank, file)
             }
         }
-        // TODO draw arrows
+        if (dragSquare == null) {
+            position.graphicsComments.filterIsInstance<ColoredArrow>().forEach {
+                drawColoredArrow(it)
+            }
+        }
     }
 
     /**
@@ -202,18 +227,18 @@ class ChessBoard : Region() {
             if (it.scaledImage != null) {
                 canvas.graphicsContext2D.drawImage(it.scaledImage, x, y)
             } else {
-                colorSquare(x, y, if (it.square.isWhite) Color.LIGHTGREY else Color.GRAY)
+                colorSquare(x, y, if (it.square.isWhite) lightBrown else darkBrown)
             }
             // TODO 2. square coordinates
 
-            // TODO 3. colored squares of last move
+            // 3. colored squares of last move
             if (it.lastMoveSquare && dragSquare == null) {
-                colorSquare(x, y, Color.YELLOW, 0.4)
+                colorSquare(x, y, squareSelectionColor)
             }
 
-            // TODO 4. colored squares of highlights
+            // 4. colored squares of highlights
             if (it.color != null && dragSquare == null) {
-                colorSquare(x, y, it.color!!, 0.4)
+                colorSquare(x, y, translateColor(it.color)!!)
             }
 
             // 5. draw pieces
@@ -224,9 +249,16 @@ class ChessBoard : Region() {
             }
             // 6. D&D squares highlight
             if (it === dragSquare || it === dropSquare) {
-                colorSquare(x, y, Color.YELLOW, 0.4)
+                colorSquare(x, y, squareSelectionColor)
             }
         }
+    }
+
+    private fun translateColor(color: Color?) = when (color) {
+        Color.RED -> highlightColorRed
+        Color.YELLOW -> highlightColorYellow
+        Color.GREEN -> highlightColorGreen
+        else -> color
     }
 
     private fun drawDragPiece(point: Point2D?) {
@@ -263,6 +295,40 @@ class ChessBoard : Region() {
             fillRect(x, y, squareSize.toDouble(), squareSize.toDouble())
             globalAlpha = 1.0
         }
+    }
+
+    private fun drawColoredArrow(arrow: ColoredArrow) {
+        fun Point2D.squareCenter() = Point2D(x + squareSize / 2, y + squareSize / 2)
+
+        val pointFrom = squareDataOf(arrow.from).topLeft.squareCenter()
+        val pointTo = squareDataOf(arrow.to).topLeft.squareCenter()
+        val distance = pointFrom.distance(pointTo)
+        val arrowHeight = (squareSize / 10).toDouble()
+        val arrowheadSide = (squareSize / 3).toDouble()
+        val arrowheadLength = arrowheadSide
+
+        with (arrowCanvas.graphicsContext2D) {
+            save()
+            val midPoint = Point2D((pointFrom.x + pointTo.x) / 2,  (pointFrom.y + pointTo.y) / 2)
+            translate(pointFrom.x, pointFrom.y)
+            val degrees = Math.atan2(pointTo.y - pointFrom.y, pointTo.x - pointFrom.x)
+//            rotate(-20.0)
+            beginPath()
+            moveTo(-distance / 2, arrowHeight / 2)
+            lineTo(distance / 2 - arrowheadLength, arrowHeight / 2)
+            lineTo(distance / 2 - arrowheadLength, arrowheadSide / 2)
+            lineTo(distance / 2, 0.0)
+            lineTo(distance / 2 - arrowheadLength, -(arrowheadSide / 2))
+            lineTo(distance / 2 - arrowheadLength, -(arrowHeight / 2))
+            lineTo(-distance / 2, -(arrowHeight / 2))
+            closePath()
+
+            fill  = translateColor(arrow.color)
+            fill()
+            translate(-midPoint.x, -midPoint.y)
+            restore()
+        }
+
     }
 
     private fun squareDataOf(square: Square) = squareDataOf(square.rank, square.file)
@@ -302,13 +368,15 @@ class ChessBoard : Region() {
     }
 
     private fun positionSquaresToSquareData() {
-        val coloredSquares = position.graphicsComments.filter { it.secondSquare == null }
+        fun Square.sameRankAndFileAs(s: Square) = rank == s.rank && file == s.file
+        val coloredSquares = position.graphicsComments.filterIsInstance<ColoredSquare>()
+        val squaresOfMove = position.squaresOfMove
         for (rank in 1..8) {
             for (file in 1..8) {
                 with (squareDataOf(rank, file)) {
                     square = position.square(rank, file)
-                    color = coloredSquares.firstOrNull { it.firstSquare.rank == square.rank && it.firstSquare.file == square.file }?.color
-                    lastMoveSquare = false // TODO lastMoveSquare
+                    color = coloredSquares.firstOrNull { it.square.sameRankAndFileAs(square) }?.color
+                    lastMoveSquare = squaresOfMove.any { it.sameRankAndFileAs(square) }
                 }
             }
         }

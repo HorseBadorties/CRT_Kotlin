@@ -8,7 +8,7 @@ import de.toto.crt.game.rules.Piece.PieceType.*
  */
 fun Position.createNextFromSAN(san: String, asMainline: Boolean = true): Position {
     try {
-        val result = parseSAN(san, asMainline)
+        val result = parseNextFromSAN(san, asMainline)
         // add the new Position to our list of `next` Positions
         next.add(if (asMainline) 0 else next.size, result)
         return result
@@ -17,21 +17,52 @@ fun Position.createNextFromSAN(san: String, asMainline: Boolean = true): Positio
     }
 }
 
-private fun Position.parseSAN(san: String, asMainline: Boolean): Position {
-    // handle null-move
-    if (san == "--") {
-        return createPosition(san, null, 0, asMainline).checkCastleRights()
-    }
-    // handle castling - consider both "0-0" (zeros) and "O-O" (Os)
-    val isLongCastles = san.startsWith("0-0-0") || san.startsWith("O-O-O")
-    if (isLongCastles || san.startsWith("0-0") || san.startsWith("O-O")) {
-        return createPosition(san, null, halfMoveCount + 1, asMainline).castle(isLongCastles)
+val Position.squaresOfMove: List<Square>
+    get() {
+        if (previous == null) return listOf()
+        with (previous!!.parseSAN(move)) {
+            return if (isNullMove) listOf() else listOf(fromSquare!!, toSquare!!)
+        }
     }
 
-    // we don't use/validate check and checkmate as of yet (?!)
+data class MoveInfo(
+        val isNullMove: Boolean = false,
+        val isLongCastles: Boolean = false,
+        val isShortCastles: Boolean = false,
+        val isCapture: Boolean = false,
+        val isCheck: Boolean = false,
+        val isMate: Boolean = false,
+        val isPromotion: Boolean = false,
+        val promotionPiece: Piece? = null,
+        val piece: Piece? = null,
+        val fromSquare: Square?,
+        val toSquare: Square?)
+
+fun Position.parseSAN(san: String): MoveInfo {
+    // handle null-move
+    if (san == "--") {
+        return MoveInfo(isNullMove = true, fromSquare = null, toSquare = null)
+    }
+
+    val isMate = san.endsWith("#")
+    val isCheck = isMate || san.endsWith("+")
+    val isCapture = san.contains('x')
+
+    // handle castling - consider both "0-0" (zeros) and "O-O" (Os)
+    val isLongCastles = san.startsWith("0-0-0") || san.startsWith("O-O-O")
+    val isShortCastles = !isLongCastles && (san.startsWith("0-0") || san.startsWith("O-O"))
+    if (isLongCastles || isShortCastles) {
+        val squares = castlingSquares(isLongCastles)
+        return MoveInfo(isLongCastles = isLongCastles,
+                isShortCastles = isShortCastles,
+                isCheck = isCheck,
+                isMate = isMate,
+                piece = Piece.get(KING, whiteToMove),
+                fromSquare = squares.first,
+                toSquare = squares.second)
+    }
+
     var move = san.removeSuffix("+").removeSuffix("#")
-    // capture?
-    val isCapture = move.contains('x')
     if (isCapture) move = move.replace("x", "")
     // promotion? Consider both "c8=Q" and "c8Q"
     val promotionPiece = Piece.getPieceByPGNCharAndColor(move.last(), whiteToMove)
@@ -49,18 +80,34 @@ private fun Position.parseSAN(san: String, asMainline: Boolean): Position {
         move.length == 2 -> square(move)
         else -> findSquare { isFromSquare(it, move, piece, toSquare, isCapture) }
     }
+    return MoveInfo(isCapture = isCapture,
+            isCheck = isCheck,
+            isMate = isMate,
+            isPromotion = promotionPiece != null,
+            promotionPiece = promotionPiece,
+            piece = piece,
+            fromSquare = fromSquare,
+            toSquare = toSquare)
+}
 
-    val newEnPassantField = getEnPassantField(piece, fromSquare, toSquare)
-    val newHalfMoveCount = if (piece.type == PAWN || isCapture) 0 else halfMoveCount + 1
-    // we got all information - create the new Position
-    val result = createPosition(san, newEnPassantField, newHalfMoveCount, asMainline)
-    // do the actual move
-    if (enPassantField == toSquare.name && isCapture && piece.type == PAWN) {
-        result.doEnPassantMove(fromSquare, toSquare, piece)
-    } else {
-        result.doNormalMove(fromSquare, toSquare, piece, promotionPiece)
+private fun Position.parseNextFromSAN(san: String, asMainline: Boolean): Position {
+    with (parseSAN(san)) {
+        if (isNullMove) return createPosition(san, null, 0, asMainline).checkCastleRights()
+        if (isLongCastles || isShortCastles)
+            return createPosition(san, null, halfMoveCount + 1, asMainline).castle(isLongCastles)
+
+        val newEnPassantField = getEnPassantField(piece!!, fromSquare!!, toSquare!!)
+        val newHalfMoveCount = if (piece.type == PAWN || isCapture) 0 else halfMoveCount + 1
+        // we got all information - create the new Position
+        val result = createPosition(san, newEnPassantField, newHalfMoveCount, asMainline)
+        // do the actual move
+        if (enPassantField == toSquare.name && isCapture && piece.type == PAWN) {
+            result.doEnPassantMove(fromSquare, toSquare, piece)
+        } else {
+            result.doNormalMove(fromSquare, toSquare, piece, promotionPiece)
+        }
+        return result
     }
-    return result
 }
 
 // TODO cleanup code
@@ -116,6 +163,17 @@ private fun Position.createPosition(
     // and castling rights
     result.setCastlingRights(*this.castlingRight.toTypedArray())
     return result
+}
+
+/**
+ * `first` contains the King's square, `second` the sqaure where the King moves to
+ */
+private fun Position.castlingSquares(long: Boolean): Pair<Square, Square> {
+    // the moving color is `!whiteToMove` here ...!
+    val rank = backRank(!whiteToMove)
+    val from = square(rank, 5)
+    val to = if (long) square(rank, 3) else square(rank, 7)
+    return Pair(from, to)
 }
 
 private fun Position.castle(long: Boolean): Position {
