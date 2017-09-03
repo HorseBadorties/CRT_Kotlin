@@ -195,6 +195,15 @@ class Position(
 
 }
 
+fun forEachRankAndFile(action: (rank: Int, file: Int) -> Unit) {
+    for (rank in 1..8) {
+        for (file in 1..8) {
+            action(rank, file)
+        }
+    }
+}
+
+
 sealed class GraphicsComment
 data class ColoredSquare(val square: Square, val color: Color) : GraphicsComment()
 data class ColoredArrow(val from: Square, val to: Square, val color: Color) : GraphicsComment()

@@ -8,5 +8,5 @@
 [ECO "E10"]
 [PlyCount "8"]
 
-1. d4 {[%cal Gg1d5]} Nf6 $1 {[%csl Re4]} 2. c4 {[%csl Gd5]} c5 {[%csl Yd4]} 3. d5 b5 4. Nf3 e6 {Blumenfeld Gambit} *
+1. d4 {[%cal Gg1d5,Rb1c3,Ya8b5,Gg1g8,Rc2a4]} Nf6 $1 {[%csl Re4]} 2. c4 {[%csl Gd5]} c5 {[%csl Yd4]} 3. d5 b5 4. Nf3 e6 {Blumenfeld Gambit} *
 

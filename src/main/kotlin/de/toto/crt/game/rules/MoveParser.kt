@@ -1,6 +1,7 @@
 package de.toto.crt.game.rules
 
 import de.toto.crt.game.Position
+import de.toto.crt.game.forEachRankAndFile
 import de.toto.crt.game.rules.Piece.PieceType.*
 
 /**
@@ -155,29 +156,24 @@ private fun Position.createPosition(
         variationLevel = if (asMainline) variationLevel else variationLevel + 1
     )
     // copy over piece placements
-    for (rank in 1..8) {
-        for (file in 1..8) {
-            result.square(rank, file).piece = this.square(rank, file).piece
-        }
-    }
+    forEachRankAndFile { rank, file -> result.square(rank, file).piece = this.square(rank, file).piece }
     // and castling rights
     result.setCastlingRights(*this.castlingRight.toTypedArray())
     return result
 }
 
 /**
- * `first` contains the King's square, `second` the sqaure where the King moves to
+ * `first` contains the King's square, `second` the square where the King moves to
  */
 private fun Position.castlingSquares(long: Boolean): Pair<Square, Square> {
-    // the moving color is `!whiteToMove` here ...!
-    val rank = backRank(!whiteToMove)
+    val rank = backRank(whiteToMove)
     val from = square(rank, 5)
     val to = if (long) square(rank, 3) else square(rank, 7)
     return Pair(from, to)
 }
 
 private fun Position.castle(long: Boolean): Position {
-    // the moving color is `!whiteToMove` here ...!
+    // the moving highlightColor is `!whiteToMove` here ...!
     val rank = backRank(!whiteToMove)
     if (long) {
         square(rank, 1).piece = null

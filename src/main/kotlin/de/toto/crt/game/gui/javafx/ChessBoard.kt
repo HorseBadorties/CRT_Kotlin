@@ -2,29 +2,31 @@ package de.toto.crt.game.gui.javafx
 
 import com.kitfox.svg.SVGUniverse
 import com.kitfox.svg.app.beans.SVGIcon
+import com.sun.javafx.tk.Toolkit
 import de.toto.crt.game.ColoredArrow
 import de.toto.crt.game.ColoredSquare
 import de.toto.crt.game.Position
+import de.toto.crt.game.forEachRankAndFile
 import de.toto.crt.game.rules.Square
 import de.toto.crt.game.rules.squaresOfMove
 import javafx.embed.swing.SwingFXUtils
 import javafx.geometry.Point2D
 import javafx.scene.canvas.Canvas
+import javafx.scene.canvas.GraphicsContext
 import javafx.scene.image.Image
-import javafx.scene.image.WritableImage
 import javafx.scene.input.ClipboardContent
 import javafx.scene.input.TransferMode
 import javafx.scene.layout.Pane
-import javafx.scene.layout.Region
-import javafx.scene.paint.Color
 import java.awt.Dimension
 import java.awt.image.BufferedImage
+import de.toto.crt.game.gui.javafx.ChessBoard.Layer.*
+import javafx.scene.paint.*
+import javafx.scene.text.Font
 
 private class SquareData(
     var square: Square,
     var topLeft: Point2D = Point2D(0.0, 0.0),
-    var scaledImage: Image? = null,
-    var color: Color? = null,
+    var highlightColor: Color? = null,
     var lastMoveSquare: Boolean = false)
 
 class ChessBoard : Pane() {
@@ -35,127 +37,154 @@ class ChessBoard : Pane() {
         set(value) {
             field = value
             calcSquarePoints()
-            draw()
+            drawSquareCoordinates()
+            drawPosition()
         }
     fun flip() { isOrientationWhite = !isOrientationWhite }
+
+    var isShowingSquareCoordinates = true
+        set(value) {
+            field = value
+            canvasLayer[SQUARE_COORDINATES]?.isVisible = value
+        }
+
+    var isShowingBoard = true
+        set(value) {
+            field = value
+            canvasLayer[BOARD]?.isVisible = value
+            canvasLayer[SQUARE_COORDINATES]?.isVisible = value
+            canvasLayer[PIECES]?.isVisible = value
+            canvasLayer[SQUARE_HIGHLIGHTS]?.isVisible = value
+        }
+
+    var isShowingPieces = true
+        set(value) {
+            field = value
+            canvasLayer[PIECES]?.isVisible = value
+        }
+
+    var isShowingGraphicsComments = true
+        set(value) {
+            field = value
+            canvasLayer[ARROWS]?.isVisible = value
+        }
 
     var position = Position()
         set(value) {
             if (value != position) {
                 field = value
                 positionSquaresToSquareData()
-                draw()
+                drawPosition()
             }
         }
 
-    private val canvas = Canvas()
-    private val arrowCanvas = Canvas()
+    private enum class Layer { BOARD, SQUARE_COORDINATES, SQUARE_HIGHLIGHTS, PIECES, ARROWS, DRAG_DROP }
+    private val canvasLayer: Map<Layer, Canvas> = Layer.values().associate { it to Canvas() }
+
     private var squareSize: Int = 0
-    private val boardImageURL: String? = null // "/images/board/maple.jpg"
+    private val boardImageURL: String? = "/images/board/maple.jpg"
+    private var boardImageScaled: Image? = null
     private val pieceIcons: Map<Char, SVGIcon> = loadPieces()
     private val scaledPieces = mutableMapOf<Char, Image>()
     private val squares: List<SquareData> = squareData()
     private var dragSquare: SquareData? = null
     private var dragImage: Image? = null
-    private val dragAffectedSquares = mutableSetOf<Square>()
     private var dropSquare: SquareData? = null
 
     // TODO move into CSS
-    private val squareSelectionColor = Color(0.3, 0.4, 0.5, 0.6);
-    private val lightBrown = Color.rgb(208, 192, 160);
-    private val darkBrown = Color.rgb(160, 128, 80);
-    private val highlightColorGreen = Color(0.0, 1.0, 0.0, 0.4);
-    private val highlightColorRed = Color(1.0, 0.0, 0.0, 0.4);
-    private val highlightColorYellow = Color(1.0, 1.0, 0.0, 0.4);
+    private val squareSelectionColor = Color(0.3, 0.4, 0.5, 0.6)
+    private val lightBrown = Color.rgb(208, 192, 160)
+    private val darkBrown = Color.rgb(160, 128, 80)
+    private val highlightColorGreen = Color(0.0, 1.0, 0.0, 0.4)
+    private val highlightColorRed = Color(1.0, 0.0, 0.0, 0.4)
+    private val highlightColorYellow = Color(1.0, 1.0, 0.0, 0.4)
 
     init {
-        children.add(canvas)
-        children.add(arrowCanvas)
+        canvasLayer.values.forEach { children.add(it) }
 
         // Drag&Drop handling
-        canvas.setOnDragDetected { e ->
-            val s = squareAt(e.x, e.y)
-            if (s.rank in 1..8 && s.file in 1..8) {
-                val piece = position.square(s.rank, s.file).piece
-                if (piece != null) {
-                    // we need to put something on the dragboard to effectivly start dragging
-                    val dragboard = canvas.startDragAndDrop(*TransferMode.ANY)
-                    val content = ClipboardContent()
-                    content.putString("")
-                    dragboard.setContent(content)
-                    e.consume()
-                    dragSquare = squareDataOf(s)
-                    dragImage = scaledPieces[piece.fenChar]
-                    draw() // get rid of possible arrows
+        with (canvasLayer[DRAG_DROP]!!) {
+            setOnDragDetected { e ->
+                val s = squareAt(e.x, e.y)
+                if (s.rank in 1..8 && s.file in 1..8) {
+                    val piece = position.square(s.rank, s.file).piece
+                    if (piece != null) {
+                        // we need to put something on the dragboard to effectivly start dragging
+                        val dragboard = startDragAndDrop(*TransferMode.ANY)
+                        val content = ClipboardContent()
+                        content.putString("")
+                        dragboard.setContent(content)
+                        e.consume()
+                        dragSquare = squareDataOf(s)
+                        dragImage = scaledPieces[piece.fenChar]
+                        drawPieces()
+                        drawDragPiece(Point2D(e.x, e.y))
+                    }
+                }
+                e.consume()
+            }
+            setOnDragOver { e ->
+                val s = squareAt(e.x, e.y)
+                if (s.rank in 1..8 && s.file in 1..8) {
+                    e.acceptTransferModes(*TransferMode.ANY)
+                    dropSquare = squareDataOf(s)
                     drawDragPiece(Point2D(e.x, e.y))
                 }
+                e.consume()
             }
-            e.consume()
-        }
-        canvas.setOnDragOver { e ->
-            val s = squareAt(e.x, e.y)
-            if (s.rank in 1..8 && s.file in 1..8) {
-                e.acceptTransferModes(*TransferMode.ANY)
-                dropSquare = squareDataOf(s)
-                drawDragPiece(Point2D(e.x, e.y))
+            setOnDragDropped { e ->
+                e.isDropCompleted = true
+                e.consume()
             }
-            e.consume()
-        }
-        canvas.setOnDragDropped { e ->
-            e.isDropCompleted = true
-            e.consume()
-        }
-        canvas.setOnDragDone { e ->
-            e.consume()
-            listener.forEach { it.moveIssued(dragSquare!!.square, dropSquare!!.square) }
-            drawDragPiece(null)
-        }
-        canvas.setOnMouseClicked { e ->
-            listener.forEach { it.squareClicked(squareAt(e.x, e.y)) }
+            setOnDragDone { e ->
+                e.consume()
+                // d&d finished - clear all d&d related stuff
+                clearCanvas(DRAG_DROP)
+                listener.forEach { it.moveIssued(dragSquare!!.square, dropSquare!!.square) }
+                dragImage = null
+                dragSquare = null
+                dropSquare = null
+                drawPieces()
+            }
+            setOnMouseClicked { e ->
+                listener.forEach { it.squareClicked(squareAt(e.x, e.y)) }
+            }
         }
 
     }
 
     private fun squareData(): List<SquareData> {
         val result = mutableListOf<SquareData>()
-        for (rank in 1..8) {
-            for (file in 1..8) {
-                result.add(SquareData(position.square(rank, file)))
-            }
-        }
+        forEachRankAndFile { rank, file -> result.add(SquareData(position.square(rank, file))) }
         return result.toList()
     }
 
     override fun layoutChildren() {
         scaleAll()
-        draw()
+        drawBoard()
+        drawSquareCoordinates()
+        drawPosition()
     }
 
+    private fun canvasSize(): Double = canvasLayer[BOARD]?.height ?: 0.0
+
     private fun scaleAll() {
-        // canvas size has to be always divisible by 8
+        // set the size of the canvases - it has to be always divisible by 8
         var s = Math.min(width, height).toInt()
         while (s % 8 != 0) s--
-        val size = s.toDouble()
-        canvas.width = size
-        canvas.height = width
-        arrowCanvas.width = size
-        arrowCanvas.height = width
+        val canvasSize = s.toDouble()
+        canvasLayer.values.forEach {
+            it.width = canvasSize
+            it.height = canvasSize
+        }
         // calc new squareSize
-        squareSize = (canvas.width / 8).toInt()
+        squareSize = (canvasSize / 8).toInt()
         // calc square topLeft points
         calcSquarePoints()
         // scale square images
         if (boardImageURL != null) {
             try {
-                val boardImageScaled = Image(boardImageURL, canvas.width, canvas.width, true, true)
-                for (rank in 1..8) {
-                    for (file in 1..8) {
-                        with (squareDataOf(rank, file)) {
-                            scaledImage = WritableImage(boardImageScaled.pixelReader,
-                                    topLeft.x.toInt(), topLeft.y.toInt(), squareSize, squareSize)
-                        }
-                    }
-                }
+                boardImageScaled = Image(boardImageURL, canvasSize, canvasSize, true, true)
             } catch (ex: Exception) {
                 ex.printStackTrace()
             }
@@ -174,84 +203,86 @@ class ChessBoard : Pane() {
     }
 
     private fun calcSquarePoints() {
-        for (rank in 1..8) {
-            for (file in 1..8) {
-                val x = if (isOrientationWhite) ((file - 1) * squareSize).toDouble()
-                else canvas.width - file  * squareSize
-                val y = if (isOrientationWhite) canvas.width - rank * squareSize
-                else ((rank - 1) * squareSize).toDouble()
-                squareDataOf(rank, file).let {
-                    it.topLeft = Point2D(x, y)
+        forEachSquareWithRankAndFile { rank, file ->
+            val x = if (isOrientationWhite) ((file - 1) * squareSize).toDouble() else canvasSize() - file  * squareSize
+            val y = if (isOrientationWhite) canvasSize() - rank * squareSize else ((rank - 1) * squareSize).toDouble()
+            topLeft = Point2D(x, y)
+        }
+    }
+
+    private fun drawBoard() {
+        with (canvasLayer[BOARD]!!.graphicsContext2D) {
+            if (boardImageScaled != null) {
+                drawImage(boardImageScaled, 0.0, 0.0)
+            } else forEachSquare {
+               colorSquare(topLeft.x, topLeft.y, if (square.isWhite) lightBrown else darkBrown)
+            }
+        }
+    }
+
+    private fun drawSquareCoordinates() {
+        clearCanvas(SQUARE_COORDINATES)
+        with (canvasLayer[SQUARE_COORDINATES]!!.graphicsContext2D) {
+            font = Font("Dialog", squareSize / 7.0)
+            val fontHeight = Toolkit.getToolkit().fontLoader.getFontMetrics(font).ascent
+            val span = squareSize / 25
+            forEachSquareWithRankAndFile { rank, file ->
+                val coordinateRankAndFile =  if (isOrientationWhite) 1 else 8
+                if (rank == coordinateRankAndFile || file == coordinateRankAndFile) {
+                    fill = if (square.isWhite) darkBrown else lightBrown
+                    fillText(square.name, topLeft.x + span, topLeft.y + fontHeight + span)
                 }
             }
         }
     }
 
-    /**
-     * 1. clear canvas
-     * 2. draw squares
-     * 3. draw arrows
-     */
-    private fun draw() {
-        with (arrowCanvas.graphicsContext2D) {
-            clearRect(0.0, 0.0, width, height)
-        }
-        with (canvas.graphicsContext2D) {
-            clearRect(0.0, 0.0, width, height)
-        }
-        for (rank in 1..8) {
-            for (file in 1..8) {
-                drawSquare(rank, file)
-            }
-        }
-        if (dragSquare == null) {
-            position.graphicsComments.filterIsInstance<ColoredArrow>().forEach {
-                drawColoredArrow(it)
+    private fun drawSquareHighlights() {
+        clearCanvas(SQUARE_HIGHLIGHTS)
+        with (canvasLayer[SQUARE_HIGHLIGHTS]!!.graphicsContext2D) {
+            forEachSquare {
+                if (lastMoveSquare) colorSquare(topLeft.x, topLeft.y, squareSelectionColor)
+                if (highlightColor != null && isShowingGraphicsComments) {
+                    colorSquare(topLeft.x, topLeft.y, translateColor(highlightColor)!!)
+                }
             }
         }
     }
 
-    /**
-     * 1. square background
-     * 2. square coordinates
-     * 3. colored squares of last move
-     * 4. colored squares of highlights
-     * 5. pieces
-     * 6. D&D squares highlight
-     */
-    private fun drawSquare(rank: Int, file: Int) {
-        squareDataOf(rank, file).let {
-            val x = it.topLeft.x
-            val y = it.topLeft.y
-            // 1. square background
-            if (it.scaledImage != null) {
-                canvas.graphicsContext2D.drawImage(it.scaledImage, x, y)
-            } else {
-                colorSquare(x, y, if (it.square.isWhite) lightBrown else darkBrown)
-            }
-            // TODO 2. square coordinates
-
-            // 3. colored squares of last move
-            if (it.lastMoveSquare && dragSquare == null) {
-                colorSquare(x, y, squareSelectionColor)
-            }
-
-            // 4. colored squares of highlights
-            if (it.color != null && dragSquare == null) {
-                colorSquare(x, y, translateColor(it.color)!!)
-            }
-
-            // 5. draw pieces
-            if (it !== dragSquare) {
-                position.square(rank, file).piece?.let {
-                    canvas.graphicsContext2D.drawImage(scaledPieces[it.fenChar], x, y)
+    private fun drawPieces() {
+        clearCanvas(PIECES)
+        with (canvasLayer[PIECES]!!.graphicsContext2D) {
+            forEachSquareWithRankAndFile { rank, file ->
+                if (this !== dragSquare) {
+                    position.square(rank, file).piece?.let {
+                        drawImage(scaledPieces[it.fenChar], topLeft.x, topLeft.y)
+                    }
                 }
             }
-            // 6. D&D squares highlight
-            if (it === dragSquare || it === dropSquare) {
-                colorSquare(x, y, squareSelectionColor)
+        }
+    }
+
+    private fun drawDragPiece(point: Point2D) {
+        clearCanvas(DRAG_DROP)
+        with (canvasLayer[DRAG_DROP]!!.graphicsContext2D) {
+            forEachSquare {
+                if (this === dragSquare || this === dropSquare) {
+                    colorSquare(topLeft.x, topLeft.y, squareSelectionColor)
+                }
+            }
+            if (isShowingPieces) {
+                val x = point.x - squareSize / 2
+                val y = point.y - squareSize / 2
+                drawImage(dragImage, x, y)
             }
         }
+    }
+
+    private fun clearCanvas(layer: Layer) = canvasLayer[layer]!!.graphicsContext2D.clearRect(0.0, 0.0, width, height)
+
+    private fun drawPosition() {
+        drawSquareHighlights()
+        drawPieces()
+        drawColoredArrows()
     }
 
     private fun translateColor(color: Color?) = when (color) {
@@ -261,40 +292,17 @@ class ChessBoard : Pane() {
         else -> color
     }
 
-    private fun drawDragPiece(point: Point2D?) {
-        // redraw the former drag-affected squares
-        dragAffectedSquares.forEach { drawSquare(it.rank, it.file) }
-        dragAffectedSquares.clear()
-        if (point != null) {
-            // draw drag scaledImage
-            val x = point.x - squareSize / 2
-            val y = point.y - squareSize / 2
-            canvas.graphicsContext2D.drawImage(dragImage, x, y)
-            // save the new drag-affected squares
-            fun _add(x: Double, y: Double) {
-                val s = squareAt(x, y)
-                if (s.rank in 1..8 && s.file in 1..8) dragAffectedSquares.add(s)
-            }
-            _add(x, y)
-            _add(x, y + squareSize)
-            _add(x + squareSize, y)
-            _add(x + squareSize, y + squareSize)
-        } else {
-            // d&d finished - clear all d&d related stuff
-            dragImage = null
-            dragSquare = null
-            dropSquare = null
-            draw()
-        }
+
+    private fun GraphicsContext.colorSquare(x: Double, y: Double, color: Color, alpha: Double = 1.0) {
+        globalAlpha = alpha
+        fill = color
+        fillRect(x, y, squareSize.toDouble(), squareSize.toDouble())
+        globalAlpha = 1.0
     }
 
-    private fun colorSquare(x: Double, y: Double, color: Color, alpha: Double = 1.0) {
-        with (canvas.graphicsContext2D) {
-            globalAlpha = alpha
-            fill = color
-            fillRect(x, y, squareSize.toDouble(), squareSize.toDouble())
-            globalAlpha = 1.0
-        }
+    private fun drawColoredArrows() {
+        canvasLayer[ARROWS]!!.graphicsContext2D.clearRect(0.0, 0.0, width, height)
+        position.graphicsComments.filterIsInstance<ColoredArrow>().forEach { drawColoredArrow(it) }
     }
 
     private fun drawColoredArrow(arrow: ColoredArrow) {
@@ -307,12 +315,12 @@ class ChessBoard : Pane() {
         val arrowheadSide = (squareSize / 3).toDouble()
         val arrowheadLength = arrowheadSide
 
-        with (arrowCanvas.graphicsContext2D) {
+        with (canvasLayer[ARROWS]!!.graphicsContext2D) {
             save()
-            val midPoint = Point2D((pointFrom.x + pointTo.x) / 2,  (pointFrom.y + pointTo.y) / 2)
-            translate(pointFrom.x, pointFrom.y)
-            val degrees = Math.atan2(pointTo.y - pointFrom.y, pointTo.x - pointFrom.x)
-//            rotate(-20.0)
+            val midPoint = Point2D((pointFrom.x + pointTo.x) / 2, (pointFrom.y + pointTo.y) / 2)
+            translate(midPoint.x, midPoint.y)
+            val theta = Math.atan2(pointFrom.y - pointTo.y, pointFrom.x - pointTo.x)
+            rotate(180 + Math.toDegrees(theta))
             beginPath()
             moveTo(-distance / 2, arrowHeight / 2)
             lineTo(distance / 2 - arrowheadLength, arrowHeight / 2)
@@ -322,10 +330,13 @@ class ChessBoard : Pane() {
             lineTo(distance / 2 - arrowheadLength, -(arrowHeight / 2))
             lineTo(-distance / 2, -(arrowHeight / 2))
             closePath()
-
-            fill  = translateColor(arrow.color)
+//            val from = Color(arrow.color.red, arrow.color.green, arrow.color.blue, 0.3)
+//            val to = Color(arrow.color.red, arrow.color.green, arrow.color.blue, 0.6)
+//            fill = LinearGradient(pointFrom.x, pointFrom.y, pointTo.x, pointTo.y, true, CycleMethod.NO_CYCLE,
+//                    Stop(0.0, from), Stop(1.0, to))
+            // TODO alpha gradient
+            fill = translateColor(arrow.color)
             fill()
-            translate(-midPoint.x, -midPoint.y)
             restore()
         }
 
@@ -371,15 +382,19 @@ class ChessBoard : Pane() {
         fun Square.sameRankAndFileAs(s: Square) = rank == s.rank && file == s.file
         val coloredSquares = position.graphicsComments.filterIsInstance<ColoredSquare>()
         val squaresOfMove = position.squaresOfMove
-        for (rank in 1..8) {
-            for (file in 1..8) {
-                with (squareDataOf(rank, file)) {
-                    square = position.square(rank, file)
-                    color = coloredSquares.firstOrNull { it.square.sameRankAndFileAs(square) }?.color
-                    lastMoveSquare = squaresOfMove.any { it.sameRankAndFileAs(square) }
-                }
-            }
+        forEachSquareWithRankAndFile { rank, file ->
+            square = position.square(rank, file)
+            highlightColor = coloredSquares.firstOrNull { it.square.sameRankAndFileAs(square) }?.color
+            lastMoveSquare = squaresOfMove.any { it.sameRankAndFileAs(square) }
         }
+    }
+
+    private fun forEachSquare(action: SquareData.() -> Unit) {
+        forEachRankAndFile { rank, file -> action(squareDataOf(rank, file)) }
+    }
+
+    private fun forEachSquareWithRankAndFile(action: SquareData.(rank: Int, file: Int) -> Unit) {
+        forEachRankAndFile { rank, file -> action(squareDataOf(rank, file), rank, file) }
     }
 
 }
