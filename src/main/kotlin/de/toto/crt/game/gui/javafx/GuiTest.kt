@@ -18,12 +18,16 @@ import javafx.stage.Stage
 import org.controlsfx.control.StatusBar
 import java.nio.file.Paths
 import com.kitfox.svg.batik.MultipleGradientPaint.NO_CYCLE
+import de.toto.crt.game.Position
+import javafx.application.Platform
 import javafx.scene.Group
+import javafx.scene.image.Image
 import javafx.scene.paint.Color
 import javafx.scene.paint.CycleMethod
 import javafx.scene.paint.LinearGradient
 import javafx.scene.paint.Stop
 import javafx.scene.shape.Rectangle
+import java.util.*
 
 
 fun main(args: Array<String>) {
@@ -36,10 +40,11 @@ class App: Application() {
     val board = ChessBoard()
     var game: Game
     val statusBar = StatusBar()
+    val drillPositions = LinkedList<Position>()
 
     init {
-//        val games = fromPGN(Paths.get(javaClass.getResource("/pgn/Repertoire_Black.pgn").toURI()))
-        val games = fromPGN(Paths.get(javaClass.getResource("/pgn/GraphicsCommentsAndNAGs.pgn").toURI()))
+        val games = fromPGN(Paths.get(javaClass.getResource("/pgn/Repertoire_Black.pgn").toURI()))
+//        val games = fromPGN(Paths.get(javaClass.getResource("/pgn/TestRepertoire.pgn").toURI()))
         game = games.first()
         games.forEach { if (it !== game) game.mergeIn(it) }
     }
@@ -73,8 +78,9 @@ class App: Application() {
 
         // ToolBar
         val btnDrill = Button("Drill")
-        val btnCoordinates = Button("Square Coordinates")
-         btnCoordinates.onAction = EventHandler { board.isShowingSquareCoordinates = !board.isShowingSquareCoordinates }
+        btnDrill.onAction = EventHandler { drill() }
+         val btnCoordinates = Button("Square Coordinates")
+        btnCoordinates.onAction = EventHandler { board.isShowingSquareCoordinates = !board.isShowingSquareCoordinates }
         val toolBar = ToolBar(btnDrill, btnCoordinates)
         pane.top = toolBar
 
@@ -93,18 +99,25 @@ class App: Application() {
             })
         }
         stage?.scene = scene
+        stage?.icons?.add(Image("/images/icon/White Knight-96.png"))
         stage?.show()
     }
 
     private val chessBoardListener = object: ChessBoardListener {
         override fun squareClicked(square: Square) {
-            val pos = game.currentPosition.next.firstOrNull { it.squaresOfMove[1] == square }
-            if (pos != null) board.position = game.gotoPosition(pos)
+            val pos = game.currentPosition.next.firstOrNull { it.squaresOfMove[1].sameRankAndFileAs(square) }
+            if (pos != null) {
+                board.position = game.gotoPosition(pos)
+                userMoved()
+            }
         }
 
         override fun moveIssued(from: Square, to: Square) {
             val pos = game.currentPosition.next.firstOrNull { it.squaresOfMove.containsAll(listOf(from, to)) }
-            if (pos != null) board.position = game.gotoPosition(pos)
+            if (pos != null) {
+                board.position = game.gotoPosition(pos)
+                userMoved()
+            }
         }
     }
 
@@ -116,6 +129,50 @@ class App: Application() {
 
     private fun updateStatusBar() {
         statusBar.text = game.currentPosition.comment
+    }
+
+    private fun drill() {
+        if (drillPositions.isEmpty()) {
+            drillPositions.clear()
+            drillPositions.addAll(game.currentPosition.preOrderDepthFirst(shuffle = true) {
+                // only mainline
+                if (it.whiteToMove != board.isOrientationWhite) {
+//                    it.previous?.next?.get(0) == it
+                    true
+                } else it.hasNext
+//                true
+            })
+            if (!drillPositions.isEmpty() && drillPositions[0].whiteToMove == board.isOrientationWhite) {
+                doDrillMove()
+            }
+
+        } else {
+            drillPositions.clear()
+            board.position = game.gotoStartPosition()
+        }
+    }
+
+    private fun doDrillMove() {
+        if (!drillPositions.isEmpty()) {
+            val nextDrillPosition = drillPositions.poll()
+            if (nextDrillPosition.next.size > 1) {
+                // we have an alternative variation at hand
+
+
+            }
+            board.position = game.gotoPosition(nextDrillPosition)
+        }
+    }
+
+    private fun userMoved() {
+        if (!drillPositions.isEmpty() && drillPositions[0] == game.currentPosition) {
+            drillPositions.poll()
+            Thread({
+                Thread.sleep(500)
+                Platform.runLater { doDrillMove() }
+            }).start()
+        }
+
     }
 
 }

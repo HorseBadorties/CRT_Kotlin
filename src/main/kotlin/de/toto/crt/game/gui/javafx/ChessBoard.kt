@@ -27,13 +27,13 @@ private class SquareData(
     var square: Square,
     var topLeft: Point2D = Point2D(0.0, 0.0),
     var highlightColor: Color? = null,
-    var lastMoveSquare: Boolean = false)
+    var isLastMoveSquare: Boolean = false)
 
 class ChessBoard : Pane() {
 
     val listener = mutableListOf<ChessBoardListener>()
 
-    private var isOrientationWhite = true
+    var isOrientationWhite = true
         set(value) {
             field = value
             calcSquarePoints()
@@ -73,7 +73,7 @@ class ChessBoard : Pane() {
         set(value) {
             if (value != position) {
                 field = value
-                positionSquaresToSquareData()
+                updateSquareData(value)
                 drawPosition()
             }
         }
@@ -106,30 +106,25 @@ class ChessBoard : Pane() {
         with (canvasLayer[DRAG_DROP]!!) {
             setOnDragDetected { e ->
                 val s = squareAt(e.x, e.y)
-                if (s.rank in 1..8 && s.file in 1..8) {
-                    val piece = position.square(s.rank, s.file).piece
-                    if (piece != null) {
-                        // we need to put something on the dragboard to effectivly start dragging
-                        val dragboard = startDragAndDrop(*TransferMode.ANY)
-                        val content = ClipboardContent()
-                        content.putString("")
-                        dragboard.setContent(content)
-                        e.consume()
-                        dragSquare = squareDataOf(s)
-                        dragImage = scaledPieces[piece.fenChar]
-                        drawPieces()
-                        drawDragPiece(Point2D(e.x, e.y))
-                    }
+                val piece = position.square(s.rank, s.file).piece
+                if (piece != null) {
+                    // we need to put something on the dragboard to effectivly start dragging
+                    val dragboard = startDragAndDrop(*TransferMode.ANY)
+                    val content = ClipboardContent()
+                    content.putString("")
+                    dragboard.setContent(content)
+                    e.consume()
+                    dragSquare = squareDataOf(s)
+                    dragImage = scaledPieces[piece.fenChar]
+                    drawPieces()
+                    drawDragPiece(Point2D(e.x, e.y))
                 }
                 e.consume()
             }
             setOnDragOver { e ->
-                val s = squareAt(e.x, e.y)
-                if (s.rank in 1..8 && s.file in 1..8) {
-                    e.acceptTransferModes(*TransferMode.ANY)
-                    dropSquare = squareDataOf(s)
-                    drawDragPiece(Point2D(e.x, e.y))
-                }
+                e.acceptTransferModes(*TransferMode.ANY)
+                dropSquare = squareDataOf(squareAt(e.x, e.y))
+                drawDragPiece(Point2D(e.x, e.y))
                 e.consume()
             }
             setOnDragDropped { e ->
@@ -156,7 +151,7 @@ class ChessBoard : Pane() {
     private fun squareData(): List<SquareData> {
         val result = mutableListOf<SquareData>()
         forEachRankAndFile { rank, file -> result.add(SquareData(position.square(rank, file))) }
-        return result.toList()
+        return result
     }
 
     override fun layoutChildren() {
@@ -184,7 +179,7 @@ class ChessBoard : Pane() {
         // scale square images
         if (boardImageURL != null) {
             try {
-                boardImageScaled = Image(boardImageURL, canvasSize, canvasSize, true, true)
+                boardImageScaled = Image(boardImageURL, canvasSize, canvasSize, false, true)
             } catch (ex: Exception) {
                 ex.printStackTrace()
             }
@@ -240,7 +235,7 @@ class ChessBoard : Pane() {
         clearCanvas(SQUARE_HIGHLIGHTS)
         with (canvasLayer[SQUARE_HIGHLIGHTS]!!.graphicsContext2D) {
             forEachSquare {
-                if (lastMoveSquare) colorSquare(topLeft.x, topLeft.y, squareSelectionColor)
+                if (isLastMoveSquare) colorSquare(topLeft.x, topLeft.y, squareSelectionColor)
                 if (highlightColor != null && isShowingGraphicsComments) {
                     colorSquare(topLeft.x, topLeft.y, translateColor(highlightColor)!!)
                 }
@@ -294,10 +289,11 @@ class ChessBoard : Pane() {
 
 
     private fun GraphicsContext.colorSquare(x: Double, y: Double, color: Color, alpha: Double = 1.0) {
+        save()
         globalAlpha = alpha
         fill = color
         fillRect(x, y, squareSize.toDouble(), squareSize.toDouble())
-        globalAlpha = 1.0
+        restore()
     }
 
     private fun drawColoredArrows() {
@@ -339,7 +335,6 @@ class ChessBoard : Pane() {
             fill()
             restore()
         }
-
     }
 
     private fun squareDataOf(square: Square) = squareDataOf(square.rank, square.file)
@@ -378,14 +373,13 @@ class ChessBoard : Pane() {
         }
     }
 
-    private fun positionSquaresToSquareData() {
-        fun Square.sameRankAndFileAs(s: Square) = rank == s.rank && file == s.file
-        val coloredSquares = position.graphicsComments.filterIsInstance<ColoredSquare>()
-        val squaresOfMove = position.squaresOfMove
+    private fun updateSquareData(pos: Position) {
+        val coloredSquares = pos.graphicsComments.filterIsInstance<ColoredSquare>()
+        val squaresOfMove = pos.squaresOfMove
         forEachSquareWithRankAndFile { rank, file ->
-            square = position.square(rank, file)
+            square = pos.square(rank, file)
             highlightColor = coloredSquares.firstOrNull { it.square.sameRankAndFileAs(square) }?.color
-            lastMoveSquare = squaresOfMove.any { it.sameRankAndFileAs(square) }
+            isLastMoveSquare = squaresOfMove.any { it.sameRankAndFileAs(square) }
         }
     }
 

@@ -124,14 +124,23 @@ class Position(
         return result
     }
 
+    fun List<Position>.shuffle(): List<Position> {
+        Collections.shuffle(this)
+        return this
+    }
+
     /**
      * Returns a preorder depth-first List of all following Positions with all their variations.
+     * If `shuffle` is used the order of variations will be shuffled.
      */
-    fun preOrderDepthFirst(filter: (Position) -> Boolean = { true }): List<Position> {
+    fun preOrderDepthFirst(shuffle: Boolean = false, filter: (Position) -> Boolean = { true }): List<Position> {
+
         val result = mutableListOf<Position>()
 
         fun preOrder(pos: Position) {
-            pos.next.forEach {
+            val variations = pos.next
+            if (shuffle) variations.shuffle()
+            variations.forEach {
                 if (filter(it)) {
                     result.add(it)
                     preOrder(it)

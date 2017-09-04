@@ -53,6 +53,8 @@ class Square {
 
     override fun hashCode() = 31 * (10 * rank + file) + (piece?.hashCode() ?: 0)
 
+    fun sameRankAndFileAs(s: Square) = rank == s.rank && file == s.file
+
     companion object {
         fun fromName(name: String): Square = Square(name.drop(1).toInt(), name[0].toInt() - 'a'.toInt() + 1)
     }
