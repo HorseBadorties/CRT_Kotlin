@@ -322,16 +322,14 @@ class ChessBoard : Pane() {
             lineTo(distance / 2 - arrowheadLength, arrowHeight / 2)
             lineTo(distance / 2 - arrowheadLength, arrowheadSide / 2)
             lineTo(distance / 2, 0.0)
-            lineTo(distance / 2 - arrowheadLength, -(arrowheadSide / 2))
-            lineTo(distance / 2 - arrowheadLength, -(arrowHeight / 2))
-            lineTo(-distance / 2, -(arrowHeight / 2))
+            lineTo(distance / 2 - arrowheadLength, -arrowheadSide / 2)
+            lineTo(distance / 2 - arrowheadLength, -arrowHeight / 2)
+            lineTo(-distance / 2, -arrowHeight / 2)
             closePath()
-//            val from = Color(arrow.color.red, arrow.color.green, arrow.color.blue, 0.3)
-//            val to = Color(arrow.color.red, arrow.color.green, arrow.color.blue, 0.6)
-//            fill = LinearGradient(pointFrom.x, pointFrom.y, pointTo.x, pointTo.y, true, CycleMethod.NO_CYCLE,
-//                    Stop(0.0, from), Stop(1.0, to))
-            // TODO alpha gradient
-            fill = translateColor(arrow.color)
+            val from = Color(arrow.color.red, arrow.color.green, arrow.color.blue, 0.3)
+            val to = Color(arrow.color.red, arrow.color.green, arrow.color.blue, 0.6)
+            fill = LinearGradient(0.0, 0.0, 1.0, 0.0, true, CycleMethod.NO_CYCLE,
+                    Stop(0.0, from), Stop(1.0, to))
             fill()
             restore()
         }
