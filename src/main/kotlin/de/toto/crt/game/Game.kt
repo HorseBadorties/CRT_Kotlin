@@ -68,7 +68,7 @@ class Game {
      * Return the first Position that matches the `predicate`,
      * or `null` if no match was found
      */
-    fun get(predicate: (Position) -> Boolean): Position? {
+    fun getOrNull(predicate: (Position) -> Boolean): Position? {
         val queue = LinkedList<Position>()
         queue.add(startPosition())
         while (!queue.isEmpty()) {
@@ -81,10 +81,10 @@ class Game {
         return null
     }
 
-    fun contains(pos: Position):Boolean = get { it == pos } != null
+    fun contains(pos: Position):Boolean = getOrNull { it == pos } != null
 
     fun mergeIn(otherGame: Game) {
-        fun find(pos: Position?) = get { it == pos }
+        fun find(pos: Position?) = getOrNull { it == pos }
 
         otherGame.startPosition().breadthFirst().forEach { otherPos ->
             if (!contains(otherPos)) {

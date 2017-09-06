@@ -12,7 +12,7 @@ class FenTest {
 
 
     @Test
-    fun testPieces() {
+    fun pieces() {
         assertTrue(fromFEN("r7/8/8/8/8/8/8/8 w KQkq - 0 1").square("a8").piece == Piece.BLACK_ROOK)
         assertTrue(fromFEN("8/8/8/8/8/8/8/R7 w KQkq - 0 1").square("a1").piece == Piece.WHITE_ROOK)
         with(fromFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")){
@@ -29,13 +29,13 @@ class FenTest {
     }
 
     @Test
-    fun testSideToMove() {
+    fun sideToMove() {
         assertTrue(fromFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1").whiteToMove)
         assertFalse(fromFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1").whiteToMove)
     }
 
     @Test
-    fun testCastlingRights() {
+    fun castlingRights() {
         assertTrue(fromFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1").
                 castlingRights().contentEquals(CastlingRight.values()))
         assertTrue(fromFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0 1").
@@ -45,21 +45,30 @@ class FenTest {
     }
 
     @Test
-    fun testEnPassantField() {
+    fun enPassantField() {
         assertNull(fromFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1").enPassantField)
         assertTrue(fromFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq e2 0 1").enPassantField == "e2")
     }
 
     @Test
-    fun testHalfMoveCount() {
+    fun halfMoveCount() {
         assertTrue(fromFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1").halfMoveCount == 0)
         assertTrue(fromFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 49 1").halfMoveCount == 49)
     }
 
     @Test
-    fun testMoveNumber() {
-        assertTrue(fromFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1").moveNumber == 1)
-        assertTrue(fromFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 42").moveNumber == 42)
+    fun moveNumber() {
+        //Position.moveNumber is the actual move number while the FEN fullmove number (number of the next move)
+        assertTrue(fromFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1").moveNumber == 0)
+        assertTrue(fromFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 42").moveNumber == 41)
+    }
+
+    @Test
+    fun toFen() {
+        assertEquals(fromFEN(FEN_STARTPOSITION).toFEN(),
+                "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+        assertEquals(fromFEN(FEN_EMPTY_BOARD).toFEN(),
+                "8/8/8/8/8/8/8/8 w KQkq - 0 1")
     }
 
 }

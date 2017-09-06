@@ -87,15 +87,15 @@ class MoveParserTest {
     @Test
     fun moveNumber() {
         var pos = fromFEN(FEN_STARTPOSITION)
-        assertTrue(pos.moveNumber == 0)
+        assertEquals(pos.moveNumber, 0)
         pos = pos.createNextFromSAN("e4")
-        assertTrue(pos.moveNumber == 1)
+        assertEquals(pos.moveNumber, 1)
         pos = pos.createNextFromSAN("c5")
-        assertTrue(pos.moveNumber == 1)
+        assertEquals(pos.moveNumber,  1)
         pos = pos.createNextFromSAN("Nf3")
-        assertTrue(pos.moveNumber == 2)
+        assertEquals(pos.moveNumber, 2)
         pos = pos.createNextFromSAN("d6")
-        assertTrue(pos.moveNumber == 2)
+        assertEquals(pos.moveNumber, 2)
     }
 
     @Test

@@ -2,14 +2,19 @@ package de.toto.crt.game.gui.javafx
 
 import de.toto.crt.game.Game
 import de.toto.crt.game.GameListener
+import de.toto.crt.game.Position
 import de.toto.crt.game.fromPGN
 import de.toto.crt.game.rules.Square
 import de.toto.crt.game.rules.squaresOfMove
+import de.toto.crt.game.rules.toFEN
 import javafx.application.Application
+import javafx.application.Platform
 import javafx.event.EventHandler
 import javafx.scene.Scene
 import javafx.scene.control.Button
+import javafx.scene.control.Label
 import javafx.scene.control.ToolBar
+import javafx.scene.image.Image
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyCodeCombination
 import javafx.scene.input.KeyCombination
@@ -17,16 +22,6 @@ import javafx.scene.layout.BorderPane
 import javafx.stage.Stage
 import org.controlsfx.control.StatusBar
 import java.nio.file.Paths
-import com.kitfox.svg.batik.MultipleGradientPaint.NO_CYCLE
-import de.toto.crt.game.Position
-import javafx.application.Platform
-import javafx.scene.Group
-import javafx.scene.image.Image
-import javafx.scene.paint.Color
-import javafx.scene.paint.CycleMethod
-import javafx.scene.paint.LinearGradient
-import javafx.scene.paint.Stop
-import javafx.scene.shape.Rectangle
 import java.util.*
 
 
@@ -43,30 +38,12 @@ class App: Application() {
     val drillPositions = LinkedList<Position>()
 
     init {
-//        val games = fromPGN(Paths.get(javaClass.getResource("/pgn/Repertoire_Black.pgn").toURI()))
-        val games = fromPGN(Paths.get(javaClass.getResource("/pgn/GraphicsCommentsAndNAGs.pgn").toURI()))
-//        val games = fromPGN(Paths.get(javaClass.getResource("/pgn/TestRepertoire.pgn").toURI()))
+        val games = fromPGN(Paths.get(javaClass.getResource("/pgn/Repertoire_Black.pgn").toURI()))
+//        val games = fromPGN(Paths.getOrNull(javaClass.getResource("/pgn/GraphicsCommentsAndNAGs.pgn").toURI()))
+//        val games = fromPGN(Paths.getOrNull(javaClass.getResource("/pgn/TestRepertoire.pgn").toURI()))
         game = games.first()
         games.forEach { if (it !== game) game.mergeIn(it) }
     }
-
-//    override fun start(primaryStage: Stage) {
-//
-//        val mainGroup = Group()
-//        val r = Rectangle(0.0, 0.0, 200.0, 200.0)
-//
-//        val stop1 = Stop(0.0, Color(0.0, 0.0, 1.0, 0.2))
-//        val stop2 = Stop(1.0, Color(0.0, 0.0, 1.0, 0.8))
-//        val lg = LinearGradient(0.0, 0.0, 200.0, 200.0, false,
-//                CycleMethod.NO_CYCLE,
-//                stop1, stop2)
-//        r.setFill(lg)
-//
-//        mainGroup.getChildren().addAll(r)
-//        val scene = Scene(mainGroup, 200.0, 200.0)
-//        primaryStage.scene = scene
-//        primaryStage.show()
-//    }
 
      override fun start(stage: Stage?) {
         stage?.title = "JavaFX-Tester with FX ChessBoard"
@@ -80,7 +57,7 @@ class App: Application() {
         // ToolBar
         val btnDrill = Button("Drill")
         btnDrill.onAction = EventHandler { drill() }
-         val btnCoordinates = Button("Square Coordinates")
+        val btnCoordinates = Button("Square Coordinates")
         btnCoordinates.onAction = EventHandler { board.isShowingSquareCoordinates = !board.isShowingSquareCoordinates }
         val toolBar = ToolBar(btnDrill, btnCoordinates)
         pane.top = toolBar
@@ -90,7 +67,7 @@ class App: Application() {
         val scene = Scene(pane, 800.0, 800.0)
         with (scene.getAccelerators()) {
             put(KeyCodeCombination(KeyCode.LEFT), Runnable {
-                    board.position = game.back()
+                board.position = game.back()
             })
             put(KeyCodeCombination(KeyCode.RIGHT), Runnable {
                 board.position =  game.next()
@@ -129,7 +106,9 @@ class App: Application() {
     }
 
     private fun updateStatusBar() {
-        statusBar.text = game.currentPosition.comment
+        statusBar.text = if (game.currentPosition.move.isEmpty()) "" else game.currentPosition.moveWithMovenumber
+        statusBar.rightItems.clear()
+        statusBar.rightItems.add(Label(game.currentPosition.toFEN()))
     }
 
     private fun drill() {
@@ -138,10 +117,8 @@ class App: Application() {
             drillPositions.addAll(game.currentPosition.preOrderDepthFirst(shuffle = true) {
                 // only mainline
                 if (it.whiteToMove != board.isOrientationWhite) {
-//                    it.previous?.next?.get(0) == it
-                    true
+                    it.previous?.next?.getOrNull(0) == it
                 } else it.hasNext
-//                true
             })
             if (!drillPositions.isEmpty() && drillPositions[0].whiteToMove == board.isOrientationWhite) {
                 doDrillMove()

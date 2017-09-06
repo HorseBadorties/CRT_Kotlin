@@ -86,7 +86,7 @@ Ra1 Rb5 37. Rxa6 Ke7 38. Ra7+ Kd6 39. Rh7 Rxb6 40. Rxh6+ Ke5 41. Kf2 Kf5
     @Test
     fun testBig() {
         var count = 0
-//        fromPGN(Paths.get("C:\\Users\\080064\\Downloads\\twic_BULK.pgn"), { count++; true })
+//        fromPGN(Paths.getOrNull("C:\\Users\\080064\\Downloads\\twic_BULK.pgn"), { count++; true })
         fromPGN(Paths.get("C:\\Users\\Torsten\\Downloads\\2015-2017.pgn"), { count++; true })
         println(count)
     }
@@ -96,7 +96,7 @@ fun Position.hasVariation(san: String) = next.any { it.move == san }
 
 fun Game.getPosition(sanWithMoveNumber: String): Position {
     var result = startPosition()
-    while (result.moveWithMovenumber() != sanWithMoveNumber) {
+    while (result.moveWithMovenumber != sanWithMoveNumber) {
         if (!result.hasNext) {
             throw IllegalArgumentException("move $sanWithMoveNumber does not exist")
         } else {

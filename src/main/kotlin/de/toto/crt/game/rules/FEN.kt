@@ -2,8 +2,10 @@ package de.toto.crt.game.rules
 
 import de.toto.crt.game.Position
 
-const val FEN_STARTPOSITION = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 0"
-const val FEN_EMPTY_BOARD = "8/8/8/8/8/8/8/8 w KQkq - 0 0"
+// https://en.wikipedia.org/wiki/Forsyth-Edwards_Notation
+
+const val FEN_STARTPOSITION = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+const val FEN_EMPTY_BOARD = "8/8/8/8/8/8/8/8 w KQkq - 0 1"
 
 /**
  * Constructs a Position according to the provided `fen`
@@ -11,8 +13,15 @@ const val FEN_EMPTY_BOARD = "8/8/8/8/8/8/8/8 w KQkq - 0 0"
 fun fromFEN(fen: String): Position {
     val fenFields = fen.trim().split(" ")
     try {
-        val epField = if (fenFields[3] == "-") null else fenFields[3]
-        with(Position("", fenFields[1] == "w", epField, fenFields[4].toInt(), fenFields[5].toInt(), null)) {
+        val whiteToMove = fenFields[1] == "w"
+        var movenumber = fenFields[5].toInt()
+        if (!whiteToMove || fen == FEN_STARTPOSITION) movenumber--
+        with (Position(move = "",
+                whiteToMove = whiteToMove,
+                enPassantField = if (fenFields[3] == "-") null else fenFields[3],
+                halfMoveCount = fenFields[4].toInt(),
+                moveNumber = movenumber,
+                previous = null)) {
             // Set up Pieces
             var rank = 8; var file = 1
             for (fenChar in fenFields[0]) {
@@ -27,7 +36,7 @@ fun fromFEN(fen: String): Position {
                 }
             }
             // Castling
-            setCastlingRights(fenFields[2])
+            castlingRightsFromFEN(fenFields[2])
             return this
         }
     } catch (ex: Exception) {
@@ -35,7 +44,45 @@ fun fromFEN(fen: String): Position {
     }
 }
 
-private fun Position.setCastlingRights(fenString: String) {
+/**
+ * returns the FEN of this position
+ */
+fun Position.toFEN(): String {
+    val fenMoveNumber = if (moveNumber == 0 || whiteToMove) moveNumber + 1 else moveNumber
+    return "${squaresToFEN()} ${if (whiteToMove) "w" else "b"} ${castlingRightsToFEN()} " +
+        "${enPassantField ?: "-"} $halfMoveCount $fenMoveNumber"
+}
+
+fun Position.squaresToFEN(): String {
+    val result = StringBuilder()
+    for (rank in 8 downTo 1) {
+        var emptySquareCounter = 0
+        for (file in 1..8) {
+            val piece = square(rank, file).piece
+            if (piece != null) {
+                if (emptySquareCounter > 0) result.append(emptySquareCounter)
+                emptySquareCounter = 0
+                result.append(piece.fenChar)
+            } else emptySquareCounter++
+        }
+        if (emptySquareCounter > 0) result.append(emptySquareCounter)
+        if (rank > 1) result.append("/")
+    }
+    return result.toString()
+}
+
+private fun Position.castlingRightsToFEN(): String {
+    with (StringBuilder()) {
+        if (hasCastlingRight(CastlingRight.WHITE_SHORT)) append("K")
+        if (hasCastlingRight(CastlingRight.WHITE_LONG)) append("Q")
+        if (hasCastlingRight(CastlingRight.BLACK_SHORT)) append("k")
+        if (hasCastlingRight(CastlingRight.BLACK_LONG)) append("q")
+        return if (isEmpty()) "-" else toString()
+    }
+
+}
+
+private fun Position.castlingRightsFromFEN(fenString: String) {
     val rights = mutableListOf<CastlingRight>()
     if (fenString.contains("K")) rights.add(CastlingRight.WHITE_SHORT)
     if (fenString.contains("Q")) rights.add(CastlingRight.WHITE_LONG)

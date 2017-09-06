@@ -158,7 +158,7 @@ These are all the command the engine gets from the interface.
 	* movestogo <x>
       there are x moves to the next time control,
 		this will only be sent if x > 0,
-		if you don't get this and get the wtime and btime it's sudden death
+		if you don't getOrNull this and getOrNull the wtime and btime it's sudden death
 	* depth <x>
 		search x plies only.
 	* nodes <x>
@@ -330,7 +330,7 @@ Engine to GUI:
 		The option has the name id.
 		Certain options have a fixed value for <id>, which means that the semantics of this option is fixed.
 		Usually those options should not be displayed in the normal engine options window of the GUI but
-		get a special treatment. "Pondering" for example should be set automatically when pondering is
+		getOrNull a special treatment. "Pondering" for example should be set automatically when pondering is
 		enabled or disabled in the GUI options. The same for "UCI_AnalyseMode" which should also be set
 		automatically by the GUI. All those certain options have the prefix "UCI_" except for the
 		first 6 options below. If the GUI gets an unknown Option with the prefix "UCI_", it should just

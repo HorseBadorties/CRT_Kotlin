@@ -14,7 +14,7 @@ fun Position.createNextFromSAN(san: String, asMainline: Boolean = true): Positio
         next.add(if (asMainline) 0 else next.size, result)
         return result
     } catch (ex: Exception) {
-        throw IllegalArgumentException("failed to parse SAN $san as next move for ${moveWithMovenumber()}", ex)
+        throw IllegalArgumentException("failed to parse SAN $san as next move for ${moveWithMovenumber}", ex)
     }
 }
 
@@ -111,7 +111,6 @@ private fun Position.parseNextFromSAN(san: String, asMainline: Boolean): Positio
     }
 }
 
-// TODO cleanup code
 private fun Position.getEnPassantField(piece: Piece, from: Square, to: Square): String? {
     // was it a two-squares pawn move?
     if (piece.type == PAWN && Math.abs(from.rank - to.rank) == 2) {

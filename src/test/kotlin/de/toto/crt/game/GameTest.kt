@@ -69,13 +69,13 @@ class GameTest {
         val game2 = fromPGN("1.e4 e5 2.Nf3 Nc6 (2..Nf6 3.Nxe5) 3.Bb5 Nf6 *")[0]
         game1.mergeIn(game2)
         assertEquals(game1.pos("Nf3")?.next?.size, 2)
-        assertEquals(game2.pos("3...Nf6")?.next?.size, 0)
+        assertEquals(game2.pos("3... Nf6")?.next?.size, 0)
     }
 
 
 
 }
 
-fun Game.pos(move: String) = get {
-    if (move.first().isDigit()) it.moveWithMovenumber() == move else it.move == move
+fun Game.pos(move: String) = getOrNull {
+    if (move.first().isDigit()) it.moveWithMovenumber == move else it.move == move
 }

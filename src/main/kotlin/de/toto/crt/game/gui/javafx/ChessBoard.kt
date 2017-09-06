@@ -7,8 +7,10 @@ import de.toto.crt.game.ColoredArrow
 import de.toto.crt.game.ColoredSquare
 import de.toto.crt.game.Position
 import de.toto.crt.game.forEachRankAndFile
+import de.toto.crt.game.gui.javafx.ChessBoard.Layer.*
 import de.toto.crt.game.rules.Square
 import de.toto.crt.game.rules.squaresOfMove
+import javafx.animation.FadeTransition
 import javafx.embed.swing.SwingFXUtils
 import javafx.geometry.Point2D
 import javafx.scene.canvas.Canvas
@@ -17,11 +19,14 @@ import javafx.scene.image.Image
 import javafx.scene.input.ClipboardContent
 import javafx.scene.input.TransferMode
 import javafx.scene.layout.Pane
+import javafx.scene.paint.Color
+import javafx.scene.paint.CycleMethod
+import javafx.scene.paint.LinearGradient
+import javafx.scene.paint.Stop
+import javafx.scene.text.Font
+import javafx.util.Duration
 import java.awt.Dimension
 import java.awt.image.BufferedImage
-import de.toto.crt.game.gui.javafx.ChessBoard.Layer.*
-import javafx.scene.paint.*
-import javafx.scene.text.Font
 
 private class SquareData(
     var square: Square,
@@ -78,11 +83,19 @@ class ChessBoard : Pane() {
             }
         }
 
-    private enum class Layer { BOARD, SQUARE_COORDINATES, SQUARE_HIGHLIGHTS, PIECES, ARROWS, DRAG_DROP }
+    private enum class Layer {
+        BOARD,
+        SQUARE_COORDINATES,
+        LAST_MOVE_HIGHLIGHTS,
+        SQUARE_HIGHLIGHTS,
+        PIECES,
+        ARROWS,
+        DRAG_DROP }
+
     private val canvasLayer: Map<Layer, Canvas> = Layer.values().associate { it to Canvas() }
 
     private var squareSize: Int = 0
-    private val boardImageURL: String? = "/images/board/maple.jpg"
+    private val boardImageURL: String? = null //"/images/board/maple.jpg"
     private var boardImageScaled: Image? = null
     private val pieceIcons: Map<Char, SVGIcon> = loadPieces()
     private val scaledPieces = mutableMapOf<Char, Image>()
@@ -95,12 +108,31 @@ class ChessBoard : Pane() {
     private val squareSelectionColor = Color(0.3, 0.4, 0.5, 0.6)
     private val lightBrown = Color.rgb(208, 192, 160)
     private val darkBrown = Color.rgb(160, 128, 80)
+//    private val highlightColorGreen = Color(0.0, 1.0, 0.0, 1.0)
+//    private val highlightColorRed = Color(1.0, 0.0, 0.0, 1.0)
+//    private val highlightColorYellow = Color(1.0, 1.0, 0.0, 1.0)
     private val highlightColorGreen = Color(0.0, 1.0, 0.0, 0.4)
     private val highlightColorRed = Color(1.0, 0.0, 0.0, 0.4)
     private val highlightColorYellow = Color(1.0, 1.0, 0.0, 0.4)
 
     init {
         canvasLayer.values.forEach { children.add(it) }
+
+        /*
+        FadeTransition(Duration.millis(1000.0), canvasLayer[SQUARE_HIGHLIGHTS]).apply {
+            fromValue = 0.6
+            toValue  = 0.5
+            isAutoReverse = true
+            cycleCount = Int.MAX_VALUE
+        }.play()
+
+        FadeTransition(Duration.millis(1000.0), canvasLayer[ARROWS]).apply {
+            fromValue = 0.6
+            toValue  = 0.4
+            isAutoReverse = true
+            cycleCount = Int.MAX_VALUE
+        }.play()
+        */
 
         // Drag&Drop handling
         with (canvasLayer[DRAG_DROP]!!) {
@@ -231,11 +263,19 @@ class ChessBoard : Pane() {
         }
     }
 
+    private fun drawLastMoveHighlights() {
+        clearCanvas(LAST_MOVE_HIGHLIGHTS)
+        with (canvasLayer[LAST_MOVE_HIGHLIGHTS]!!.graphicsContext2D) {
+            forEachSquare {
+                if (isLastMoveSquare) colorSquare(topLeft.x, topLeft.y, squareSelectionColor)
+            }
+        }
+    }
+
     private fun drawSquareHighlights() {
         clearCanvas(SQUARE_HIGHLIGHTS)
         with (canvasLayer[SQUARE_HIGHLIGHTS]!!.graphicsContext2D) {
             forEachSquare {
-                if (isLastMoveSquare) colorSquare(topLeft.x, topLeft.y, squareSelectionColor)
                 if (highlightColor != null && isShowingGraphicsComments) {
                     colorSquare(topLeft.x, topLeft.y, translateColor(highlightColor)!!)
                 }
@@ -275,6 +315,7 @@ class ChessBoard : Pane() {
     private fun clearCanvas(layer: Layer) = canvasLayer[layer]!!.graphicsContext2D.clearRect(0.0, 0.0, width, height)
 
     private fun drawPosition() {
+        drawLastMoveHighlights()
         drawSquareHighlights()
         drawPieces()
         drawColoredArrows()
@@ -304,20 +345,19 @@ class ChessBoard : Pane() {
     private fun drawColoredArrow(arrow: ColoredArrow) {
         fun Point2D.squareCenter() = Point2D(x + squareSize / 2, y + squareSize / 2)
 
-        val pointFrom = squareDataOf(arrow.from).topLeft.squareCenter()
-        val pointTo = squareDataOf(arrow.to).topLeft.squareCenter()
-        val distance = pointFrom.distance(pointTo)
-        val arrowHeight = (squareSize / 10).toDouble()
-        val arrowheadSide = (squareSize / 3).toDouble()
-        val arrowheadLength = arrowheadSide
-
         with (canvasLayer[ARROWS]!!.graphicsContext2D) {
             save()
+            val pointFrom = squareDataOf(arrow.from).topLeft.squareCenter()
+            val pointTo = squareDataOf(arrow.to).topLeft.squareCenter()
             val midPoint = Point2D((pointFrom.x + pointTo.x) / 2, (pointFrom.y + pointTo.y) / 2)
             translate(midPoint.x, midPoint.y)
             val theta = Math.atan2(pointFrom.y - pointTo.y, pointFrom.x - pointTo.x)
             rotate(180 + Math.toDegrees(theta))
             beginPath()
+            val distance = pointFrom.distance(pointTo)
+            val arrowHeight = (squareSize / 10).toDouble()
+            val arrowheadSide = (squareSize / 3).toDouble()
+            val arrowheadLength = arrowheadSide
             moveTo(-distance / 2, arrowHeight / 2)
             lineTo(distance / 2 - arrowheadLength, arrowHeight / 2)
             lineTo(distance / 2 - arrowheadLength, arrowheadSide / 2)
@@ -326,8 +366,8 @@ class ChessBoard : Pane() {
             lineTo(distance / 2 - arrowheadLength, -arrowHeight / 2)
             lineTo(-distance / 2, -arrowHeight / 2)
             closePath()
-            val from = Color(arrow.color.red, arrow.color.green, arrow.color.blue, 0.3)
-            val to = Color(arrow.color.red, arrow.color.green, arrow.color.blue, 0.6)
+            val from = Color(arrow.color.red, arrow.color.green, arrow.color.blue, 0.2)
+            val to = Color(arrow.color.red, arrow.color.green, arrow.color.blue, 0.7)
             fill = LinearGradient(0.0, 0.0, 1.0, 0.0, true, CycleMethod.NO_CYCLE,
                     Stop(0.0, from), Stop(1.0, to))
             fill()

@@ -66,14 +66,14 @@ class Position(
     }
 
     /**
-     * get a Square by 1-based `rank` and `file`
+     * getOrNull a Square by 1-based `rank` and `file`
      */
     fun square(rank: Int, file: Int): Square {
         return squares[rank-1][file-1]
     }
 
     /**
-     * get a Square by `name`
+     * getOrNull a Square by `name`
      */
     fun square(name: String): Square {
         val file = name[0] - 'a'
@@ -199,8 +199,7 @@ class Position(
     override fun toString() = move
 
     // TODO move somewhere else?
-//    val moveWithMovenumber: String get() { return "$moveNumber${if (whiteToMove) "..." else "."} $move" }
-    fun moveWithMovenumber() = "$moveNumber${if (whiteToMove) "..." else "."}$move"
+    val moveWithMovenumber: String get() { return "$moveNumber${if (whiteToMove) "..." else "."} $move" }
 
 }
 
