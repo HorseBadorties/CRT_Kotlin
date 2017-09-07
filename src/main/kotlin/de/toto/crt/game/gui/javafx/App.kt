@@ -16,7 +16,9 @@ import javafx.scene.control.Label
 import javafx.scene.control.ToolBar
 import javafx.scene.image.Image
 import javafx.scene.input.KeyCode
+import javafx.scene.input.KeyCode.*
 import javafx.scene.input.KeyCodeCombination
+import javafx.scene.input.KeyCodeCombination.*
 import javafx.scene.input.KeyCombination
 import javafx.scene.layout.BorderPane
 import javafx.stage.Stage
@@ -58,24 +60,25 @@ class App: Application() {
         // ToolBar
         val btnDrill = Button("Drill")
         btnDrill.onAction = EventHandler { drill() }
-        val btnCoordinates = Button("Square Coordinates")
-        btnCoordinates.onAction = EventHandler { board.isShowingSquareCoordinates = !board.isShowingSquareCoordinates }
-        val toolBar = ToolBar(btnDrill, btnCoordinates)
+        val btnSettings = Button("Settings")
+        btnSettings.onAction = EventHandler {
+            PropertySheet.setChessBoard(board)
+            PropertySheet.show()
+        }
+        val toolBar = ToolBar(btnDrill, btnSettings)
         pane.top = toolBar
 
         pane.bottom = statusBar
 
         val scene = Scene(pane, Prefs.getDouble(Prefs.FRAME_WIDTH, 800.0), Prefs.getDouble(Prefs.FRAME_HEIGHT, 800.0))
         with (scene.getAccelerators()) {
-            put(KeyCodeCombination(KeyCode.LEFT), Runnable {
-                board.position = game.back()
-            })
-            put(KeyCodeCombination(KeyCode.RIGHT), Runnable {
-                board.position =  game.next()
-            })
-            put(KeyCodeCombination(KeyCode.F, KeyCombination.CONTROL_DOWN), Runnable {
-                board.flip()
-            })
+            fun put(keyCodeCombination: KeyCodeCombination, action: () -> Unit) {
+                put(keyCodeCombination, Runnable { action() })
+            }
+            put(KeyCodeCombination(HOME)) { board.position = game.gotoStartPosition() }
+            put(KeyCodeCombination(LEFT)) { board.position = game.back() }
+            put(KeyCodeCombination(RIGHT)) { board.position =  game.next() }
+            put(KeyCodeCombination(F, CONTROL_DOWN)) { board.flip() }
         }
         stage?.scene = scene
         stage?.icons?.add(Image("/images/icon/White Knight-96.png"))
