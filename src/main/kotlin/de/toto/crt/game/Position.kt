@@ -11,7 +11,7 @@ class Position(
     val whiteToMove: Boolean = true,
     val enPassantField: String? = null,
     val halfMoveCount: Int = 0,
-    val moveNumber: Int = 0,
+    val moveNumber: Int = 0, // movenumber of the move that let to this position (unlike FEN fullmove number!)
     var previous: Position? = null,
     val variationLevel: Int = 0
 ) {
@@ -199,7 +199,8 @@ class Position(
     override fun toString() = move
 
     // TODO move somewhere else?
-    val moveWithMovenumber: String get() { return "$moveNumber${if (whiteToMove) "..." else "."} $move" }
+    val movenumberMove: String get() { return "$moveNumber${if (whiteToMove) "..." else "."} $move" }
+    val movenumberMoveNAGs: String get() { return "$movenumberMove${nags.joinToString(separator = " ")}" }
 
 }
 
@@ -210,7 +211,6 @@ fun forEachRankAndFile(action: (rank: Int, file: Int) -> Unit) {
         }
     }
 }
-
 
 sealed class GraphicsComment
 data class ColoredSquare(val square: Square, val color: Color) : GraphicsComment()

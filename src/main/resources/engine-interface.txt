@@ -275,7 +275,7 @@ Engine to GUI:
 			the score from the engine's point of view in centipawns.
 		* mate <y>
 			mate in y moves, not plies.
-			If the engine is getting mated use negative values for y.
+			If the engine is getting mated use negative store for y.
 		* lowerbound
 	      the score is just a lower bound.
 		* upperbound
@@ -461,7 +461,7 @@ uci
 // Note: here the GUI can already send a "quit" command if it just wants to find out
 //       details about the engine, so the engine should not initialize its internal
 //       parameters before here.
-// now the GUI sets some values in the engine
+// now the GUI sets some store in the engine
 // set hash to 32 MB
 setoption name Hash value 32
 
@@ -473,7 +473,7 @@ setoption name NalimovPath value d:\tb;c\tb
 // this command and the answer is required here!
 isready
 
-// engine has finished setting up the internal values
+// engine has finished setting up the internal store
 		readyok
 
 // now we are ready to go

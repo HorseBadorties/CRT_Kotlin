@@ -31,7 +31,7 @@ fun main(args: Array<String>) {
 
 class App: Application() {
 
-    val pane = BorderPane()
+    var ourStage: Stage? = null
     val board = ChessBoard()
     var game: Game
     val statusBar = StatusBar()
@@ -46,12 +46,13 @@ class App: Application() {
     }
 
      override fun start(stage: Stage?) {
+        ourStage = stage
         stage?.title = "JavaFX-Tester with FX ChessBoard"
+        val pane = BorderPane()
 
         game.listener.add(gameListener)
 
-        board.position = game.gotoStartPosition()
-        board.listener.add(chessBoardListener)
+        initBoard()
         pane.center = board
 
         // ToolBar
@@ -64,7 +65,7 @@ class App: Application() {
 
         pane.bottom = statusBar
 
-        val scene = Scene(pane, 800.0, 800.0)
+        val scene = Scene(pane, Prefs.getDouble(Prefs.FRAME_WIDTH, 800.0), Prefs.getDouble(Prefs.FRAME_HEIGHT, 800.0))
         with (scene.getAccelerators()) {
             put(KeyCodeCombination(KeyCode.LEFT), Runnable {
                 board.position = game.back()
@@ -79,6 +80,31 @@ class App: Application() {
         stage?.scene = scene
         stage?.icons?.add(Image("/images/icon/White Knight-96.png"))
         stage?.show()
+    }
+
+    override fun stop() {
+        with (Prefs) {
+            set(Prefs.WHITE_PERSPECTIVE, board.isOrientationWhite)
+            set(Prefs.SHOW_BOARD, board.isShowingBoard)
+            set(Prefs.SHOW_PIECES, board.isShowingPieces)
+            set(Prefs.SHOW_COORDINATES, board.isShowingSquareCoordinates)
+            set(Prefs.SHOW_GRAPHICS_COMMENTS, board.isShowingGraphicsComments)
+            set(Prefs.FRAME_WIDTH, ourStage?.scene?.width ?: 800.0)
+            set(Prefs.FRAME_HEIGHT, ourStage?.scene?.height ?: 800.0)
+        }
+        super.stop()
+    }
+
+    private fun initBoard() {
+        board.apply {
+            position = game.gotoStartPosition()
+            isOrientationWhite = Prefs.getBoolean(Prefs.WHITE_PERSPECTIVE)
+            isShowingBoard = Prefs.getBoolean(Prefs.SHOW_BOARD)
+            isShowingPieces = Prefs.getBoolean(Prefs.SHOW_PIECES)
+            isShowingSquareCoordinates = Prefs.getBoolean(Prefs.SHOW_COORDINATES)
+            isShowingGraphicsComments = Prefs.getBoolean(Prefs.SHOW_GRAPHICS_COMMENTS)
+            listener.add(chessBoardListener)
+        }
     }
 
     private val chessBoardListener = object: ChessBoardListener {
@@ -106,7 +132,7 @@ class App: Application() {
     }
 
     private fun updateStatusBar() {
-        statusBar.text = if (game.currentPosition.move.isEmpty()) "" else game.currentPosition.moveWithMovenumber
+        statusBar.text = if (game.currentPosition.move.isEmpty()) "" else game.currentPosition.movenumberMoveNAGs
         statusBar.rightItems.clear()
         statusBar.rightItems.add(Label(game.currentPosition.toFEN()))
     }

@@ -77,5 +77,5 @@ class GameTest {
 }
 
 fun Game.pos(move: String) = getOrNull {
-    if (move.first().isDigit()) it.moveWithMovenumber == move else it.move == move
+    if (move.first().isDigit()) it.movenumberMove == move else it.move == move
 }

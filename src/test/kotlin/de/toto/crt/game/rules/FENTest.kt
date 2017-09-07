@@ -1,6 +1,8 @@
 package de.toto.crt.game.rules
 
 import de.toto.crt.game.Position
+import de.toto.crt.game.fromPGN
+import de.toto.crt.game.pos
 import de.toto.crt.game.rules.CastlingRight
 import de.toto.crt.game.rules.Piece
 import de.toto.crt.game.rules.fromFEN
@@ -67,8 +69,10 @@ class FenTest {
     fun toFen() {
         assertEquals(fromFEN(FEN_STARTPOSITION).toFEN(),
                 "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
-        assertEquals(fromFEN(FEN_EMPTY_BOARD).toFEN(),
-                "8/8/8/8/8/8/8/8 w KQkq - 0 1")
+        assertEquals(fromPGN("1. d4 Nf6 1-0")[0].pos("1... Nf6")?.toFEN(),
+                "rnbqkb1r/pppppppp/5n2/8/3P4/8/PPP1PPPP/RNBQKBNR w KQkq - 1 2")
+        assertEquals(fromPGN("1. e4 Nf6 2. Nf3 e6 3. Bc4 Be7 4. 0-0 1-0")[0].pos("4. 0-0")?.toFEN(),
+                "rnbqk2r/ppppbppp/4pn2/8/2B1P3/5N2/PPPP1PPP/RNBQ1RK1 b kq - 3 4")
     }
 
 }

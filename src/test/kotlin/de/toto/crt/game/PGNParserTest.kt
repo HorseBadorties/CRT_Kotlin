@@ -96,7 +96,7 @@ fun Position.hasVariation(san: String) = next.any { it.move == san }
 
 fun Game.getPosition(sanWithMoveNumber: String): Position {
     var result = startPosition()
-    while (result.moveWithMovenumber != sanWithMoveNumber) {
+    while (result.movenumberMove != sanWithMoveNumber) {
         if (!result.hasNext) {
             throw IllegalArgumentException("move $sanWithMoveNumber does not exist")
         } else {
