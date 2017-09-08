@@ -15,11 +15,9 @@ import javafx.scene.control.Button
 import javafx.scene.control.Label
 import javafx.scene.control.ToolBar
 import javafx.scene.image.Image
-import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyCode.*
 import javafx.scene.input.KeyCodeCombination
 import javafx.scene.input.KeyCodeCombination.*
-import javafx.scene.input.KeyCombination
 import javafx.scene.layout.BorderPane
 import javafx.stage.Stage
 import org.controlsfx.control.StatusBar
@@ -61,10 +59,7 @@ class App: Application() {
         val btnDrill = Button("Drill")
         btnDrill.onAction = EventHandler { drill() }
         val btnSettings = Button("Settings")
-        btnSettings.onAction = EventHandler {
-            PropertySheet.setChessBoard(board)
-            PropertySheet.show()
-        }
+        btnSettings.onAction = EventHandler { settings() }
         val toolBar = ToolBar(btnDrill, btnSettings)
         pane.top = toolBar
 
@@ -72,13 +67,11 @@ class App: Application() {
 
         val scene = Scene(pane, Prefs.getDouble(Prefs.FRAME_WIDTH, 800.0), Prefs.getDouble(Prefs.FRAME_HEIGHT, 800.0))
         with (scene.getAccelerators()) {
-            fun put(keyCodeCombination: KeyCodeCombination, action: () -> Unit) {
-                put(keyCodeCombination, Runnable { action() })
-            }
-            put(KeyCodeCombination(HOME)) { board.position = game.gotoStartPosition() }
-            put(KeyCodeCombination(LEFT)) { board.position = game.back() }
-            put(KeyCodeCombination(RIGHT)) { board.position =  game.next() }
-            put(KeyCodeCombination(F, CONTROL_DOWN)) { board.flip() }
+            put(KeyCodeCombination(HOME), Runnable { board.position = game.gotoStartPosition() })
+            put(KeyCodeCombination(LEFT), Runnable { board.position = game.back() })
+            put(KeyCodeCombination(RIGHT), Runnable { board.position =  game.next() })
+            put(KeyCodeCombination(F, CONTROL_DOWN), Runnable { board.flip() })
+            put(KeyCodeCombination(S, CONTROL_DOWN), Runnable { settings() })
         }
         stage?.scene = scene
         stage?.icons?.add(Image("/images/icon/White Knight-96.png"))
@@ -97,6 +90,8 @@ class App: Application() {
         }
         super.stop()
     }
+
+    private fun settings() = SettingsDialog(ourStage?.scene?.window, BoardProperties(board), FooProperties()).show()
 
     private fun initBoard() {
         board.apply {

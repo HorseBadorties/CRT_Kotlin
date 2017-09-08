@@ -10,7 +10,6 @@ import de.toto.crt.game.forEachRankAndFile
 import de.toto.crt.game.gui.javafx.ChessBoard.Layer.*
 import de.toto.crt.game.rules.Square
 import de.toto.crt.game.rules.squaresOfMove
-import javafx.animation.FadeTransition
 import javafx.embed.swing.SwingFXUtils
 import javafx.geometry.Point2D
 import javafx.scene.canvas.Canvas
@@ -24,7 +23,6 @@ import javafx.scene.paint.CycleMethod
 import javafx.scene.paint.LinearGradient
 import javafx.scene.paint.Stop
 import javafx.scene.text.Font
-import javafx.util.Duration
 import java.awt.Dimension
 import java.awt.image.BufferedImage
 
@@ -40,10 +38,12 @@ class ChessBoard : Pane() {
 
     var isOrientationWhite = true
         set(value) {
-            field = value
-            calcSquarePoints()
-            drawSquareCoordinates()
-            drawPosition()
+            if (field != value) {
+                field = value
+                calcSquarePoints()
+                drawSquareCoordinates()
+                drawPosition()
+            }
         }
     fun flip() { isOrientationWhite = !isOrientationWhite }
 
@@ -57,9 +57,6 @@ class ChessBoard : Pane() {
         set(value) {
             field = value
             canvasLayer[BOARD]?.isVisible = value
-            canvasLayer[SQUARE_COORDINATES]?.isVisible = value
-            canvasLayer[PIECES]?.isVisible = value
-            canvasLayer[SQUARE_HIGHLIGHTS]?.isVisible = value
         }
 
     var isShowingPieces = true
