@@ -20,10 +20,8 @@ fun Position.createNextFromSAN(san: String, asMainline: Boolean = true): Positio
 
 val Position.squaresOfMove: List<Square>
     get() {
-        if (previous == null) return listOf()
-        with (previous!!.parseSAN(move)) {
-            return if (isNullMove) listOf() else listOf(fromSquare!!, toSquare!!)
-        }
+        return previous?.parseSAN(move)?.let { if (it.isNullMove) emptyList() else listOf(it.fromSquare!!, it.toSquare!!) }
+                ?: emptyList()
     }
 
 data class MoveInfo(

@@ -1,7 +1,11 @@
+
 fun main(args: Array<String>) {
-    val boolean = false
-    var result = boolean t 1.0 ?: "0"
-    println(result::class.java)
+    val (x, y) = Foo1(23, 45)
+    val (x2, y2) = Foo2(23, 45)
 }
 
-infix fun <T : Any> Boolean.t(value: T): T? = if(this) value else null
+data class Foo1(val x: Int, val y: Int)
+class Foo2(val x: Int, val y: Int) {
+    operator fun component1() = x
+    operator fun component2() = y
+}
