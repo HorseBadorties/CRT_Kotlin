@@ -1,64 +1,93 @@
 package de.toto.crt.game
 
-import de.toto.crt.game.rules.NAG
+import kotlinx.coroutines.experimental.*
 import java.nio.file.*
 
-fun fromPGN(path: Path, listener: (Game) -> Boolean) = PGNParser().parse(path, listener)
+import de.toto.crt.game.rules.NAG
 
-fun fromPGN(path: Path): List<Game> {
-    val result = mutableListOf<Game>()
-    PGNParser().parse(path, { result.add(it) })
-    return result
+fun fromPGN(pgn: String): Game {
+    val game = StringBuilder()
+    pgn.lines().forEach() {
+        if (!it.isBlank()) {
+            game.append(it.trim()).append(System.lineSeparator())
+        }
+    }
+    return PGNParser(lineNumber = 1).parse(game.toString(), { true }) ?: throw IllegalArgumentException("failed to parse $pgn")
 }
 
-fun fromPGN(pgn: String): List<Game> {
+fun fromPGN(path: Path, predicate: (Game) -> Boolean = { true }): List<Game> {
     val result = mutableListOf<Game>()
-    PGNParser().parse(pgn, { result.add(it) })
-    return result
-}
-
-private class PGNParser {
-
-    var lineNumber = 0
     var startOfFile = true
+    var lineNumber = 0
+    var lineNumberGameStart = 0
+    val game = StringBuilder()
+    var inGametext = false
+    val deferredGames = mutableListOf<Deferred<Game?>>()
+    for (line in Files.lines(path, Charsets.UTF_8)) {
+        lineNumber++
+        if (line.isBlank()) continue
+        if (startOfFile) {
+            if (line.contains('[')) {
+                // Drop first 3 ChessBase "special characters"
+                game.append(line.dropWhile { it != '[' }.trim()).append(System.lineSeparator())
+            }
+            startOfFile = false
+            lineNumberGameStart = lineNumber
+        } else {
+            if (line.trim().isTag) {
+                if (inGametext) {
+                    val newGametext = game.toString()
+                    val newLineNumber = lineNumberGameStart
+                    deferredGames.add(async(CommonPool) {
+                        try {
+                            PGNParser(newLineNumber).parse(newGametext, predicate)
+                        } catch (ex: Exception) {
+                            ex.printStackTrace()
+                            null
+                        }
+                    })
+                    game.setLength(0)
+                    inGametext = false
+                    lineNumberGameStart = lineNumber
+                }
+            } else {
+                inGametext = true
+            }
+            game.append(line.trim()).append(System.lineSeparator())
+        }
+    }
+    runBlocking {
+        deferredGames.forEach { it.await()?.let { result.add(it) } }
+    }
+    return result
+}
+
+
+private class PGNParser(lineNumber: Int) {
+
+    val game = Game()
+    var lineNumber = lineNumber
     var inMovetext = false
     var inComment = false
+    var gameResultFound = false
     var comment = StringBuilder()
-    var game = Game()
 
-    private lateinit var listener: (Game) -> Boolean
+    private lateinit var predicate: (Game) -> Boolean
 
-    fun parse(path: Path, listener: (Game) -> Boolean) {
-        this.listener = listener
-        for (line in Files.lines(path, Charsets.UTF_8)) {
-            if (!parseLine(line)) return
-        }
+    fun parse(string: String, predicate: (Game) -> Boolean = { true }): Game? {
+        this.predicate = predicate
+        string.lines().forEach { if (!gameResultFound) parseLine(it) }
+        return if (predicate(game)) return game else null
     }
 
-    fun parse(string: String, listener: (Game) -> Boolean) {
-        this.listener = listener
-        string.lines().forEach {
-            if (!parseLine(it)) return
-        }
-    }
-
-    private fun parseLine(line: String): Boolean {
+    private fun parseLine(line: String) {
         lineNumber++
         try {
-            var s = line.trim()
-            if (s.isEmpty()) return true
-            if (startOfFile) {
-                if (s.contains('[')) {
-                    // Drop first 3 ChessBase "special characters"
-                    s = s.dropWhile { it != '[' }
-                }
-                startOfFile = false
-            }
             if (inMovetext) {
-                if (!parseMovetext(s)) return false
+                parseMovetext(line)
             } else {
-                if (s.startsWith('[') && s.endsWith(']')) {
-                    with (s.dropLast(1).drop(1)) {
+                if (line.isTag) {
+                    with (line.dropLast(1).drop(1)) {
                         game.tags.put(substringBefore(' '),
                                 substringAfter(' ').replace("\"", ""))
                     }
@@ -67,27 +96,22 @@ private class PGNParser {
                     if ("FEN" in game.tags) {
                         game.startWithFen(game.tags["FEN"] ?: "")
                     }
-                    parseMovetext(s)
+                    parseMovetext(line)
                 }
             }
-            return true
         } catch (e: Exception) {
             throw Exception("error on line $lineNumber", e)
         }
     }
 
-    private fun parseMovetext(line: String): Boolean {
+    private fun parseMovetext(line: String) {
         for (token in line.split(regex)) {
             if (!inComment) {
                 when {
-                    token.isBlank() -> { /* do nothing */ }
-                    token.isMoveNumber -> { /* do nothing */ }
+                    token.isBlank() -> {}
+                    token.isMoveNumber -> {}
+                    token.isGameResult -> gameResultFound = true
                     token.isNAG -> game.currentPosition.nags.add(NAG.getNag(token))
-                    token.isGameResult -> {
-                        inMovetext = false
-                        if (!listener(game)) return false
-                        game = Game()
-                    }
                     token.isCommentStart -> inComment = true
                     token.isVariantStart -> game.startVariation()
                     token.isVariantEnd -> game.endVariation()
@@ -104,7 +128,6 @@ private class PGNParser {
             }
         }
         if (inComment) comment.append(" ")
-        return true
     }
 
 }
@@ -126,3 +149,4 @@ private val String.isVariantEnd: Boolean get() { return endsWith(')') }
 private val String.isMoveNumber: Boolean get() { return contains('.') || isNumber }
 private val String.isNAG: Boolean get() { return startsWith('$') }
 private val String.isNumber: Boolean get() { return all { it.isDigit() } }
+private val String.isTag: Boolean get() = startsWith("[") && endsWith("]")

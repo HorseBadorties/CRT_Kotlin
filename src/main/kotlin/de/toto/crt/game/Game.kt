@@ -95,6 +95,11 @@ class Game {
         }
     }
 
+    override fun toString(): String {
+        return "Game(tags=$tags)"
+    }
+
+
 }
 
 interface GameListener {

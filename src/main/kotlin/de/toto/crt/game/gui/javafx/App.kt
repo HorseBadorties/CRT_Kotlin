@@ -38,12 +38,14 @@ class App: Application() {
     val drillPositions = LinkedList<Position>()
 
     init {
-        val games = fromPGN(Paths.get(javaClass.getResource("/pgn/Repertoire_Black.pgn").toURI()))
+        val games = fromPGN(fromResource("/pgn/Repertoire_Black.pgn"))
 //        val games = fromPGN(Paths.getOrNull(javaClass.getResource("/pgn/GraphicsCommentsAndNAGs.pgn").toURI()))
 //        val games = fromPGN(Paths.getOrNull(javaClass.getResource("/pgn/TestRepertoire.pgn").toURI()))
         game = games.first()
         games.forEach { if (it !== game) game.mergeIn(it) }
     }
+
+    fun fromResource(name: String) = Paths.get(javaClass.getResource(name).toURI())
 
      override fun start(stage: Stage?) {
         ourStage = stage

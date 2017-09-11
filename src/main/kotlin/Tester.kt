@@ -1,11 +1,15 @@
+import de.toto.crt.game.fromPGN
+import java.nio.file.Paths
+import kotlin.system.measureTimeMillis
 
 fun main(args: Array<String>) {
-    val (x, y) = Foo1(23, 45)
-    val (x2, y2) = Foo2(23, 45)
-}
+    var count = 0
+    val duration = measureTimeMillis {
+        val games = fromPGN(Paths.get("C:\\Users\\080064\\Downloads\\twic_BULK.pgn")) {
+            count++; it.tags["White"]?.startsWith("Duda,") ?: false
+        }
+        println("${games.size} Duda games found")
+    }
+    println("$count games parsed in ${duration/1000} seconds")
 
-data class Foo1(val x: Int, val y: Int)
-class Foo2(val x: Int, val y: Int) {
-    operator fun component1() = x
-    operator fun component2() = y
 }

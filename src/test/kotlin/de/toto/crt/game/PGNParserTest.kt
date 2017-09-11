@@ -18,10 +18,10 @@ class PGNParserTest {
 1. d4 Nf6 2. c4 c5 3. d5 b5 4. e3 (4. e4 Nxe4 5. Qf3 Nd6 (5... Nf6 ${'$'}4 6. d6))
 4... Qa5+ 5. Nc3 (5. Bd2 b4) (5. Nd2 bxc4 6. Bxc4 Ba6) 5... b4 6. Nce2 *
 """
-        with (fromPGN(moves).first()) {
-            assertTrue(this.getPosition("4...Qa5+").hasVariation("Nd2"))
-            assertTrue(this.getPosition("4...Qa5+").hasVariation("Nc3"))
-            assertTrue(this.getPosition("4...Qa5+").hasVariation("Bd2"))
+        with (fromPGN(moves)) {
+            assertTrue(this.getPosition("4... Qa5+").hasVariation("Nd2"))
+            assertTrue(this.getPosition("4... Qa5+").hasVariation("Nc3"))
+            assertTrue(this.getPosition("4... Qa5+").hasVariation("Bd2"))
             false
         }
 
@@ -41,19 +41,7 @@ Nb5 Nxe4 9. Qe2 Ba6 10. Qxe4 Bxb5 11. Bxb5 Qxb5 12. d6 Nc6) 8... bxc3 9. Bxc3
 Qa4 (9... Qb6 10. exf6 gxf6 11. Nf3 d6 12. Be2 Nd7 13. O-O Bh6 14. a4) 10. Qxa4
 Rxa4 11. exf6 gxf6 {[%csl Rd5][%cal Rh8g8,Rg8g2,Ra4a2]} *
 """
-        val game = fromPGN(moves).first()
-    }
-
-    @Test
-    fun skipInvalidGame() {
-        val moves = """
-[Event "20th OIBM 2016"]
-1. d4 Nf6 2. c4 g6 3. Nc3 Bg7 4. e4 d6 5. Nf3 O-O 6. h3 e5 7. d5 Na6 8. Be3 Nh5
-9. Qe8 10. Be2 Nf4 1-0
-
-[Event "20th OIBM 2016"]
-1. d4 Nf6 1-0"""
-        fromPGN(moves)
+        val game = fromPGN(moves)
     }
 
     @Test
