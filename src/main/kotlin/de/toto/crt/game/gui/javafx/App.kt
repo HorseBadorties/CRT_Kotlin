@@ -10,17 +10,23 @@ import de.toto.crt.game.rules.toFEN
 import javafx.application.Application
 import javafx.application.Platform
 import javafx.event.EventHandler
+import javafx.geometry.Insets
+import javafx.geometry.Orientation
 import javafx.scene.Scene
-import javafx.scene.control.Button
-import javafx.scene.control.Label
-import javafx.scene.control.ToolBar
+import javafx.scene.control.*
 import javafx.scene.image.Image
+import javafx.scene.image.ImageView
+import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyCode.*
 import javafx.scene.input.KeyCodeCombination
-import javafx.scene.input.KeyCodeCombination.*
+import javafx.scene.input.KeyCodeCombination.CONTROL_DOWN
 import javafx.scene.layout.BorderPane
+import javafx.scene.layout.FlowPane
+import javafx.stage.FileChooser
 import javafx.stage.Stage
 import org.controlsfx.control.StatusBar
+import org.controlsfx.tools.Borders
+import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.*
 
@@ -33,51 +39,116 @@ class App: Application() {
 
     var ourStage: Stage? = null
     val board = ChessBoard()
-    var game: Game
+    var game = Game()
     val statusBar = StatusBar()
+    val lstVariations = ListView<Position>()
+    val lstMoves = ListView<Position>()
     val drillPositions = LinkedList<Position>()
-
-    init {
-        val games = fromPGN(fromResource("/pgn/Repertoire_Black.pgn"))
-//        val games = fromPGN(Paths.getOrNull(javaClass.getResource("/pgn/GraphicsCommentsAndNAGs.pgn").toURI()))
-//        val games = fromPGN(Paths.getOrNull(javaClass.getResource("/pgn/TestRepertoire.pgn").toURI()))
-        game = games.first()
-        games.forEach { if (it !== game) game.mergeIn(it) }
-    }
 
     fun fromResource(name: String) = Paths.get(javaClass.getResource(name).toURI())
 
-     override fun start(stage: Stage?) {
+    override fun start(stage: Stage?) {
         ourStage = stage
         stage?.title = "JavaFX-Tester with FX ChessBoard"
-        val pane = BorderPane()
-
-        game.listener.add(gameListener)
 
         initBoard()
-        pane.center = board
+        loadPGN(fromResource("/pgn/Repertoire_Black.pgn"))
+
+        val pane = BorderPane()
+        val variationsAndMoves = SplitPane().apply {
+            orientation = Orientation.HORIZONTAL
+            items.add(BorderPane().apply {
+                top = Label("Variations")
+                center = lstVariations
+                minWidth = 50.0
+            })
+            items.add(BorderPane().apply {
+                top = Label("Movelist")
+                center = lstMoves
+                minWidth = 50.0
+            })
+        }
+
+
+        SplitPane().apply {
+            orientation = Orientation.HORIZONTAL
+            items.add(board)
+            items.add(Borders.wrap(variationsAndMoves).emptyBorder().padding(5.0).build().build())
+            pane.center = this
+        }
+
+        lstVariations.onMouseClicked = EventHandler { gotoSelectedVariation() }
+        lstVariations.onKeyPressed = EventHandler { e -> if (e.code == KeyCode.ENTER) gotoSelectedVariation() }
 
         // ToolBar
-        val btnDrill = Button("Drill")
-        btnDrill.onAction = EventHandler { drill() }
-        val btnSettings = Button("Settings")
-        btnSettings.onAction = EventHandler { settings() }
-        val toolBar = ToolBar(btnDrill, btnSettings)
+        val toolBar = ToolBar()
+        with (Button("Load")) {
+            graphic = ImageView(Image(this@App.javaClass.getResourceAsStream("/images/icon/Open in Popup-32.png")))
+            contentDisplay = ContentDisplay.TOP
+            onAction = EventHandler { loadPGN(pickPGN()) }
+            toolBar.items.add(this)
+        }
+        with (Button("Drill")) {
+            graphic = ImageView(Image(this@App.javaClass.getResourceAsStream("/images/icon/Make Decision red2-32.png")))
+            contentDisplay = ContentDisplay.TOP
+            onAction = EventHandler { drill() }
+            toolBar.items.add(this)
+        }
+        with (Button("Settings")) {
+            graphic = ImageView(Image(this@App.javaClass.getResourceAsStream("/images/icon/Settings-32.png")))
+            contentDisplay = ContentDisplay.TOP
+            onAction = EventHandler { settings() }
+            toolBar.items.add(this)
+        }
         pane.top = toolBar
-
         pane.bottom = statusBar
 
         val scene = Scene(pane, Prefs.getDouble(Prefs.FRAME_WIDTH, 800.0), Prefs.getDouble(Prefs.FRAME_HEIGHT, 800.0))
         with (scene.getAccelerators()) {
-            put(KeyCodeCombination(HOME), Runnable { board.position = game.gotoStartPosition() })
-            put(KeyCodeCombination(LEFT), Runnable { board.position = game.back() })
-            put(KeyCodeCombination(RIGHT), Runnable { board.position =  game.next() })
+            put(KeyCodeCombination(HOME), Runnable { game.gotoStartPosition() })
+            put(KeyCodeCombination(LEFT), Runnable { back() })
+            put(KeyCodeCombination(RIGHT), Runnable { next() })
             put(KeyCodeCombination(F, CONTROL_DOWN), Runnable { board.flip() })
             put(KeyCodeCombination(S, CONTROL_DOWN), Runnable { settings() })
         }
         stage?.scene = scene
         stage?.icons?.add(Image("/images/icon/White Knight-96.png"))
         stage?.show()
+    }
+
+    private fun gotoSelectedVariation() {
+        game.gotoPosition(lstVariations.selectionModel.selectedItem)
+    }
+
+    private fun back() {
+        game.back()
+    }
+
+    private fun next() {
+        if (lstVariations.selectionModel.selectedItem != null) {
+            gotoSelectedVariation()
+        } else {
+            game.next()
+        }
+    }
+
+
+    fun pickPGN(): Path {
+        with (FileChooser()) {
+            title = "Select a pgn file that contains your repertoire"
+            extensionFilters.add(FileChooser.ExtensionFilter("PGN Files", "*.pgn"))
+            return showOpenDialog(ourStage)?.toPath() ?: fromResource("/pgn/Repertoire_Black.pgn")
+        }
+    }
+
+    fun loadPGN(path: Path) {
+        game?.listener.remove(gameListener)
+        val games = fromPGN(path)
+        game = games.first()
+        games.forEach { if (it !== game) game.mergeIn(it) }
+        game.listener.add(gameListener)
+        game.gotoStartPosition()
+        updateStatusBar("$path loaded")
     }
 
     override fun stop() {
@@ -111,7 +182,7 @@ class App: Application() {
         override fun squareClicked(square: Square) {
             val pos = game.currentPosition.next.firstOrNull { it.squaresOfMove[1].sameRankAndFileAs(square) }
             if (pos != null) {
-                board.position = game.gotoPosition(pos)
+                game.gotoPosition(pos)
                 userMoved()
             }
         }
@@ -119,7 +190,7 @@ class App: Application() {
         override fun moveIssued(from: Square, to: Square) {
             val pos = game.currentPosition.next.firstOrNull { it.squaresOfMove.containsAll(listOf(from, to)) }
             if (pos != null) {
-                board.position = game.gotoPosition(pos)
+                game.gotoPosition(pos)
                 userMoved()
             }
         }
@@ -127,14 +198,27 @@ class App: Application() {
 
     private val gameListener = object: GameListener {
         override fun positionChanged() {
+            board.position = game.currentPosition
+            lstVariations.items.clear()
+            lstVariations.items.addAll(game.currentPosition.next)
+            lstMoves.items.clear()
+
             updateStatusBar()
         }
     }
 
-    private fun updateStatusBar() {
-        statusBar.text = if (game.currentPosition.move.isEmpty()) "" else game.currentPosition.movenumberMoveNAGs
-        statusBar.rightItems.clear()
-        statusBar.rightItems.add(Label(game.currentPosition.toFEN()))
+    private fun updateStatusBar(_text: String? = null) {
+        with (statusBar) {
+            with (game.currentPosition) {
+                if (_text != null) {
+                    text = _text
+                } else {
+                    text = if (move.isEmpty()) "" else movenumberMoveNAGs
+                }
+                rightItems.clear()
+                rightItems.add(Label(toFEN()))
+            }
+        }
     }
 
     private fun drill() {
@@ -152,7 +236,7 @@ class App: Application() {
 
         } else {
             drillPositions.clear()
-            board.position = game.gotoStartPosition()
+            game.gotoStartPosition()
         }
     }
 
@@ -164,7 +248,7 @@ class App: Application() {
 
 
             }
-            board.position = game.gotoPosition(nextDrillPosition)
+            game.gotoPosition(nextDrillPosition)
         }
     }
 
@@ -180,4 +264,3 @@ class App: Application() {
     }
 
 }
-

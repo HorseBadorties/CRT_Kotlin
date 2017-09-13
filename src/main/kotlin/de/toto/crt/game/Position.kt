@@ -66,14 +66,14 @@ class Position(
     }
 
     /**
-     * getOrNull a Square by 1-based `rank` and `file`
+     * get a Square by 1-based `rank` and `file`
      */
     fun square(rank: Int, file: Int): Square {
         return squares[rank-1][file-1]
     }
 
     /**
-     * getOrNull a Square by `name`
+     * get a Square by `name`
      */
     fun square(name: String): Square {
         val file = name[0] - 'a'
@@ -82,15 +82,18 @@ class Position(
     }
 
     /**
+     * Invokes `action` on each square
+     */
+    inline fun forEachSquare(action: (square: Square) -> Unit) {
+        forEachRankAndFile { rank, file ->  action(square(rank, file)) }
+    }
+
+    /**
      * Returns a list of squares that match the `predicate`
      */
     inline fun filterSquares(predicate: (Square) -> Boolean): List<Square> {
         val result = mutableListOf<Square>()
-        for (rank in 0..7) {
-            for (file in 0..7) {
-                with (squares[rank][file]) { if (predicate(this)) result.add(this) }
-            }
-        }
+        forEachSquare { if (predicate(it)) result.add(it) }
         return result
     }
 
@@ -99,11 +102,7 @@ class Position(
      * Throws an `IllegalArgumentException` if no match was found
      */
     inline fun findSquare(predicate: (Square) -> Boolean): Square {
-        for (rank in 0..7) {
-            for (file in 0..7) {
-                with (squares[rank][file]) { if (predicate(this)) return this }
-            }
-        }
+        forEachSquare { if (predicate(it)) return it }
         throw IllegalArgumentException("no square matches the predicate")
     }
 
@@ -204,7 +203,7 @@ class Position(
 
 }
 
-fun forEachRankAndFile(action: (rank: Int, file: Int) -> Unit) {
+inline fun forEachRankAndFile(action: (rank: Int, file: Int) -> Unit) {
     for (rank in 1..8) {
         for (file in 1..8) {
             action(rank, file)

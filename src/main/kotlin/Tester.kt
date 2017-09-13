@@ -1,15 +1,25 @@
-import de.toto.crt.game.fromPGN
-import java.nio.file.Paths
-import kotlin.system.measureTimeMillis
+import java.util.*
 
 fun main(args: Array<String>) {
-    var count = 0
-    val duration = measureTimeMillis {
-        val games = fromPGN(Paths.get("C:\\Users\\080064\\Downloads\\twic_BULK.pgn")) {
-            count++; it.tags["White"]?.startsWith("Duda,") ?: false
-        }
-        println("${games.size} Duda games found")
-    }
-    println("$count games parsed in ${duration/1000} seconds")
-
+    println( List(3) { it } )
+//    val q = queueOf(*emptyArray<Node>())
 }
+
+fun breadthFirst(root: Node): List<Node> {
+    val result = mutableListOf<Node>()
+    queueOf(root).pollEach { queue, node ->
+        if (node !== root) result.add(node)
+        node.children.filterTo(queue) { child ->  child !in result }
+    }
+    return result
+}
+
+class Node(var children: List<Node>)
+
+inline fun queueOf(vararg nodes: Node) = LinkedList(nodes.asList())
+//fun queueOf(vararg node: Node) = LinkedList<Node>().apply { addAll(node) }
+
+inline fun Queue<Node>.pollEach(action: (Queue<Node>, Node) -> Unit) {
+    while (!isEmpty()) action(this, poll())
+}
+

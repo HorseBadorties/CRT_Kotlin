@@ -72,12 +72,12 @@ private class PGNParser(lineNumber: Int) {
     var gameResultFound = false
     var comment = StringBuilder()
 
-    private lateinit var predicate: (Game) -> Boolean
+    lateinit var predicate: (Game) -> Boolean
 
     fun parse(string: String, predicate: (Game) -> Boolean = { true }): Game? {
         this.predicate = predicate
         string.lines().forEach { if (!gameResultFound) parseLine(it) }
-        return if (predicate(game)) return game else null
+        return if (predicate(game)) game else null
     }
 
     private fun parseLine(line: String) {

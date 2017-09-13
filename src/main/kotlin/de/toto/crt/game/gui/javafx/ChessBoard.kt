@@ -179,7 +179,7 @@ class ChessBoard : Pane() {
 
     private fun squareData(): List<SquareData> {
         val result = mutableListOf<SquareData>()
-        forEachRankAndFile { rank, file -> result.add(SquareData(position.square(rank, file))) }
+        position.forEachSquare { result.add(SquareData(it)) }
         return result
     }
 
@@ -418,11 +418,11 @@ class ChessBoard : Pane() {
         }
     }
 
-    private fun forEachSquare(action: SquareData.() -> Unit) {
+    private inline fun forEachSquare(action: SquareData.() -> Unit) {
         forEachRankAndFile { rank, file -> action(squareDataOf(rank, file)) }
     }
 
-    private fun forEachSquareWithRankAndFile(action: SquareData.(rank: Int, file: Int) -> Unit) {
+    private inline fun forEachSquareWithRankAndFile(action: SquareData.(rank: Int, file: Int) -> Unit) {
         forEachRankAndFile { rank, file -> action(squareDataOf(rank, file), rank, file) }
     }
 
