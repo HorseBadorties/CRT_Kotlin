@@ -1,25 +1,19 @@
-import java.util.*
+import java.lang.IllegalArgumentException
 
 fun main(args: Array<String>) {
-    println( List(3) { it } )
-//    val q = queueOf(*emptyArray<Node>())
+    val l = listOf(1, 2, 3, 4, 5, 6, 7)
+            .toMap()
+    println(l)
+
+    val m = mapOf(1 to 2, 3 to 4, 5 to 6)
+    println(m)
 }
 
-fun breadthFirst(root: Node): List<Node> {
-    val result = mutableListOf<Node>()
-    queueOf(root).pollEach { queue, node ->
-        if (node !== root) result.add(node)
-        node.children.filterTo(queue) { child ->  child !in result }
-    }
-    return result
-}
-
-class Node(var children: List<Node>)
-
-inline fun queueOf(vararg nodes: Node) = LinkedList(nodes.asList())
-//fun queueOf(vararg node: Node) = LinkedList<Node>().apply { addAll(node) }
-
-inline fun Queue<Node>.pollEach(action: (Queue<Node>, Node) -> Unit) {
-    while (!isEmpty()) action(this, poll())
+public inline fun <T> Collection<T>.toMap(): Map<T, T> {
+    if (size % 2 != 0) throw IllegalArgumentException("Collection has an uneven number of elements.")
+    val map = mutableMapOf<T, T>()
+    indices.filter { it % 2 == 0 }
+           .forEach { map.put(elementAt(it), elementAt(it +1)) }
+    return map
 }
 

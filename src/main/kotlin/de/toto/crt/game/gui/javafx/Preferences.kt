@@ -22,4 +22,5 @@ object Prefs {
     const val SHOW_COORDINATES = "SHOW_COORDINATES"
     const val FRAME_WIDTH = "FRAME_WIDTH"
     const val FRAME_HEIGHT = "FRAME_HEIGHT"
+    const val DIVIDER_POS = "DIVIDER_POS"
 }

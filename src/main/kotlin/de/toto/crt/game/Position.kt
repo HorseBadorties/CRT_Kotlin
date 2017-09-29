@@ -1,8 +1,6 @@
 package de.toto.crt.game
 
-import de.toto.crt.game.rules.CastlingRight
-import de.toto.crt.game.rules.NAG
-import de.toto.crt.game.rules.Square
+import de.toto.crt.game.rules.*
 import javafx.scene.paint.Color
 import java.util.*
 
@@ -109,6 +107,21 @@ class Position(
     val hasNext: Boolean  get() { return !next.isEmpty() }
 
     /**
+     * Returns a List of all moves that led to this position, including `this` position,
+     * not including the start position
+     */
+    fun toHere(): List<Position> {
+        // TODO cleanup
+        val result = mutableListOf<Position>()
+        var p = this
+        while (p.previous != null) {
+            if (p.moveNumber > 0) result.add(0, p)
+            p = p.previous!!
+        }
+        return result
+    }
+
+    /**
      * Returns a breadth-first ordered List of all following Positions with all their variations.
      */
     fun breadthFirst(): List<Position> {
@@ -123,11 +136,6 @@ class Position(
         return result
     }
 
-    fun List<Position>.shuffle(): List<Position> {
-        Collections.shuffle(this)
-        return this
-    }
-
     /**
      * Returns a preorder depth-first List of all following Positions with all their variations.
      * If `shuffle` is used the order of variations will be shuffled.
@@ -138,7 +146,7 @@ class Position(
 
         fun preOrder(pos: Position) {
             val variations = pos.next
-            if (shuffle) variations.shuffle()
+            if (shuffle) Collections.shuffle(variations)
             variations.forEach {
                 if (filter(it)) {
                     result.add(it)
@@ -195,11 +203,12 @@ class Position(
         return result
     }
 
-    override fun toString() = move
+    override fun toString() = movenumberMoveNAGs
 
     // TODO move somewhere else?
-    val movenumberMove: String get() { return "$moveNumber${if (whiteToMove) "..." else "."} $move" }
-    val movenumberMoveNAGs: String get() { return "$movenumberMove${nags.joinToString(separator = " ")}" }
+    val moveNAGs: String get() = "$move${nags.joinToString(separator = " ")}"
+    val movenumberMove: String get() = "$moveNumber${if (whiteToMove) "..." else "."} $move"
+    val movenumberMoveNAGs: String get() = "$movenumberMove${nags.joinToString(separator = " ")}"
 
 }
 

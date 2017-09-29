@@ -10,10 +10,10 @@ class GameTest {
     @Test
     fun preOrderDepthFirst() {
         var game = fromPGN("1.e4 e5 2.Nf3 Nc6 (2...Nf6 3.Nxe5) 3.Bb5 Nf6 *")
-        assertEquals(game.startPosition().preOrderDepthFirst().toString(),
+        assertEquals(game.startPosition().preOrderDepthFirst().map { it.move }.toString(),
                 "[e4, e5, Nf3, Nc6, Bb5, Nf6, Nf6, Nxe5]")
         game = fromPGN("1.e4 e5 2.Nf3 Nc6 (2...Nf6 3.Nxe5 (3.Nc3) 3...Qe7 4.Nf3) 3.Bb5 Nf6 *")
-        assertEquals(game.startPosition().preOrderDepthFirst().toString(),
+        assertEquals(game.startPosition().preOrderDepthFirst().map { it.move }.toString(),
                 "[e4, e5, Nf3, Nc6, Bb5, Nf6, Nf6, Nxe5, Qe7, Nf3, Nc3]")
     }
 
@@ -21,7 +21,7 @@ class GameTest {
     fun preOrderDepthFirstFiltered() {
         val game = fromPGN("1.e4 e5 2.Nf3 Nc6 (2...Nf6 ${NAG.DUBIOUS_MOVE.nag} 3.Nxe5) 3.Bb5 Nf6 *")
         assertEquals(game.startPosition().preOrderDepthFirst { !it.nags.contains(NAG.DUBIOUS_MOVE) }.
-                filter { it.whiteToMove }.toString(),
+                filter { it.whiteToMove }.map { it.move }.toString(),
                 "[e5, Nc6, Nf6]")
     }
 
@@ -42,7 +42,7 @@ class GameTest {
     @Test
     fun breadthFirst() {
         val game = fromPGN("1.e4 e5 2.Nf3 Nc6 (2...Nf6 3.Nxe5) 3.Bb5 Nf6 *")
-        assertEquals(game.startPosition().breadthFirst().toString(),
+        assertEquals(game.startPosition().breadthFirst().map { it.move }.toString(),
                 "[e4, e5, Nf3, Nc6, Nf6, Bb5, Nxe5, Nf6]")
     }
 
