@@ -24,6 +24,8 @@ fun Position.squareIsAttackedBy(square: Square, byWhitePieces: Boolean): Boolean
  * With a KING on square does he attack the other Square?
  */
 private fun kingAttacks(square: Square, other: Square): Boolean {
+    fun Square.match(_rank: Int, _file: Int) = rank == _rank && file == _file
+
     return with (square) {
         other.match(rank + 1, file) ||
         other.match(rank + 1, file - 1) ||
@@ -124,4 +126,3 @@ private fun pawnAttacks(isWhitePawn: Boolean, square: Square, other: Square): Bo
             && (other.file == square.file + 1 || other.file == square.file - 1)
 }
 
-private fun Square.match(_rank: Int, _file: Int) = rank == _rank && file == _file
